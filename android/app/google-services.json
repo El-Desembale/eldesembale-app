@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "461047496514",
+    "project_id": "el-desembale-app",
+    "storage_bucket": "el-desembale-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:461047496514:android:f79827b771286fd852d2db",
+        "android_client_info": {
+          "package_name": "com.desembale.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAONGnYfoSk9BcaR0_24Oh7uGitN5_YehY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
