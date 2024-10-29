@@ -19,6 +19,29 @@ class LoanInformationEntity {
     required this.secondReference,
     required this.bankInformation,
   });
+  Map<String, dynamic> toJson() {
+    return {
+      'direction': direction,
+      'first_reference': {
+        'relationship': firstReference.relationship,
+        'phone': firstReference.phone,
+      },
+      'second_reference': {
+        'relationship': secondReference.relationship,
+        'phone': secondReference.phone,
+      },
+      'bank_information': {
+        'bank_name': bankInformation.bankName,
+        'account_type': bankInformation.accountType,
+        'bank_account_number': bankInformation.bankAccountNumber,
+        'bank_account_name': bankInformation.bankAccountName,
+        'bank_account_last_name': bankInformation.bankAccountLastName,
+        'bank_document_type': bankInformation.bankDocumentType,
+        'bank_document_number': bankInformation.bankDocumentNumber,
+      },
+    };
+  }
+
   LoanInformationEntity copyWith({
     String? direction,
     File? empInvoiceFile,
@@ -58,13 +81,22 @@ class LoanInformationEntity {
         bankInformation: LoanBankAccountEntity(
           bankName: "",
           accountType: "",
-          bankAccountNumber: 0,
+          bankAccountNumber: '',
           bankAccountName: '',
           bankAccountLastName: '',
           bankDocumentType: '',
-          bankDocumentNumber: 0,
+          bankDocumentNumber: '',
         ),
       );
+  bool get isLoanInformationCompleted =>
+      direction.isNotEmpty &&
+      empInvoiceFile.path.isNotEmpty &&
+      ccFrontalPicture.path.isNotEmpty &&
+      ccBackPicture.path.isNotEmpty &&
+      selfiePicture.path.isNotEmpty &&
+      firstReference.relationship.isNotEmpty &&
+      secondReference.relationship.isNotEmpty &&
+      bankInformation.isCompleted;
 }
 
 class LoanReferenceEntity {
@@ -90,19 +122,19 @@ class LoanBankAccountEntity {
   final String bankAccountName;
   final String bankAccountLastName;
   final String bankDocumentType;
-  final int bankDocumentNumber;
+  final String bankDocumentNumber;
   final String bankName;
   final String accountType;
-  final int bankAccountNumber;
+  final String bankAccountNumber;
 
   bool get isCompleted =>
       bankAccountName.isNotEmpty &&
       bankAccountLastName.isNotEmpty &&
       bankDocumentType.isNotEmpty &&
-      bankDocumentNumber != 0 &&
+      bankDocumentNumber.isNotEmpty &&
       bankName.isNotEmpty &&
       accountType.isNotEmpty &&
-      bankAccountNumber != 0;
+      bankAccountNumber.isNotEmpty;
 
   LoanBankAccountEntity({
     required this.bankName,
@@ -117,10 +149,10 @@ class LoanBankAccountEntity {
     String? bankAccountName,
     String? bankAccountLastName,
     String? bankDocumentType,
-    int? bankDocumentNumber,
+    String? bankDocumentNumber,
     String? bankName,
     String? accountType,
-    int? bankAccountNumber,
+    String? bankAccountNumber,
   }) {
     return LoanBankAccountEntity(
       bankAccountName: bankAccountName ?? this.bankAccountName,

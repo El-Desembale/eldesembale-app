@@ -150,25 +150,22 @@ class LoginServiceImpl implements LoginService {
           // Aquí el OTP se completa automáticamente
           final verificationId = credential.verificationId ?? "";
           if (!completer.isCompleted) {
-            completer
-                .complete(verificationId); // Completar con el verificationId
+            completer.complete(verificationId);
           }
         },
         verificationFailed: (FirebaseAuthException e) {
-          print('Error verificando OTP: $e');
           if (!completer.isCompleted) {
-            completer.completeError(e); // Completar con error
+            completer.completeError(e);
           }
         },
         codeSent: (String verificationId, int? resendToken) async {
           if (!completer.isCompleted) {
-            completer.complete(
-                verificationId); // Completar cuando el código es enviado
+            completer.complete(verificationId);
           }
         },
         codeAutoRetrievalTimeout: (String verificationId) {
           if (!completer.isCompleted) {
-            completer.complete(verificationId); // Completar en timeout
+            completer.complete(verificationId);
           }
         },
       );

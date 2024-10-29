@@ -30,6 +30,12 @@ class AssetImages {
   static const String reverseCcPicture = '${_baseIcons}reverse_cc_picture.svg';
   static const String selfie = '${_baseIcons}selfie.svg';
 
+  static const String loanCancel = '${_baseIcons}loan_cancel.svg';
+  static const String loanCash = '${_baseIcons}loan_cash.svg';
+  static const String loanCheck = '${_baseIcons}loan_check.svg';
+  static const String loanClock = '${_baseIcons}loan_clock.svg';
+  static const String loanWaitting = '${_baseIcons}loan_waitting.svg';
+
   //images
   static const String login = '${_baseImages}login.png';
   static const String register = '${_baseImages}register.png';

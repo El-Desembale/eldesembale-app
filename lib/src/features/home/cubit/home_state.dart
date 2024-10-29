@@ -8,12 +8,14 @@ class HomeState {
   final int selectedInstallments;
   final double totalLoanAmount;
   final LoanInformationEntity loanInformation;
+  List<LoanRequestEntity> loans;
   HomeState({
     required this.limits,
     required this.paymentPeriod,
     required this.selectedInstallments,
     required this.totalLoanAmount,
     required this.loanInformation,
+    required this.loans,
     this.isLoading = false,
     this.error,
   });
@@ -26,6 +28,7 @@ class HomeState {
     bool? isLoading,
     double? totalLoanAmount,
     LoanInformationEntity? loanInformation,
+    List<LoanRequestEntity>? loans,
   }) {
     return HomeState(
       error: error ?? this.error,
@@ -35,6 +38,7 @@ class HomeState {
       isLoading: isLoading ?? this.isLoading,
       totalLoanAmount: totalLoanAmount ?? this.totalLoanAmount,
       loanInformation: loanInformation ?? this.loanInformation,
+      loans: loans ?? this.loans,
     );
   }
 }

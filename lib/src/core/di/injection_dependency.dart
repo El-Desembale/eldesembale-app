@@ -7,7 +7,9 @@ import '../../features/home/cubit/home_cubit.dart';
 import '../../features/home/data/reposotories/home_repository_impl.dart';
 import '../../features/home/data/services/home_service.dart';
 import '../../features/home/domain/repositories/home_repository.dart';
+import '../../features/home/domain/use_case/create_loan_use_case.dart';
 import '../../features/home/domain/use_case/get_limits_use_case.dart';
+import '../../features/home/domain/use_case/get_loans_use_case.dart';
 import '../../features/login/cubit/login_cubit.dart';
 import '../../features/login/data/repositories/login_repository_impl.dart';
 import '../../features/login/data/services/login_service.dart';
@@ -38,7 +40,7 @@ class Dependencies {
       instanceName: 'auth',
     );
     sl.registerFactory(
-      () => HomeCubit(sl()),
+      () => HomeCubit(sl(), sl(), sl()),
     );
     sl.registerFactory(
       () => LoginCubit(sl(), sl(), sl(), sl(), sl(), sl()),
@@ -77,6 +79,12 @@ class Dependencies {
     );
     sl.registerLazySingleton(
       () => GetLimitsUseCase(sl()),
+    );
+    sl.registerLazySingleton(
+      () => CreateLoanUseCase(sl()),
+    );
+    sl.registerLazySingleton(
+      () => GetLoansUseCase(sl()),
     );
   }
 

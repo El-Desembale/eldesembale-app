@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../config/auth/cubit/auth_cubit.dart';
+import '../../../../config/routes/routes.dart';
+import '../../../../core/di/injection_dependency.dart';
 import '../../../../utils/colors.dart';
 import '../../../../utils/images.dart';
 
@@ -45,6 +48,7 @@ class DrawerWidget extends StatelessWidget {
                 _drawerItem(
                   "Mi cuenta",
                   AssetImages.person,
+                  () {},
                 ),
                 SizedBox(
                   height: MediaQuery.sizeOf(context).height * 0.01,
@@ -52,6 +56,9 @@ class DrawerWidget extends StatelessWidget {
                 _drawerItem(
                   "Mis solcitudes",
                   AssetImages.request,
+                  () {
+                    context.push(AppRoutes.loansList);
+                  },
                 ),
                 SizedBox(
                   height: MediaQuery.sizeOf(context).height * 0.01,
@@ -59,6 +66,10 @@ class DrawerWidget extends StatelessWidget {
                 _drawerItem(
                   "Cerrar sesión",
                   AssetImages.back,
+                  () {
+                    sl<AuthCubit>(instanceName: 'auth').logout();
+                    context.go(AppRoutes.login);
+                  },
                 ),
               ],
             ),
@@ -72,7 +83,7 @@ class DrawerWidget extends StatelessWidget {
     );
   }
 
-  static Widget _drawerItem(String title, String icon) {
+  static Widget _drawerItem(String title, String icon, void Function()? onTap) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(
         horizontal: 25,
@@ -99,7 +110,7 @@ class DrawerWidget extends StatelessWidget {
           fontSize: 18,
         ),
       ),
-      onTap: () {},
+      onTap: onTap,
     );
   }
 }

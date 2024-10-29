@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../utils/colors.dart';
 import '../../../../../utils/images.dart';
+import '../../../../../utils/modalbottomsheet.dart';
 import '../../../cubit/home_cubit.dart';
 import '../../widgets/custom_tile_widget.dart';
 
@@ -42,7 +43,19 @@ class LoanDataCollectScreen extends StatelessWidget {
               ),
             ),
           ),
-          body: _body(context, state),
+          body: Stack(
+            children: [
+              _body(context, state),
+              state.isLoading
+                  ? Container(
+                      color: Colors.black.withOpacity(0.5),
+                      child: const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ],
+          ),
         );
       },
     );
@@ -91,7 +104,10 @@ class LoanDataCollectScreen extends StatelessWidget {
             trailingIcon: Icons.attach_file_outlined,
             isCompleted: state.loanInformation.empInvoiceFile.path.isNotEmpty,
             onTap: () async {
-              FilePickerResult? result = await FilePicker.platform.pickFiles();
+              FilePickerResult? result = await FilePicker.platform.pickFiles(
+                type: FileType.custom,
+                allowedExtensions: ['pdf'],
+              );
               if (result != null) {
                 homeCubit.addEmpInvoiceFile(File(result.files.first.path!));
               }
@@ -157,11 +173,23 @@ class LoanDataCollectScreen extends StatelessWidget {
             subTitle: "TODO",
             isCompleted: state.loanInformation.bankInformation.isCompleted,
             trailingIcon: Icons.arrow_forward,
-            onTap: () {},
+            onTap: () {
+              context.push(AppRoutes.loanBankAccount);
+            },
           ),
           const SizedBox(height: 50),
           GestureDetector(
-            onTap: () {},
+            onTap: () async {
+              if (state.loanInformation.isLoanInformationCompleted) {
+                await homeCubit.submitLoan(context);
+              } else {
+                ModalbottomsheetUtils.customError(
+                  context,
+                  "Error",
+                  "Por favor complete todos los campos",
+                );
+              }
+            },
             child: Container(
               height: 62,
               decoration: BoxDecoration(

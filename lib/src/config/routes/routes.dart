@@ -9,11 +9,13 @@ import '../../core/preferences/shared_preference.dart';
 import '../../features/home/cubit/home_cubit.dart';
 import '../../features/home/ui/screens/home_screen.dart';
 import '../../features/home/ui/screens/loan_information_screen.dart';
+import '../../features/home/ui/screens/loans_information/loan_bank_account_screen.dart';
 import '../../features/home/ui/screens/loans_information/loan_camera_screen.dart';
 import '../../features/home/ui/screens/loans_information/loan_data_collect_screen.dart';
 import '../../features/home/ui/screens/loans_information/loan_direction_screen.dart';
 import '../../features/home/ui/screens/loans_information/loan_reference_screen.dart';
 import '../../features/home/ui/screens/loans_information/loan_selfie_screen.dart';
+import '../../features/home/ui/screens/loans_list_screens.dart';
 import '../../features/login/cubit/login_cubit.dart';
 import '../../features/login/ui/screens/login_screen.dart';
 import '../../features/login/ui/screens/recovery_password_screen.dart';
@@ -32,6 +34,8 @@ class AppRoutes {
   static const loanCamera = '/loan-camera';
   static const loanSelfie = '/loan-selfie';
   static const loanRefences = '/loan-references';
+  static const loanBankAccount = '/loan-bank-account';
+  static const loansList = '/loans-list';
 
   static final LoginCubit _loginCubit = sl<LoginCubit>();
   static final HomeCubit _homeCubit = sl<HomeCubit>();
@@ -141,6 +145,26 @@ class AppRoutes {
       pageBuilder: (context, state) {
         return NoTransitionPage(
           child: LoanRefencesScreen(
+            homeCubit: _homeCubit,
+          ),
+        );
+      },
+    ),
+    GoRoute(
+      path: loanBankAccount,
+      pageBuilder: (context, state) {
+        return NoTransitionPage(
+          child: LoanBankAccountScreen(
+            homeCubit: _homeCubit,
+          ),
+        );
+      },
+    ),
+    GoRoute(
+      path: loansList,
+      pageBuilder: (context, state) {
+        return NoTransitionPage(
+          child: LoansListScreen(
             homeCubit: _homeCubit,
           ),
         );
