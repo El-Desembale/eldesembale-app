@@ -22,6 +22,14 @@ class AssetImages {
   static const String person = '${_baseIcons}person.svg';
   static const String back = '${_baseIcons}back_icon.svg';
 
+  static const String bank = '${_baseIcons}bank.svg';
+  static const String ccPicture = '${_baseIcons}cc_picture.svg';
+  static const String empInvoice = '${_baseIcons}epm_invoice.svg';
+  static const String locationDot = '${_baseIcons}location_dot.svg';
+  static const String references = '${_baseIcons}references.svg';
+  static const String reverseCcPicture = '${_baseIcons}reverse_cc_picture.svg';
+  static const String selfie = '${_baseIcons}selfie.svg';
+
   //images
   static const String login = '${_baseImages}login.png';
   static const String register = '${_baseImages}register.png';

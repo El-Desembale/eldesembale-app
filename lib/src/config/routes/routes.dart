@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,6 +9,10 @@ import '../../core/preferences/shared_preference.dart';
 import '../../features/home/cubit/home_cubit.dart';
 import '../../features/home/ui/screens/home_screen.dart';
 import '../../features/home/ui/screens/loan_information_screen.dart';
+import '../../features/home/ui/screens/loans_information/loan_camera_screen.dart';
+import '../../features/home/ui/screens/loans_information/loan_data_collect_screen.dart';
+import '../../features/home/ui/screens/loans_information/loan_direction_screen.dart';
+import '../../features/home/ui/screens/loans_information/loan_selfie_screen.dart';
 import '../../features/login/cubit/login_cubit.dart';
 import '../../features/login/ui/screens/login_screen.dart';
 import '../../features/login/ui/screens/recovery_password_screen.dart';
@@ -20,6 +26,11 @@ class AppRoutes {
   static const login = '/login';
   static const recoveryPassword = '/recovery-password';
   static const loanInformation = '/loan-information';
+  static const loanDataCollect = '/loan-data-collect';
+  static const loanDirection = '/loan-direction';
+  static const loanCamera = '/loan-camera';
+  static const loanSelfie = '/loan-selfie';
+
   static final LoginCubit _loginCubit = sl<LoginCubit>();
   static final HomeCubit _homeCubit = sl<HomeCubit>();
   static final _prefs = sl<LocalSharedPreferences>(
@@ -77,6 +88,48 @@ class AppRoutes {
         return NoTransitionPage(
           child: LoanInformationScreen(
             homeCubit: _homeCubit,
+          ),
+        );
+      },
+    ),
+    GoRoute(
+      path: loanDataCollect,
+      pageBuilder: (context, state) {
+        return NoTransitionPage(
+          child: LoanDataCollectScreen(
+            homeCubit: _homeCubit,
+          ),
+        );
+      },
+    ),
+    GoRoute(
+      path: loanDirection,
+      pageBuilder: (context, state) {
+        return NoTransitionPage(
+          child: LoanDirectionScreen(
+            homeCubit: _homeCubit,
+          ),
+        );
+      },
+    ),
+    GoRoute(
+      path: loanCamera,
+      pageBuilder: (context, state) {
+        final onFileSelected = state.extra as void Function(File)?;
+        return NoTransitionPage(
+          child: LoanCameraScreen(
+            addFile: onFileSelected!,
+          ),
+        );
+      },
+    ),
+    GoRoute(
+      path: loanSelfie,
+      pageBuilder: (context, state) {
+        final onFileSelected = state.extra as void Function(File)?;
+        return NoTransitionPage(
+          child: LoanSelfieScreen(
+            addFile: onFileSelected!,
           ),
         );
       },

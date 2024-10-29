@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../config/routes/routes.dart';
 import '../../../../utils/colors.dart';
 import '../../cubit/home_cubit.dart';
 
@@ -200,7 +201,9 @@ class LoanInformationScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             GestureDetector(
-              onTap: () {},
+              onTap: () {
+                context.push(AppRoutes.loanDataCollect);
+              },
               child: Container(
                 height: 62,
                 decoration: BoxDecoration(

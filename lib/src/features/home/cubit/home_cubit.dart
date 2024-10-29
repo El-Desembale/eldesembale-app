@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../data/entities/loan_information_entity.dart';
 import '../domain/models/limit_model.dart';
 import '../domain/use_case/get_limits_use_case.dart';
 
@@ -12,6 +15,7 @@ class HomeCubit extends Cubit<HomeState> {
     this._getLimitsCase,
   ) : super(
           HomeState(
+            loanInformation: LoanInformationEntity.initial(),
             limits: LimitModel(
               selectedSegment: 25,
               minAmmount: 10000,
@@ -98,6 +102,56 @@ class HomeCubit extends Cubit<HomeState> {
     );
   }
 
+  void updateDirection(String newDirection) {
+    emit(
+      state.copyWith(
+        loanInformation: state.loanInformation.copyWith(
+          direction: newDirection,
+        ),
+      ),
+    );
+  }
+
+  void addEmpInvoiceFile(File file) {
+    emit(
+      state.copyWith(
+        loanInformation: state.loanInformation.copyWith(
+          empInvoiceFile: file,
+        ),
+      ),
+    );
+  }
+
+  void addFrontIdFile(File file) {
+    emit(
+      state.copyWith(
+        loanInformation: state.loanInformation.copyWith(
+          ccFrontalPicture: file,
+        ),
+      ),
+    );
+  }
+
+  void addBackIdFile(File file) {
+    emit(
+      state.copyWith(
+        loanInformation: state.loanInformation.copyWith(
+          ccBackPicture: file,
+        ),
+      ),
+    );
+  }
+
+  void addSelfieFile(File file) {
+    emit(
+      state.copyWith(
+        loanInformation: state.loanInformation.copyWith(
+          selfiePicture: file,
+        ),
+      ),
+    );
+  }
+
   void isLoading(bool isLoading) {
     emit(
       state.copyWith(
@@ -115,6 +169,7 @@ class HomeCubit extends Cubit<HomeState> {
   void clear() {
     emit(
       HomeState(
+        loanInformation: LoanInformationEntity.initial(),
         limits: LimitModel(
           selectedSegment: 25,
           minAmmount: 10000,
