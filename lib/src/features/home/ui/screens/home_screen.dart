@@ -1,35 +1,25 @@
+import 'package:desembale/src/config/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../core/di/injection_dependency.dart';
 import '../../../../utils/colors.dart';
 import '../../cubit/home_cubit.dart';
 import '../widgets/drawer.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({
-    super.key,
-  });
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
+class HomeScreen extends StatelessWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  HomeCubit _homeCubit = sl<HomeCubit>();
-  @override
-  void initState() {
-    _homeCubit = sl<HomeCubit>();
-    _homeCubit.getLimits();
-    super.initState();
-  }
+  final HomeCubit homeCubit;
+  HomeScreen({
+    super.key,
+    required this.homeCubit,
+  });
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeCubit, HomeState>(
-      bloc: _homeCubit,
+      bloc: homeCubit,
       builder: (BuildContext context, HomeState state) {
         return Scaffold(
           key: _scaffoldKey,
@@ -107,13 +97,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 30),
                   GestureDetector(
                     onHorizontalDragUpdate: (details) {
-                      _homeCubit.updateSegmentFromPosition(
+                      homeCubit.updateSegmentFromPosition(
                         context,
                         details.localPosition.dx,
                       );
                     },
                     onTapDown: (details) {
-                      _homeCubit.updateSegmentFromPosition(
+                      homeCubit.updateSegmentFromPosition(
                         context,
                         details.localPosition.dx,
                       );
@@ -158,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 20),
                   Text(
                     NumberFormat("#,##0", "en_US")
-                        .format(_homeCubit.calculateDisplayValue()),
+                        .format(state.totalLoanAmount),
                     style: const TextStyle(
                       fontFamily: "Unbounded",
                       color: Colors.white,
@@ -166,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 20),
                   const Text(
                     'Periodo de Pago',
                     style: TextStyle(
@@ -178,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 20),
                   GestureDetector(
                     onTap: () {
-                      _homeCubit.updatePaymentPeriod('Quincenal');
+                      homeCubit.updatePaymentPeriod('Quincenal');
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -217,10 +207,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 20),
                   GestureDetector(
                     onTap: () {
-                      _homeCubit.updatePaymentPeriod('Mensual');
+                      homeCubit.updatePaymentPeriod('Mensual');
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -260,7 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(height: 30),
                   const Text(
                     'Número de Cuotas',
                     style: TextStyle(
@@ -269,81 +259,87 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 30),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: List.generate(8, (index) {
-                      int number = index + 1;
-                      return GestureDetector(
-                        onTap: () {
-                          _homeCubit.updateInstallments(number);
-                        },
-                        child: Container(
-                          height: 70,
-                          width: 40,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 5,
-                          ),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: state.selectedInstallments == number
-                                ? Colors.white
-                                : const Color.fromARGB(255, 21, 28, 16),
-                            borderRadius: BorderRadius.circular(22),
-                          ),
-                          child: Text(
-                            '$number',
-                            style: TextStyle(
-                              color: state.selectedInstallments == number
-                                  ? const Color.fromARGB(255, 21, 28, 16)
-                                  : Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                  const Spacer(),
-                  Container(
-                    height: 72,
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color.fromRGBO(47, 255, 0, 1),
-                      borderRadius: BorderRadius.circular(48),
-                    ),
+                  const SizedBox(height: 20),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.only(left: 25),
-                          child: Text(
-                            'Continuar con solicitud',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 16),
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children:
+                          List.generate(state.limits.maxInstallments, (index) {
+                        int number = index + 1;
+                        return GestureDetector(
+                          onTap: () {
+                            homeCubit.updateInstallments(number);
+                          },
                           child: Container(
-                            width: 72,
-                            height: 55,
-                            decoration: BoxDecoration(
-                              color: const Color.fromRGBO(255, 255, 255, 0.5),
-                              borderRadius: BorderRadius.circular(32),
+                            height: 70,
+                            width: 40,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 5,
                             ),
-                            child: const Icon(
-                              Icons.arrow_forward,
-                              color: Colors.black,
-                              size: 30,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: state.selectedInstallments == number
+                                  ? Colors.white
+                                  : const Color.fromARGB(255, 21, 28, 16),
+                              borderRadius: BorderRadius.circular(22),
+                            ),
+                            child: Text(
+                              '$number',
+                              style: TextStyle(
+                                color: state.selectedInstallments == number
+                                    ? const Color.fromARGB(255, 21, 28, 16)
+                                    : Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        );
+                      }),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  GestureDetector(
+                    onTap: () {
+                      context.push(AppRoutes.loanInformation);
+                    },
+                    child: Container(
+                      height: 62,
+                      decoration: BoxDecoration(
+                        color: const Color.fromRGBO(47, 255, 0, 1),
+                        borderRadius: BorderRadius.circular(48),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.only(left: 25),
+                            child: Text(
+                              'Continuar con solicitud',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 16),
+                            child: Container(
+                              width: 62,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: const Color.fromRGBO(255, 255, 255, 0.5),
+                                borderRadius: BorderRadius.circular(32),
+                              ),
+                              child: const Icon(
+                                Icons.arrow_forward,
+                                color: Colors.black,
+                                size: 30,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),

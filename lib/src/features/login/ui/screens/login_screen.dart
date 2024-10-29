@@ -178,6 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Expanded(
                 flex: 2,
                 child: CountryCodePicker(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
                   boxDecoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.16),
                     borderRadius: BorderRadius.circular(22),

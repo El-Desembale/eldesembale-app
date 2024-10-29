@@ -22,13 +22,17 @@ class HomeServiceImpl implements HomeService {
       return LimitModel(
         maxAmmount: data['max_amount'],
         minAmmount: data['min_amount'],
+        maxInstallments: data['number_max_of_installments'],
+        interest: data['interest'] * 1.0,
         selectedSegment: 25,
       );
     } else {
       return LimitModel(
         maxAmmount: 50000,
         minAmmount: 10000,
+        maxInstallments: 8,
         selectedSegment: 25,
+        interest: 10.0,
       );
     }
   }

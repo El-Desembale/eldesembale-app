@@ -16,8 +16,11 @@ class HomeCubit extends Cubit<HomeState> {
               selectedSegment: 25,
               minAmmount: 10000,
               maxAmmount: 50000,
+              maxInstallments: 8,
+              interest: 10.0,
             ),
             selectedInstallments: 4,
+            totalLoanAmount: 30000,
             paymentPeriod: 'Quincenal',
           ),
         );
@@ -42,6 +45,13 @@ class HomeCubit extends Cubit<HomeState> {
         ),
       ),
     );
+    final total = calculateDisplayValue() * 1.0;
+    emit(
+      state.copyWith(
+        totalLoanAmount: total,
+      ),
+    );
+    print('Selected segment: $total');
   }
 
   int calculateDisplayValue() {
@@ -57,14 +67,18 @@ class HomeCubit extends Cubit<HomeState> {
 
     response.fold(
       (error) => setError(error.toString()),
-      (limits) => setLimits(limits),
+      (limits) {
+        setLimits(limits);
+      },
     );
     isLoading(false);
   }
 
-  void setLimits(LimitModel limits) {
-    state.copyWith(
-      limits: limits,
+  void setLimits(LimitModel newLimits) {
+    emit(
+      state.copyWith(
+        limits: newLimits,
+      ),
     );
   }
 
@@ -105,7 +119,10 @@ class HomeCubit extends Cubit<HomeState> {
           selectedSegment: 25,
           minAmmount: 10000,
           maxAmmount: 50000,
+          maxInstallments: 8,
+          interest: 10.0,
         ),
+        totalLoanAmount: 30000,
         selectedInstallments: 4,
         paymentPeriod: 'Quincenal',
       ),

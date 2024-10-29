@@ -6,10 +6,12 @@ class HomeState {
   final LimitModel limits;
   final String paymentPeriod;
   final int selectedInstallments;
+  final double totalLoanAmount;
   HomeState({
     required this.limits,
     required this.paymentPeriod,
     required this.selectedInstallments,
+    required this.totalLoanAmount,
     this.isLoading = false,
     this.error,
   });
@@ -20,6 +22,7 @@ class HomeState {
     String? paymentPeriod,
     int? selectedInstallments,
     bool? isLoading,
+    double? totalLoanAmount,
   }) {
     return HomeState(
       error: error ?? this.error,
@@ -27,6 +30,7 @@ class HomeState {
       selectedInstallments: selectedInstallments ?? this.selectedInstallments,
       limits: limits ?? this.limits,
       isLoading: isLoading ?? this.isLoading,
+      totalLoanAmount: totalLoanAmount ?? this.totalLoanAmount,
     );
   }
 }

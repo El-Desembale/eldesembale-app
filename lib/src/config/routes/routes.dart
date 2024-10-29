@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../core/di/injection_dependency.dart';
 import '../../core/preferences/shared_preference.dart';
 
+import '../../features/home/cubit/home_cubit.dart';
 import '../../features/home/ui/screens/home_screen.dart';
+import '../../features/home/ui/screens/loan_information_screen.dart';
 import '../../features/login/cubit/login_cubit.dart';
 import '../../features/login/ui/screens/login_screen.dart';
 import '../../features/login/ui/screens/recovery_password_screen.dart';
@@ -17,7 +19,9 @@ class AppRoutes {
   static const home = '/home';
   static const login = '/login';
   static const recoveryPassword = '/recovery-password';
+  static const loanInformation = '/loan-information';
   static final LoginCubit _loginCubit = sl<LoginCubit>();
+  static final HomeCubit _homeCubit = sl<HomeCubit>();
   static final _prefs = sl<LocalSharedPreferences>(
     instanceName: 'prefs',
   );
@@ -51,8 +55,10 @@ class AppRoutes {
     ),
     GoRoute(
       path: home,
-      pageBuilder: (context, state) => const NoTransitionPage(
-        child: HomeScreen(),
+      pageBuilder: (context, state) => NoTransitionPage(
+        child: HomeScreen(
+          homeCubit: _homeCubit,
+        ),
       ),
     ),
     GoRoute(
@@ -61,6 +67,16 @@ class AppRoutes {
         return NoTransitionPage(
           child: RecoveryPasswordScreen(
             loginCubit: _loginCubit,
+          ),
+        );
+      },
+    ),
+    GoRoute(
+      path: loanInformation,
+      pageBuilder: (context, state) {
+        return NoTransitionPage(
+          child: LoanInformationScreen(
+            homeCubit: _homeCubit,
           ),
         );
       },
