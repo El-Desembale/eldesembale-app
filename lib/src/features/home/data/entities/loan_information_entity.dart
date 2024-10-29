@@ -48,12 +48,10 @@ class LoanInformationEntity {
         selfiePicture: File(''),
         ccFrontalPicture: File(''),
         firstReference: LoanReferenceEntity(
-          name: "",
           phone: 0,
           relationship: "",
         ),
         secondReference: LoanReferenceEntity(
-          name: "",
           phone: 0,
           relationship: "",
         ),
@@ -70,11 +68,9 @@ class LoanInformationEntity {
 }
 
 class LoanReferenceEntity {
-  final String name;
   final String relationship;
   final int phone;
   LoanReferenceEntity({
-    required this.name,
     required this.relationship,
     required this.phone,
   });
@@ -84,7 +80,6 @@ class LoanReferenceEntity {
     int? phone,
   }) {
     return LoanReferenceEntity(
-      name: name ?? this.name,
       relationship: relationship ?? this.relationship,
       phone: phone ?? this.phone,
     );

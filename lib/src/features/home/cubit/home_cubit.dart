@@ -166,6 +166,20 @@ class HomeCubit extends Cubit<HomeState> {
     );
   }
 
+  void setReferences(
+    LoanReferenceEntity firstReference,
+    LoanReferenceEntity secondReference,
+  ) {
+    emit(
+      state.copyWith(
+        loanInformation: state.loanInformation.copyWith(
+          firstReference: firstReference,
+          secondReference: secondReference,
+        ),
+      ),
+    );
+  }
+
   void clear() {
     emit(
       HomeState(

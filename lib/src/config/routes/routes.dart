@@ -12,6 +12,7 @@ import '../../features/home/ui/screens/loan_information_screen.dart';
 import '../../features/home/ui/screens/loans_information/loan_camera_screen.dart';
 import '../../features/home/ui/screens/loans_information/loan_data_collect_screen.dart';
 import '../../features/home/ui/screens/loans_information/loan_direction_screen.dart';
+import '../../features/home/ui/screens/loans_information/loan_reference_screen.dart';
 import '../../features/home/ui/screens/loans_information/loan_selfie_screen.dart';
 import '../../features/login/cubit/login_cubit.dart';
 import '../../features/login/ui/screens/login_screen.dart';
@@ -30,6 +31,7 @@ class AppRoutes {
   static const loanDirection = '/loan-direction';
   static const loanCamera = '/loan-camera';
   static const loanSelfie = '/loan-selfie';
+  static const loanRefences = '/loan-references';
 
   static final LoginCubit _loginCubit = sl<LoginCubit>();
   static final HomeCubit _homeCubit = sl<HomeCubit>();
@@ -130,6 +132,16 @@ class AppRoutes {
         return NoTransitionPage(
           child: LoanSelfieScreen(
             addFile: onFileSelected!,
+          ),
+        );
+      },
+    ),
+    GoRoute(
+      path: loanRefences,
+      pageBuilder: (context, state) {
+        return NoTransitionPage(
+          child: LoanRefencesScreen(
+            homeCubit: _homeCubit,
           ),
         );
       },
