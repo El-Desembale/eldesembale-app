@@ -127,6 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
         color: Color.fromARGB(255, 6, 16, 0),
       ),
       child: ListView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         children: [
           _buildImage(),
           SizedBox(
@@ -210,47 +211,40 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(width: 20),
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              "Celular",
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                            TextFormField(
-                              onChanged: (value) {
-                                setState(() {});
-                              },
-                              inputFormatters: [
-                                LengthLimitingTextInputFormatter(10),
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                              controller: widget.loginCubit.phoneController,
-                              keyboardType: TextInputType.phone,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                              ),
-                              decoration: const InputDecoration(
-                                alignLabelWithHint: true,
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.auto,
-                                labelStyle: TextStyle(
-                                  color: Colors.white,
-                                ),
-                                fillColor: Colors.transparent,
-                                errorBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                disabledBorder: InputBorder.none,
-                                focusedErrorBorder: InputBorder.none,
-                                border: InputBorder.none,
-                              ),
-                            ),
+                        child: TextFormField(
+                          onChanged: (value) {
+                            setState(() {});
+                          },
+                          inputFormatters: [
+                            LengthLimitingTextInputFormatter(10),
+                            FilteringTextInputFormatter.digitsOnly,
                           ],
+                          keyboardType: TextInputType.phone,
+                          controller: widget.loginCubit.phoneController,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                          ),
+                          decoration: const InputDecoration(
+                            contentPadding:
+                                EdgeInsets.symmetric(vertical: 10.0),
+                            floatingLabelStyle: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                            ),
+                            filled: true,
+                            labelText: "Celular",
+                            labelStyle: TextStyle(
+                              color: Colors.white,
+                            ),
+                            fillColor: Colors.transparent,
+                            errorBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            disabledBorder: InputBorder.none,
+                            focusedErrorBorder: InputBorder.none,
+                            border: InputBorder.none,
+                          ),
                         ),
                       ),
                     ],
@@ -371,7 +365,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             const Text(
                               "Contraseña",
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.white,
                               ),
                             ),
@@ -526,7 +520,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _registerForm(LoginState state) {
     return GestureDetector(
       onTap: () {
-        print("out");
         FocusScope.of(context).unfocus();
       },
       child: Container(
@@ -1014,9 +1007,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         documentType = value;
                       }
                     },
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 5, horizontal: 20),
+                    decoration: const InputDecoration(
+                      contentPadding:
+                          EdgeInsets.symmetric(vertical: 5, horizontal: 20),
                       filled: true,
                       fillColor: Colors.transparent,
                       errorBorder: InputBorder.none,
@@ -1029,8 +1022,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: Colors.grey,
                       fontSize: 20,
                     ),
-                    dropdownColor:
-                        Colors.white.withOpacity(0.16), // Color del dropdown
+                    dropdownColor: const Color.fromARGB(255, 6, 16, 0),
                   ),
                 ),
               ),
@@ -1233,7 +1225,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-          SizedBox(height: 30),
+          const SizedBox(height: 30),
           Row(
             children: [
               Expanded(
@@ -1258,7 +1250,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             const Text(
                               "Contraseña",
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.white,
                               ),
                             ),
@@ -1317,7 +1309,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ],
           ),
-          SizedBox(height: 30),
+          const SizedBox(height: 30),
           Row(
             children: [
               Expanded(
@@ -1342,7 +1334,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             const Text(
                               "Contraseña",
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.white,
                               ),
                             ),
@@ -1401,7 +1393,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ],
           ),
-          SizedBox(height: 30),
+          const SizedBox(height: 30),
           InkWell(
             onTap: () async {
               FocusScope.of(context).unfocus();

@@ -1,51 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../config/routes/routes.dart';
 import '../../../../utils/colors.dart';
-import '../../cubit/home_cubit.dart';
+import '../../data/entities/loan_request_entity.dart';
 
-class LoanInformationScreen extends StatelessWidget {
-  final HomeCubit homeCubit;
-  const LoanInformationScreen({
+class LoanInfoDetailScreen extends StatelessWidget {
+  final LoanRequestEntity loan;
+  const LoanInfoDetailScreen({
     super.key,
-    required this.homeCubit,
+    required this.loan,
   });
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HomeCubit, HomeState>(
-      bloc: homeCubit,
-      builder: (BuildContext context, HomeState state) {
-        return Scaffold(
-          drawerEnableOpenDragGesture: false,
-          extendBodyBehindAppBar: true,
-          resizeToAvoidBottomInset: false,
-          floatingActionButtonLocation: FloatingActionButtonLocation.startTop,
-          floatingActionButton: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: FloatingActionButton(
-              shape: const CircleBorder(),
-              backgroundColor: UIColors.primeraGrey.withOpacity(0.15),
-              onPressed: () {
-                context.pop();
-              },
-              child: const Icon(
-                Icons.arrow_back,
-                color: Colors.white,
-                size: 35,
-              ),
-            ),
+    return Scaffold(
+      drawerEnableOpenDragGesture: false,
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: false,
+      floatingActionButtonLocation: FloatingActionButtonLocation.startTop,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: FloatingActionButton(
+          shape: const CircleBorder(),
+          backgroundColor: UIColors.primeraGrey.withOpacity(0.15),
+          onPressed: () {
+            context.pop();
+          },
+          child: const Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+            size: 35,
           ),
-          body: _body(context, state),
-        );
-      },
+        ),
+      ),
+      body: _body(context),
     );
   }
 
-  Widget _body(BuildContext context, HomeState state) {
+  Widget _body(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
         color: Color.fromARGB(255, 6, 16, 0),
@@ -63,34 +56,24 @@ class LoanInformationScreen extends StatelessWidget {
           children: [
             const Spacer(),
             const Text(
-              'Detalles del Préstamo',
-              style: TextStyle(
-                fontFamily: "Unbounded",
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const Spacer(),
-            const Text(
               'Total Prestado',
               style: TextStyle(
                 color: Color.fromARGB(255, 243, 248, 241),
-                fontSize: 12,
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 5),
+            const SizedBox(height: 0),
             Text(
-              NumberFormat("#,##0", "en_US").format(state.totalLoanAmount),
+              NumberFormat("#,##0", "en_US").format(loan.amount),
               style: const TextStyle(
                 fontFamily: "Unbounded",
                 color: Colors.white,
-                fontSize: 40,
+                fontSize: 45,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const Spacer(),
+            const SizedBox(height: 30),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -105,7 +88,7 @@ class LoanInformationScreen extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      state.paymentPeriod,
+                      loan.paymentPeriod,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -116,8 +99,8 @@ class LoanInformationScreen extends StatelessWidget {
                 const Spacer(),
                 Container(
                   width: 2,
-                  height: 80,
-                  color: Colors.white,
+                  height: 60,
+                  color: Colors.white.withOpacity(0.5),
                 ),
                 const Spacer(),
                 Column(
@@ -130,7 +113,7 @@ class LoanInformationScreen extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      "${state.selectedInstallments}",
+                      "${loan.installments} Coutas",
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -141,7 +124,7 @@ class LoanInformationScreen extends StatelessWidget {
                 const Spacer(),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
             const Text(
               'Fechas de Pago',
               style: TextStyle(
@@ -151,14 +134,14 @@ class LoanInformationScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
             SizedBox(
-              height: MediaQuery.sizeOf(context).height * 0.3,
+              height: MediaQuery.sizeOf(context).height * 0.45,
               child: SingleChildScrollView(
                 child: Column(
-                  children: List.generate(state.selectedInstallments, (index) {
+                  children: List.generate(loan.installments, (index) {
                     DateTime date = DateTime.now();
-                    if (state.paymentPeriod == 'Mensual') {
+                    if (loan.paymentPeriod == 'Mensual') {
                       date =
                           DateTime.now().add(Duration(days: 30 * (index + 1)));
                     } else {
@@ -166,34 +149,49 @@ class LoanInformationScreen extends StatelessWidget {
                           DateTime.now().add(Duration(days: 15 * (index + 1)));
                     }
 
-                    return SizedBox(
-                      height: 60,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            DateFormat('d MMMM, yyyy', 'es').format(date),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
+                    return Column(
+                      children: [
+                        if (index != 0)
+                          Container(
+                            height: 1,
+                            color: Colors.white.withOpacity(0.15),
                           ),
-                          Text(
-                            NumberFormat("#,##0", "en_US").format(
-                              getTotalAmount(
-                                state.totalLoanAmount,
-                                state.selectedInstallments,
-                                state.limits.interest,
-                                state.paymentPeriod,
+                        SizedBox(
+                          height: 60,
+                          child: Row(
+                            children: [
+                              Text(
+                                DateFormat('d MMMM, yyyy', 'es').format(date),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
                               ),
-                            ),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                            ),
+                              const Spacer(),
+                              Text(
+                                NumberFormat("#,##0", "en_US").format(
+                                  getTotalAmount(
+                                    loan.amount,
+                                    loan.installments,
+                                    loan.interest,
+                                    loan.paymentPeriod,
+                                  ),
+                                ),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Icon(
+                                Icons.check_circle_outline,
+                                color: Colors.white.withOpacity(0.5),
+                                size: 30,
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     );
                   }),
                 ),
@@ -201,9 +199,7 @@ class LoanInformationScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             GestureDetector(
-              onTap: () {
-                context.push(AppRoutes.loanDataCollect);
-              },
+              onTap: () {},
               child: Container(
                 height: 62,
                 decoration: BoxDecoration(
@@ -216,7 +212,7 @@ class LoanInformationScreen extends StatelessWidget {
                     const Padding(
                       padding: EdgeInsets.only(left: 25),
                       child: Text(
-                        'Hacer la solicitud',
+                        'Pagar Couta',
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 15,
@@ -233,7 +229,7 @@ class LoanInformationScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(32),
                         ),
                         child: const Icon(
-                          Icons.arrow_forward,
+                          Icons.check_circle_outline_sharp,
                           color: Colors.black,
                           size: 30,
                         ),

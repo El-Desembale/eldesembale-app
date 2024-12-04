@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class CustomTextfieldWidget extends StatelessWidget {
   final String title;
   final String hintText;
   final void Function(String)? onChanged;
+  final bool onlyNumber;
   const CustomTextfieldWidget({
     super.key,
     required this.title,
     required this.hintText,
+    required this.onlyNumber,
     required this.onChanged,
   });
 
@@ -42,7 +45,11 @@ class CustomTextfieldWidget extends StatelessWidget {
                     focusedBorder: InputBorder.none,
                   ),
                   style: const TextStyle(color: Colors.white),
-                  keyboardType: TextInputType.name,
+                  keyboardType:
+                      onlyNumber ? TextInputType.phone : TextInputType.name,
+                  inputFormatters: onlyNumber
+                      ? [FilteringTextInputFormatter.digitsOnly]
+                      : [],
                   onChanged: onChanged,
                 ),
               ),

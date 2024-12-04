@@ -7,6 +7,7 @@ import '../../core/di/injection_dependency.dart';
 import '../../core/preferences/shared_preference.dart';
 
 import '../../features/home/cubit/home_cubit.dart';
+import '../../features/home/ui/screens/account_information_screen.dart';
 import '../../features/home/ui/screens/home_screen.dart';
 import '../../features/home/ui/screens/loan_information_screen.dart';
 import '../../features/home/ui/screens/loans_information/loan_bank_account_screen.dart';
@@ -26,6 +27,7 @@ class AppRoutes {
   static const onboarding = '/onboarding';
   static const splash = '/splash';
   static const home = '/home';
+  static const accountInformation = '/account-information';
   static const login = '/login';
   static const recoveryPassword = '/recovery-password';
   static const loanInformation = '/loan-information';
@@ -167,6 +169,16 @@ class AppRoutes {
           child: LoansListScreen(
             homeCubit: _homeCubit,
           ),
+        );
+      },
+    ),
+    GoRoute(
+      path: accountInformation,
+      pageBuilder: (context, state) {
+        return const NoTransitionPage(
+          child: AccountInformationScreen(
+              // homeCubit: _homeCubit,
+              ),
         );
       },
     ),

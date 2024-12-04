@@ -11,12 +11,11 @@ import 'src/core/di/injection_dependency.dart';
 import 'src/core/preferences/shared_preference.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding
-      .ensureInitialized(); // Asegúrate de que el framework esté inicializado
+  WidgetsFlutterBinding.ensureInitialized();
 
-  // Mantén el splash screen visible hasta que se complete la inicialización
   FlutterNativeSplash.preserve(
-      widgetsBinding: WidgetsFlutterBinding.ensureInitialized());
+    widgetsBinding: WidgetsFlutterBinding.ensureInitialized(),
+  );
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

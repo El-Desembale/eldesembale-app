@@ -13,7 +13,7 @@ import '../../widgets/custom_textfield_widget.dart';
 // ignore: must_be_immutable
 class LoanBankAccountScreen extends StatefulWidget {
   final HomeCubit homeCubit;
-  LoanBankAccountScreen({
+  const LoanBankAccountScreen({
     super.key,
     required this.homeCubit,
   });
@@ -108,6 +108,7 @@ class _LoanBankAccountScreenState extends State<LoanBankAccountScreen> {
               height: MediaQuery.of(context).size.height * 0.1,
             ),
             CustomTextfieldWidget(
+              onlyNumber: false,
               title: 'Nombre (s)',
               hintText: 'Ingresa tu nombre',
               onChanged: (value) {
@@ -118,6 +119,7 @@ class _LoanBankAccountScreenState extends State<LoanBankAccountScreen> {
             ),
             const SizedBox(height: 15),
             CustomTextfieldWidget(
+              onlyNumber: false,
               title: 'Apellido (s)',
               hintText: 'Ingresa tu apellido ',
               onChanged: (value) {
@@ -144,6 +146,7 @@ class _LoanBankAccountScreenState extends State<LoanBankAccountScreen> {
             CustomTextfieldWidget(
               title: 'Número de documento',
               hintText: 'Ingresa tu número de documento',
+              onlyNumber: true,
               onChanged: (value) {
                 if (value.isNotEmpty) {
                   documentNumber = value;
@@ -175,6 +178,7 @@ class _LoanBankAccountScreenState extends State<LoanBankAccountScreen> {
             ),
             const SizedBox(height: 15),
             CustomTextfieldWidget(
+              onlyNumber: true,
               title: 'Número de cuenta',
               hintText: 'Ingresa tu número de cuenta',
               onChanged: (value) {

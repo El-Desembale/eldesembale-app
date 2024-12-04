@@ -103,7 +103,6 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
   Widget _body(BuildContext context, LoginState state) {
     return GestureDetector(
       onTap: () {
-        print("out");
         // Quita el foco cuando se toca fuera del OtpInputWidget
         FocusScope.of(context).unfocus();
       },
@@ -115,7 +114,7 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
           children: [
             SizedBox(
               height: MediaQuery.sizeOf(context).height * 0.45,
-              child: Column(
+              child: const Column(
                 children: [],
               ),
             ),
@@ -280,7 +279,7 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
                           children: [
                             const Text(
                               "Contraseña",
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.white,
                               ),
                             ),

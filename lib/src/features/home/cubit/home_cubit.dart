@@ -29,14 +29,14 @@ class HomeCubit extends Cubit<HomeState> {
             loanInformation: LoanInformationEntity.initial(),
             limits: LimitModel(
               selectedSegment: 25,
-              minAmmount: 10000,
-              maxAmmount: 50000,
+              minAmmount: 50000,
+              maxAmmount: 500000,
               maxInstallments: 8,
               interest: 10.0,
             ),
             loans: [],
             selectedInstallments: 4,
-            totalLoanAmount: 30000,
+            totalLoanAmount: 250000,
             paymentPeriod: 'Quincenal',
           ),
         );
@@ -49,7 +49,7 @@ class HomeCubit extends Cubit<HomeState> {
 
   void updateSegmentFromPosition(BuildContext context, double dx) {
     final box = context.findRenderObject() as RenderBox;
-    final newSegment = (dx / box.size.width * 50).clamp(0, 49).toInt();
+    final newSegment = (dx / box.size.width * 55).clamp(0, 49).toInt();
     updateSelectedSegment(newSegment);
   }
 
@@ -67,14 +67,15 @@ class HomeCubit extends Cubit<HomeState> {
         totalLoanAmount: total,
       ),
     );
-    print('Selected segment: $total');
   }
 
   int calculateDisplayValue() {
     return state.limits.minAmmount +
         ((state.limits.selectedSegment / 49) *
-                (state.limits.maxAmmount - state.limits.minAmmount))
-            .toInt();
+                    ((state.limits.maxAmmount - state.limits.minAmmount) /
+                        10000))
+                .toInt() *
+            10000;
   }
 
   Future<void> getLimits() async {

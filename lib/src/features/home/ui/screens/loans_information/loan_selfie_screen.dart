@@ -119,7 +119,7 @@ class _LoanSelfieScreenState extends State<LoanSelfieScreen> {
                           width: 80,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(48),
-                            color: Color.fromRGBO(47, 255, 0, 1),
+                            color: const Color.fromRGBO(47, 255, 0, 1),
                           ),
                           child: Container(
                             padding: const EdgeInsets.all(6),

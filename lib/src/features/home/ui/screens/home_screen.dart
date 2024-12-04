@@ -8,18 +8,29 @@ import '../../../../utils/colors.dart';
 import '../../cubit/home_cubit.dart';
 import '../widgets/drawer.dart';
 
-class HomeScreen extends StatelessWidget {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+class HomeScreen extends StatefulWidget {
   final HomeCubit homeCubit;
-  HomeScreen({
+  const HomeScreen({
     super.key,
     required this.homeCubit,
   });
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  @override
+  initState() {
+    widget.homeCubit.getLimits();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeCubit, HomeState>(
-      bloc: homeCubit,
+      bloc: widget.homeCubit,
       builder: (BuildContext context, HomeState state) {
         return Scaffold(
           key: _scaffoldKey,
@@ -97,13 +108,13 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 30),
                   GestureDetector(
                     onHorizontalDragUpdate: (details) {
-                      homeCubit.updateSegmentFromPosition(
+                      widget.homeCubit.updateSegmentFromPosition(
                         context,
                         details.localPosition.dx,
                       );
                     },
                     onTapDown: (details) {
-                      homeCubit.updateSegmentFromPosition(
+                      widget.homeCubit.updateSegmentFromPosition(
                         context,
                         details.localPosition.dx,
                       );
@@ -124,7 +135,7 @@ class HomeScreen extends StatelessWidget {
                             return Expanded(
                               child: Container(
                                 margin:
-                                    const EdgeInsets.symmetric(horizontal: 1),
+                                    const EdgeInsets.symmetric(horizontal: 2),
                                 color: isLastSelected
                                     ? UIColors.primeraGrey
                                     : isSelected
@@ -168,7 +179,7 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 20),
                   GestureDetector(
                     onTap: () {
-                      homeCubit.updatePaymentPeriod('Quincenal');
+                      widget.homeCubit.updatePaymentPeriod('Quincenal');
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -210,7 +221,7 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 20),
                   GestureDetector(
                     onTap: () {
-                      homeCubit.updatePaymentPeriod('Mensual');
+                      widget.homeCubit.updatePaymentPeriod('Mensual');
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -269,7 +280,7 @@ class HomeScreen extends StatelessWidget {
                         int number = index + 1;
                         return GestureDetector(
                           onTap: () {
-                            homeCubit.updateInstallments(number);
+                            widget.homeCubit.updateInstallments(number);
                           },
                           child: Container(
                             height: 70,

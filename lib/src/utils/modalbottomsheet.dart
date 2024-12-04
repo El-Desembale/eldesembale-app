@@ -237,18 +237,19 @@ class ModalbottomsheetUtils {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Spacer(),
-            Container(
-              height: 64,
-              width: 64,
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(20, 255, 255, 255),
-                borderRadius: BorderRadius.circular(24),
+            if (title != '¿Deseas editar tus datos?')
+              Container(
+                height: 64,
+                width: 64,
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(20, 255, 255, 255),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: SvgPicture.asset(
+                  AssetImages.done,
+                ),
               ),
-              child: SvgPicture.asset(
-                AssetImages.done,
-              ),
-            ),
             const Spacer(),
             Text(
               title,
@@ -288,10 +289,10 @@ class ModalbottomsheetUtils {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Padding(
-                      padding: EdgeInsets.only(left: 25),
+                      padding: const EdgeInsets.only(left: 25),
                       child: Text(
                         buttonText,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.black,
                           fontSize: 16,
                         ),

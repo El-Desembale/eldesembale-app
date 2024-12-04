@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 
 import '../../domain/models/limit_model.dart';
 import '../entities/loan_information_entity.dart';
@@ -127,7 +128,6 @@ Future<String> uploadImage(File file, String prefix) async {
 
     // Obtén la URL de descarga
     String downloadUrl = await reference.getDownloadURL();
-    print('File uploaded successfully! Download URL: $downloadUrl');
 
     return downloadUrl;
   } catch (e) {
@@ -148,11 +148,10 @@ Future<String> uploadPDF(File file, String prefix) async {
 
     // Obtén la URL de descarga
     String downloadUrl = await reference.getDownloadURL();
-    print('File uploaded successfully! Download URL: $downloadUrl');
 
     return downloadUrl;
   } catch (e) {
-    print('Error uploading PDF: $e');
+    debugPrint('Error uploading PDF: $e');
     return '';
   }
 }

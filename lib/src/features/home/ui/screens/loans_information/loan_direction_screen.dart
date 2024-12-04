@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -131,12 +132,17 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
                     borderRadius: BorderRadius.circular(22),
                   ),
                   child: TextField(
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(10),
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    keyboardType: TextInputType.phone,
                     decoration: const InputDecoration(
                       hintText: '#',
                       hintStyle: TextStyle(color: Colors.white),
                       border: InputBorder.none,
                     ),
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                     onChanged: (value) {
                       wayNumber = value;
                     },
@@ -165,12 +171,12 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
                     onChanged: (value) {
                       wayNumber2 = value;
                     },
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: '#',
                       hintStyle: TextStyle(color: Colors.white),
                       border: InputBorder.none,
                     ),
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               ),
@@ -189,6 +195,11 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
                     onChanged: (value) {
                       wayNumber3 = value;
                     },
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(10),
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    keyboardType: TextInputType.phone,
                     decoration: const InputDecoration(
                       hintText: '#',
                       hintStyle: TextStyle(color: Colors.white),
@@ -245,7 +256,7 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
                           value: value,
                           child: Text(
                             value,
-                            style: TextStyle(color: Colors.white),
+                            style: const TextStyle(color: Colors.white),
                           ),
                         );
                       }).toList(),

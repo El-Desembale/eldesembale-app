@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../../utils/colors.dart';
 import '../../../../utils/images.dart';
 import '../../cubit/home_cubit.dart';
+import 'loan_info_detail_screen.dart';
 
 class LoansListScreen extends StatefulWidget {
   final HomeCubit homeCubit;
@@ -92,11 +93,11 @@ class _LoansListScreenState extends State<LoansListScreen> {
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(height: 50),
+                  const SizedBox(height: 50),
                   const Padding(
                     padding: EdgeInsets.only(left: 25),
                     child: Text(
-                      'Solictudes',
+                      'Solicitudes',
                       style: TextStyle(
                         fontFamily: "Unbounded",
                         color: Colors.white,
@@ -104,12 +105,12 @@ class _LoansListScreenState extends State<LoansListScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Expanded(
                     flex: 5,
                     child: _loansList(context, state),
                   ),
-                  SizedBox(height: 30),
+                  const SizedBox(height: 30),
                 ],
               ),
       ),
@@ -121,68 +122,80 @@ class _LoansListScreenState extends State<LoansListScreen> {
       itemCount: state.loans.length,
       itemBuilder: (BuildContext context, int index) {
         final loan = state.loans[index];
-        return Container(
-          padding: const EdgeInsets.all(10),
-          margin: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: Colors.white.withOpacity(0.16),
-            border: Border(
-              bottom: BorderSide(
-                color: Colors.white.withOpacity(0.16),
+        return InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => LoanInfoDetailScreen(
+                  loan: loan,
+                ),
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            margin: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: Colors.white.withOpacity(0.16),
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.white.withOpacity(0.16),
+                ),
               ),
             ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                children: [
-                  status(loan.status),
-                  const SizedBox(height: 10),
-                  Text(
-                    NumberFormat("#,##0", "en_US").format(loan.amount),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 30,
-                      fontFamily: "Unbounded",
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  children: [
+                    status(loan.status),
+                    const SizedBox(height: 10),
+                    Text(
+                      NumberFormat("#,##0", "en_US").format(loan.amount),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 30,
+                        fontFamily: "Unbounded",
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    loan.status == "pending" || loan.status == "rejected"
-                        ? "Solicitado ${DateFormat('d/M/y').format(loan.createdAt.toDate())}"
-                        : loan.status == "in_disbursement_process"
-                            ? DateFormat('d/M/y')
-                                .format(loan.createdAt.toDate())
-                            : "Desembolso: ${DateFormat('d/M/y').format(loan.createdAt.toDate())}",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      loan.status == "pending" || loan.status == "rejected"
+                          ? "Solicitado ${DateFormat('d/M/y').format(loan.createdAt.toDate())}"
+                          : loan.status == "in_disbursement_process"
+                              ? DateFormat('d/M/y')
+                                  .format(loan.createdAt.toDate())
+                              : "Desembolso: ${DateFormat('d/M/y').format(loan.createdAt.toDate())}",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 30),
-                  Text(
-                    "Pago ${loan.paymentPeriod}",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
+                    const SizedBox(height: 30),
+                    Text(
+                      "Pago ${loan.paymentPeriod}",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
-                  Text(
-                    loan.installments.toString() + " cuotas",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                    ),
-                  )
-                ],
-              ),
-            ],
+                    Text(
+                      "${loan.installments} cuotas",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
+                    )
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },

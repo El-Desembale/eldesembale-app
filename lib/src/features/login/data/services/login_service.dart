@@ -139,12 +139,12 @@ class LoginServiceImpl implements LoginService {
     required String phone,
     required String countryCode,
   }) async {
-    final FirebaseAuth _auth = FirebaseAuth.instance;
+    final FirebaseAuth auth = FirebaseAuth.instance;
     final Completer<String> completer =
         Completer<String>(); // Inicializar el Completer
 
     try {
-      await _auth.verifyPhoneNumber(
+      await auth.verifyPhoneNumber(
         phoneNumber: "$countryCode$phone",
         verificationCompleted: (PhoneAuthCredential credential) async {
           // Aquí el OTP se completa automáticamente
@@ -172,7 +172,7 @@ class LoginServiceImpl implements LoginService {
 
       return await completer.future;
     } catch (e) {
-      print('Error enviando OTP: $e');
+      debugPrint('Error enviando OTP: $e');
       return ""; // Hubo un error al enviar el OTP
     }
   }
@@ -182,7 +182,7 @@ class LoginServiceImpl implements LoginService {
     required String verificationId,
     required String otp,
   }) async {
-    final FirebaseAuth _auth = FirebaseAuth.instance;
+    final FirebaseAuth auth = FirebaseAuth.instance;
     try {
       // Crear las credenciales con el verificationId y el código OTP ingresado
       PhoneAuthCredential credential = PhoneAuthProvider.credential(
@@ -191,9 +191,9 @@ class LoginServiceImpl implements LoginService {
       );
 
       // Iniciar sesión con las credenciales
-      final response = await _auth.signInWithCredential(credential);
+      final response = await auth.signInWithCredential(credential);
       if (response.user != null) {
-        print("OTP verificado correctamente");
+        debugPrint("OTP verificado correctamente");
         return true;
       } else {
         return false;
@@ -203,7 +203,7 @@ class LoginServiceImpl implements LoginService {
       return false;
     } catch (e) {
       // Si ocurre algún error en la verificación
-      print('Error verificando OTP: $e');
+      debugPrint('Error verificando OTP: $e');
       return false;
     }
   }

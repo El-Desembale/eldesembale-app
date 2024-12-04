@@ -48,13 +48,15 @@ class DrawerWidget extends StatelessWidget {
                 _drawerItem(
                   "Mi cuenta",
                   AssetImages.person,
-                  () {},
+                  () {
+                    context.push(AppRoutes.accountInformation);
+                  },
                 ),
                 SizedBox(
                   height: MediaQuery.sizeOf(context).height * 0.01,
                 ),
                 _drawerItem(
-                  "Mis solcitudes",
+                  "Mis solicitudes",
                   AssetImages.request,
                   () {
                     context.push(AppRoutes.loansList);
