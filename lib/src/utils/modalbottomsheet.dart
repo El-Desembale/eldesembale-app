@@ -223,7 +223,7 @@ class ModalbottomsheetUtils {
     void Function()? onTapp,
   ) {
     return showModalBottomSheet(
-      isDismissible: true,
+      isDismissible: false,
       backgroundColor: Colors.black,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.zero,

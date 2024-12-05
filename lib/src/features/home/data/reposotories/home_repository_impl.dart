@@ -76,4 +76,23 @@ class HomeRepositoryImpl implements HomeRepository {
       );
     }
   }
+
+  @override
+  Future<Either<ErrorModel, bool>> updateUserSubscription({
+    required String email,
+  }) async {
+    try {
+      return Right(
+        await _homeService.updateUserSubscription(
+          email: email,
+        ),
+      );
+    } catch (e) {
+      return Left(
+        ErrorModel(
+          code: '$e',
+        ),
+      );
+    }
+  }
 }

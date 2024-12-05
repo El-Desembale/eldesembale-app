@@ -1,7 +1,12 @@
+// ignore_for_file: non_constant_identifier_names
+
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../config/auth/cubit/auth_cubit.dart';
@@ -13,6 +18,8 @@ import '../domain/models/limit_model.dart';
 import '../domain/use_case/create_loan_use_case.dart';
 import '../domain/use_case/get_limits_use_case.dart';
 import '../domain/use_case/get_loans_use_case.dart';
+import '../domain/use_case/update_user_subscription_use_case.dart';
+import '../ui/widgets/web_payment_view.dart';
 
 part 'home_state.dart';
 
@@ -20,10 +27,12 @@ class HomeCubit extends Cubit<HomeState> {
   final GetLimitsUseCase _getLimitsCase;
   final CreateLoanUseCase _createLoanUseCase;
   final GetLoansUseCase _getLoansUseCase;
+  final UpdateUserSubscriptionUseCase _updateUserSubscriptionUseCase;
   HomeCubit(
     this._getLimitsCase,
     this._createLoanUseCase,
     this._getLoansUseCase,
+    this._updateUserSubscriptionUseCase,
   ) : super(
           HomeState(
             loanInformation: LoanInformationEntity.initial(),
@@ -51,6 +60,48 @@ class HomeCubit extends Cubit<HomeState> {
     final box = context.findRenderObject() as RenderBox;
     final newSegment = (dx / box.size.width * 55).clamp(0, 49).toInt();
     updateSelectedSegment(newSegment);
+  }
+
+  Future<String> generateSubscriptionPayment(BuildContext context) async {
+    final user = sl<AuthCubit>(instanceName: 'auth').state.user;
+    final priv_key = dotenv.env['PRIVATE_INTEGRITY_KEY_TEST'];
+    final public_key = dotenv.env['PUBLIC_TEST_KEY'];
+
+    const amountInCents = 1900000;
+
+    final reference =
+        'subscription${user.phone}${DateTime.now().millisecondsSinceEpoch}';
+
+    final integrity = generateIntegrityHash(
+      reference,
+      amountInCents.toString(),
+      priv_key ?? "",
+    );
+    final url = generateUrl(
+      public_key ?? "",
+      amountInCents,
+      reference,
+      integrity,
+      user.email,
+      '${user.name} ${user.lastName}',
+      user.phone,
+    );
+
+    return url;
+  }
+
+  String generateIntegrityHash(
+      String reference, String billingPrice, String secretKey) {
+    final imput = '$reference${billingPrice}COP$secretKey';
+    final bytes = utf8.encode(imput);
+    final hash = sha256.convert(bytes);
+
+    return hash.toString();
+  }
+
+  String generateUrl(String publicKey, int amountInCents, String reference,
+      String integrity, String email, String name, String phone) {
+    return "https://checkout.wompi.co/p/?public-key=$publicKey&currency=COP&amount-in-cents=$amountInCents&reference=$reference&signature:integrity=$integrity&tax-in-cents:vat=00&tax-in-cents:consumption=00&customer-data:email=$email&customer-data:full-name=$name&customer-data:phone-number=$phone&redirect-url=https://eldesembale.com.co";
   }
 
   void updateSelectedSegment(int newSegment) {
@@ -226,6 +277,24 @@ class HomeCubit extends Cubit<HomeState> {
         loans: loans,
       ),
     );
+  }
+
+  Future<void> updateUserSubscription() async {
+    isLoading(true);
+    final response = await _updateUserSubscriptionUseCase.call(
+      email: sl<AuthCubit>(instanceName: 'auth').state.user.email,
+    );
+
+    response.fold(
+      (error) => setError(error.toString()),
+      (loans) {
+        final auth = sl<AuthCubit>(instanceName: 'auth');
+        auth.login(
+          user: auth.state.user.copyWith(isSubscribed: true),
+        );
+      },
+    );
+    isLoading(false);
   }
 
   Future<void> submitLoan(BuildContext context) async {

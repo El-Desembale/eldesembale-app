@@ -392,7 +392,6 @@ class LoginCubit extends Cubit<LoginState> {
       (userModel) async {
         await sl<AuthCubit>(instanceName: 'auth').login(
           user: userModel,
-          context: context,
         );
         clear();
         passwordController.clear();

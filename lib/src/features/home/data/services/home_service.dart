@@ -21,6 +21,9 @@ abstract class HomeService {
   Future<List<LoanRequestEntity>> getLoans({
     required String phone,
   });
+  Future<bool> updateUserSubscription({
+    required String email,
+  });
 }
 
 class HomeServiceImpl implements HomeService {
@@ -85,6 +88,7 @@ class HomeServiceImpl implements HomeService {
         'installments': selectedInstallments,
         'interest': interest,
         'payment_period': paymentPeriod,
+        'installments_paid': 0,
         'status': 'pending',
         'created_at': DateTime.now(),
         'loan_information': loanInformation,
@@ -111,6 +115,29 @@ class HomeServiceImpl implements HomeService {
       return loans;
     } else {
       return [];
+    }
+  }
+
+  @override
+  Future<bool> updateUserSubscription({
+    required String email,
+  }) async {
+    try {
+      QuerySnapshot querySnapshot = await _database
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        for (var doc in querySnapshot.docs) {
+          await doc.reference.update({'isSubscribed': true});
+        }
+      } else {
+        return false;
+      }
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 }

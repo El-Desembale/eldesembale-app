@@ -88,6 +88,7 @@ class LoginServiceImpl implements LoginService {
         'email': email,
         'createdAt': DateTime.now(),
         'updatedAt': DateTime.now(),
+        'isSubscribed': false,
         'countryCode': countryCode,
         'documentType': documentType,
         'documentNumber': documentNumberm,
@@ -99,6 +100,7 @@ class LoginServiceImpl implements LoginService {
         phone: user,
         lastName: lastName,
         name: name,
+        isSubscribed: false,
       );
     } catch (e) {
       throw Exception("Ha ocurrido un error inesperado.");
@@ -125,6 +127,7 @@ class LoginServiceImpl implements LoginService {
           phone: user,
           lastName: doc['lastName'] ?? "",
           name: doc['name'] ?? "",
+          isSubscribed: doc['isSubscribed'] ?? false,
         );
       } else {
         throw Exception("Usuario o contraseña incorrecta.");

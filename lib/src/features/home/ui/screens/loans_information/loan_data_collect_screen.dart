@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../config/auth/cubit/auth_cubit.dart';
 import '../../../../../config/routes/routes.dart';
+import '../../../../../core/di/injection_dependency.dart';
 import '../../../../../utils/colors.dart';
 import '../../../../../utils/images.dart';
 import '../../../../../utils/modalbottomsheet.dart';
@@ -180,8 +182,20 @@ class LoanDataCollectScreen extends StatelessWidget {
           const SizedBox(height: 50),
           GestureDetector(
             onTap: () async {
+              //TODO: CAMBIAR ESTO PARA PODER SIMULAR
               if (state.loanInformation.isLoanInformationCompleted) {
-                await homeCubit.submitLoan(context);
+                if (sl<AuthCubit>(instanceName: 'auth')
+                    .state
+                    .user
+                    .isSubscribed) {
+                  await homeCubit.submitLoan(context);
+                } else {
+                  final response =
+                      await context.push<bool>(AppRoutes.subscrption);
+                  if (response ?? false) {
+                    await homeCubit.submitLoan(context);
+                  }
+                }
               } else {
                 ModalbottomsheetUtils.customError(
                   context,

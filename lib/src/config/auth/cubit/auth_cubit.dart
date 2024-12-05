@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 
 import '../../../core/preferences/shared_preference.dart';
@@ -24,7 +23,6 @@ class AuthCubit extends HydratedCubit<AuthState> {
 
   Future<void> login({
     required UserModel user,
-    required BuildContext context,
   }) async {
     _prefs.isLogged = true;
     emit(

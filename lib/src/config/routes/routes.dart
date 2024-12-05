@@ -17,6 +17,7 @@ import '../../features/home/ui/screens/loans_information/loan_direction_screen.d
 import '../../features/home/ui/screens/loans_information/loan_reference_screen.dart';
 import '../../features/home/ui/screens/loans_information/loan_selfie_screen.dart';
 import '../../features/home/ui/screens/loans_list_screens.dart';
+import '../../features/home/ui/screens/subscription_screen.dart';
 import '../../features/login/cubit/login_cubit.dart';
 import '../../features/login/ui/screens/login_screen.dart';
 import '../../features/login/ui/screens/recovery_password_screen.dart';
@@ -38,6 +39,7 @@ class AppRoutes {
   static const loanRefences = '/loan-references';
   static const loanBankAccount = '/loan-bank-account';
   static const loansList = '/loans-list';
+  static const subscrption = '/subscription';
 
   static final LoginCubit _loginCubit = sl<LoginCubit>();
   static final HomeCubit _homeCubit = sl<HomeCubit>();
@@ -179,6 +181,16 @@ class AppRoutes {
           child: AccountInformationScreen(
               // homeCubit: _homeCubit,
               ),
+        );
+      },
+    ),
+    GoRoute(
+      path: subscrption,
+      pageBuilder: (context, state) {
+        return NoTransitionPage(
+          child: SubscriptionScreen(
+            homeCubit: _homeCubit,
+          ),
         );
       },
     ),
