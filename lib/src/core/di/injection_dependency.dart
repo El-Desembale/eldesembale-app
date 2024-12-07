@@ -10,6 +10,7 @@ import '../../features/home/domain/repositories/home_repository.dart';
 import '../../features/home/domain/use_case/create_loan_use_case.dart';
 import '../../features/home/domain/use_case/get_limits_use_case.dart';
 import '../../features/home/domain/use_case/get_loans_use_case.dart';
+import '../../features/home/domain/use_case/update_loan_use_case.dart';
 import '../../features/home/domain/use_case/update_user_subscription_use_case.dart';
 import '../../features/login/cubit/login_cubit.dart';
 import '../../features/login/data/repositories/login_repository_impl.dart';
@@ -41,7 +42,7 @@ class Dependencies {
       instanceName: 'auth',
     );
     sl.registerFactory(
-      () => HomeCubit(sl(), sl(), sl(), sl()),
+      () => HomeCubit(sl(), sl(), sl(), sl(), sl()),
     );
     sl.registerFactory(
       () => LoginCubit(sl(), sl(), sl(), sl(), sl(), sl()),
@@ -68,7 +69,6 @@ class Dependencies {
     sl.registerLazySingleton(
       () => RegisterUseCase(sl()),
     );
-
     sl.registerLazySingleton(
       () => SendOtpRecoveryPasswordUseCase(sl()),
     );
@@ -89,6 +89,9 @@ class Dependencies {
     );
     sl.registerLazySingleton(
       () => UpdateUserSubscriptionUseCase(sl()),
+    );
+    sl.registerLazySingleton(
+      () => UpdateLoanUseCase(sl()),
     );
   }
 

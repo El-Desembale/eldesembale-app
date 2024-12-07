@@ -18,8 +18,8 @@ import '../domain/models/limit_model.dart';
 import '../domain/use_case/create_loan_use_case.dart';
 import '../domain/use_case/get_limits_use_case.dart';
 import '../domain/use_case/get_loans_use_case.dart';
+import '../domain/use_case/update_loan_use_case.dart';
 import '../domain/use_case/update_user_subscription_use_case.dart';
-import '../ui/widgets/web_payment_view.dart';
 
 part 'home_state.dart';
 
@@ -28,11 +28,13 @@ class HomeCubit extends Cubit<HomeState> {
   final CreateLoanUseCase _createLoanUseCase;
   final GetLoansUseCase _getLoansUseCase;
   final UpdateUserSubscriptionUseCase _updateUserSubscriptionUseCase;
+  final UpdateLoanUseCase _updateLoanUseCase;
   HomeCubit(
     this._getLimitsCase,
     this._createLoanUseCase,
     this._getLoansUseCase,
     this._updateUserSubscriptionUseCase,
+    this._updateLoanUseCase,
   ) : super(
           HomeState(
             loanInformation: LoanInformationEntity.initial(),
@@ -72,7 +74,7 @@ class HomeCubit extends Cubit<HomeState> {
     final reference =
         'subscription${user.phone}${DateTime.now().millisecondsSinceEpoch}';
 
-    final integrity = generateIntegrityHash(
+    final integrity = _generateIntegrityHash(
       reference,
       amountInCents.toString(),
       priv_key ?? "",
@@ -90,7 +92,38 @@ class HomeCubit extends Cubit<HomeState> {
     return url;
   }
 
-  String generateIntegrityHash(
+  Future<String> generatePayment(
+    BuildContext context,
+    int amountInCents,
+  ) async {
+    final user = sl<AuthCubit>(instanceName: 'auth').state.user;
+    final priv_key = dotenv.env['PRIVATE_INTEGRITY_KEY_TEST'];
+    final public_key = dotenv.env['PUBLIC_TEST_KEY'];
+
+    amountInCents = amountInCents * 100;
+
+    final reference =
+        'payment${user.phone}${DateTime.now().millisecondsSinceEpoch}';
+
+    final integrity = _generateIntegrityHash(
+      reference,
+      amountInCents.toString(),
+      priv_key ?? "",
+    );
+    final url = generateUrl(
+      public_key ?? "",
+      amountInCents,
+      reference,
+      integrity,
+      user.email,
+      '${user.name} ${user.lastName}',
+      user.phone,
+    );
+
+    return url;
+  }
+
+  String _generateIntegrityHash(
       String reference, String billingPrice, String secretKey) {
     final imput = '$reference${billingPrice}COP$secretKey';
     final bytes = utf8.encode(imput);
@@ -297,6 +330,21 @@ class HomeCubit extends Cubit<HomeState> {
     isLoading(false);
   }
 
+  Future<bool> updateLoanInstallments(LoanRequestEntity loan) async {
+    final response = await _updateLoanUseCase.call(
+      loan: loan,
+    );
+    return response.fold(
+      (error) {
+        setError(error.toString());
+        return false;
+      },
+      (status) {
+        return status;
+      },
+    );
+  }
+
   Future<void> submitLoan(BuildContext context) async {
     isLoading(true);
     final response = await _createLoanUseCase.call(
@@ -326,6 +374,25 @@ class HomeCubit extends Cubit<HomeState> {
       },
     );
     isLoading(false);
+  }
+
+  void updateLoan(int loanIndex) {
+    final loan = state.loans[loanIndex].copyWith(
+      installmentsPaid: state.loans[loanIndex].installmentsPaid + 1,
+    );
+
+    if (loanIndex != -1) {
+      emit(
+        state.copyWith(
+          loans: [
+            ...state.loans.sublist(0, loanIndex), // Elementos antes del índice
+            loan, // El préstamo actualizado
+            ...state.loans
+                .sublist(loanIndex + 1), // Elementos después del índice
+          ],
+        ),
+      );
+    }
   }
 
   void clear() {

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../domain/models/limit_model.dart';
 import '../entities/loan_information_entity.dart';
@@ -23,6 +24,9 @@ abstract class HomeService {
   });
   Future<bool> updateUserSubscription({
     required String email,
+  });
+  Future<bool> updateLoan({
+    required LoanRequestEntity loan,
   });
 }
 
@@ -81,8 +85,11 @@ class HomeServiceImpl implements HomeService {
       loanInformation['cc_frontal_picture'] = ccFrontalPicture;
       loanInformation['cc_back_picture'] = ccBackPicture;
       loanInformation['selfie_picture'] = selfiePicture;
+      var uuid = const Uuid();
 
-      await _database.collection('loan_request').add({
+      String generatedId = uuid.v4();
+      await _database.collection('loan_request').doc(generatedId).set({
+        'id': generatedId,
         'amount': totalLoanAmount,
         'phone': phone,
         'installments': selectedInstallments,
@@ -139,6 +146,27 @@ class HomeServiceImpl implements HomeService {
     } catch (e) {
       return false;
     }
+  }
+
+  @override
+  Future<bool> updateLoan({
+    required LoanRequestEntity loan,
+  }) async {
+    QuerySnapshot querySnapshot = await _database
+        .collection('loan_request')
+        .where('id', isEqualTo: loan.id)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      for (var doc in querySnapshot.docs) {
+        await doc.reference.update(
+          {'installments_paid': loan.installmentsPaid + 1},
+        );
+      }
+    } else {
+      return false;
+    }
+    return true;
   }
 }
 

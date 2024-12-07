@@ -128,7 +128,8 @@ class _LoansListScreenState extends State<LoansListScreen> {
               context,
               MaterialPageRoute(
                 builder: (context) => LoanInfoDetailScreen(
-                  loan: loan,
+                  loanIndex: index,
+                  homeCubit: widget.homeCubit,
                 ),
               ),
             );

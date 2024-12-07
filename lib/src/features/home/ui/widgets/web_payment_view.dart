@@ -11,29 +11,19 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 import '../../../../utils/colors.dart';
 import '../../../../utils/modalbottomsheet.dart';
-import '../../cubit/home_cubit.dart';
 
 class WebPaymentView extends StatefulWidget {
   final String paymentUrl;
-  final HomeCubit homeCubit;
+  final Future<void> Function() onSuccessfulPayment;
 
   const WebPaymentView({
     super.key,
     required this.paymentUrl,
-    required this.homeCubit,
+    required this.onSuccessfulPayment,
   });
 
   @override
   State<WebPaymentView> createState() => _WebPaymentViewState();
-}
-
-class name extends StatelessWidget {
-  const name({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
 }
 
 class _WebPaymentViewState extends State<WebPaymentView> {
@@ -233,10 +223,7 @@ class _WebPaymentViewState extends State<WebPaymentView> {
         "vamos a continuar con el proceso",
         "Entendido",
         () async {
-          context.pop(true);
-          context.pop(true);
-          context.pop(true);
-          await widget.homeCubit.updateUserSubscription();
+          await widget.onSuccessfulPayment();
         },
       );
     } else if (status == "DECLINED") {

@@ -95,4 +95,23 @@ class HomeRepositoryImpl implements HomeRepository {
       );
     }
   }
+
+  @override
+  Future<Either<ErrorModel, bool>> updateLoan({
+    required LoanRequestEntity loan,
+  }) async {
+    try {
+      return Right(
+        await _homeService.updateLoan(
+          loan: loan,
+        ),
+      );
+    } catch (e) {
+      return Left(
+        ErrorModel(
+          code: '$e',
+        ),
+      );
+    }
+  }
 }

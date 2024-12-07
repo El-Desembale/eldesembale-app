@@ -123,7 +123,12 @@ class SubscriptionScreen extends StatelessWidget {
                   MaterialPageRoute(
                     builder: (_) => WebPaymentView(
                       paymentUrl: url,
-                      homeCubit: homeCubit,
+                      onSuccessfulPayment: () async {
+                        context.pop(true);
+                        context.pop(true);
+                        context.pop(true);
+                        await homeCubit.updateUserSubscription();
+                      },
                     ),
                   ),
                 );

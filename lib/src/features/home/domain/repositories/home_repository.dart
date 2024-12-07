@@ -18,6 +18,10 @@ abstract class HomeRepository {
   Future<Either<ErrorModel, List<LoanRequestEntity>>> getLoans({
     required String phone,
   });
+  Future<Either<ErrorModel, bool>> updateLoan({
+    required LoanRequestEntity loan,
+  });
+
   Future<Either<ErrorModel, bool>> updateUserSubscription({
     required String email,
   });
