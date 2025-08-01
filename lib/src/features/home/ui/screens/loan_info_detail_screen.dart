@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../utils/colors.dart';
+import '../../../../utils/utils.dart';
 import '../../cubit/home_cubit.dart';
 import '../widgets/web_payment_view.dart';
 
@@ -47,7 +48,7 @@ class LoanInfoDetailScreen extends StatelessWidget {
   }
 
   Widget _body(BuildContext context, HomeState state) {
-    final totalAmount = getTotalAmount(
+    final totalAmount = Utils.getTotalAmount(
       state.loans[loanIndex].amount,
       state.loans[loanIndex].installments,
       state.loans[loanIndex].interest,
@@ -156,15 +157,6 @@ class LoanInfoDetailScreen extends StatelessWidget {
                 child: Column(
                   children: List.generate(state.loans[loanIndex].installments,
                       (index) {
-                    DateTime date = DateTime.now();
-                    if (state.loans[loanIndex].paymentPeriod == 'Mensual') {
-                      date =
-                          DateTime.now().add(Duration(days: 30 * (index + 1)));
-                    } else {
-                      date =
-                          DateTime.now().add(Duration(days: 15 * (index + 1)));
-                    }
-
                     return Column(
                       children: [
                         if (index != 0)
@@ -177,7 +169,12 @@ class LoanInfoDetailScreen extends StatelessWidget {
                           child: Row(
                             children: [
                               Text(
-                                DateFormat('d MMMM, yyyy', 'es').format(date),
+                                DateFormat('d MMMM, yyyy', 'es')
+                                    .format(Utils.calculateInstallmentDate(
+                                  installmentIndex: index,
+                                  paymentPeriod:
+                                      state.loans[loanIndex].paymentPeriod,
+                                )),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 16,
@@ -213,89 +210,74 @@ class LoanInfoDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            GestureDetector(
-              onTap: () async {
-                final url = await homeCubit.generatePayment(
-                    context, totalAmount.truncate());
+            if (state.loans[loanIndex].canPay)
+              GestureDetector(
+                onTap: () async {
+                  final url = await homeCubit.generatePayment(
+                      context, totalAmount.truncate());
 
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => WebPaymentView(
-                      paymentUrl: url,
-                      onSuccessfulPayment: () async {
-                        final status = await homeCubit.updateLoanInstallments(
-                          state.loans[loanIndex],
-                        );
-                        if (status) {
-                          homeCubit.updateLoan(loanIndex);
-                        }
-                        context.pop();
-                        context.pop();
-                      },
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => WebPaymentView(
+                        paymentUrl: url,
+                        onSuccessfulPayment: () async {
+                          final status = await homeCubit.updateLoanInstallments(
+                            state.loans[loanIndex],
+                          );
+                          if (status) {
+                            homeCubit.updateLoan(loanIndex);
+                          }
+                          context.pop();
+                          context.pop();
+                        },
+                      ),
                     ),
+                  );
+                },
+                child: Container(
+                  height: 62,
+                  decoration: BoxDecoration(
+                    color: const Color.fromRGBO(47, 255, 0, 1),
+                    borderRadius: BorderRadius.circular(48),
                   ),
-                );
-              },
-              child: Container(
-                height: 62,
-                decoration: BoxDecoration(
-                  color: const Color.fromRGBO(47, 255, 0, 1),
-                  borderRadius: BorderRadius.circular(48),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(left: 25),
-                      child: Text(
-                        'Pagar Couta',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 15,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(left: 25),
+                        child: Text(
+                          'Pagar Couta',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 15,
+                          ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 16),
-                      child: Container(
-                        width: 62,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: const Color.fromRGBO(255, 255, 255, 0.5),
-                          borderRadius: BorderRadius.circular(32),
-                        ),
-                        child: const Icon(
-                          Icons.check_circle_outline_sharp,
-                          color: Colors.black,
-                          size: 30,
+                      Padding(
+                        padding: const EdgeInsets.only(right: 16),
+                        child: Container(
+                          width: 62,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: const Color.fromRGBO(255, 255, 255, 0.5),
+                            borderRadius: BorderRadius.circular(32),
+                          ),
+                          child: const Icon(
+                            Icons.check_circle_outline_sharp,
+                            color: Colors.black,
+                            size: 30,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
             const SizedBox(height: 20),
           ],
         ),
       ),
     );
-  }
-
-  double getTotalAmount(
-    double totalLoan,
-    int selectedInstallments,
-    double interest,
-    paymentPeriod,
-  ) {
-    double loanInterest = 0.0;
-    if (paymentPeriod == "Mensual") {
-      loanInterest = totalLoan * (interest / 100);
-    } else {
-      loanInterest = totalLoan * ((interest / 2) / 100);
-    }
-    final double capital = totalLoan / selectedInstallments;
-    return loanInterest + capital;
   }
 }

@@ -6,6 +6,7 @@ class LimitModel extends LimitEntity {
     required super.minAmmount,
     required super.maxAmmount,
     required super.maxInstallments,
+    required super.minInstallments,
     required super.interest,
   });
 
@@ -14,6 +15,7 @@ class LimitModel extends LimitEntity {
     int? minAmmount,
     int? maxAmmount,
     int? maxInstallments,
+    int? minInstallments,
     double? interest,
   }) {
     return LimitModel(
@@ -21,6 +23,7 @@ class LimitModel extends LimitEntity {
       minAmmount: minAmmount ?? this.minAmmount,
       maxAmmount: maxAmmount ?? this.maxAmmount,
       maxInstallments: maxInstallments ?? this.maxInstallments,
+      minInstallments: minInstallments ?? this.minInstallments,
       interest: interest ?? this.interest,
     );
   }

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../config/routes/routes.dart';
 import '../../../../utils/colors.dart';
+import '../../../../utils/utils.dart';
 import '../../cubit/home_cubit.dart';
 
 class LoanInformationScreen extends StatelessWidget {
@@ -157,22 +158,17 @@ class LoanInformationScreen extends StatelessWidget {
               child: SingleChildScrollView(
                 child: Column(
                   children: List.generate(state.selectedInstallments, (index) {
-                    DateTime date = DateTime.now();
-                    if (state.paymentPeriod == 'Mensual') {
-                      date =
-                          DateTime.now().add(Duration(days: 30 * (index + 1)));
-                    } else {
-                      date =
-                          DateTime.now().add(Duration(days: 15 * (index + 1)));
-                    }
-
                     return SizedBox(
                       height: 60,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            DateFormat('d MMMM, yyyy', 'es').format(date),
+                            DateFormat('d MMMM, yyyy', 'es')
+                                .format(Utils.calculateInstallmentDate(
+                              installmentIndex: index,
+                              paymentPeriod: state.paymentPeriod,
+                            )),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
@@ -180,7 +176,7 @@ class LoanInformationScreen extends StatelessWidget {
                           ),
                           Text(
                             NumberFormat("#,##0", "en_US").format(
-                              getTotalAmount(
+                              Utils.getTotalAmount(
                                 state.totalLoanAmount,
                                 state.selectedInstallments,
                                 state.limits.interest,
@@ -248,21 +244,5 @@ class LoanInformationScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  double getTotalAmount(
-    double totalLoan,
-    int selectedInstallments,
-    double interest,
-    paymentPeriod,
-  ) {
-    double loanInterest = 0.0;
-    if (paymentPeriod == "Mensual") {
-      loanInterest = totalLoan * (interest / 100);
-    } else {
-      loanInterest = totalLoan * ((interest / 2) / 100);
-    }
-    final double capital = totalLoan / selectedInstallments;
-    return loanInterest + capital;
   }
 }

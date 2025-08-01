@@ -43,6 +43,7 @@ class HomeCubit extends Cubit<HomeState> {
               minAmmount: 50000,
               maxAmmount: 500000,
               maxInstallments: 8,
+              minInstallments: 2,
               interest: 10.0,
             ),
             loans: [],
@@ -60,7 +61,10 @@ class HomeCubit extends Cubit<HomeState> {
 
   void updateSegmentFromPosition(BuildContext context, double dx) {
     final box = context.findRenderObject() as RenderBox;
-    final newSegment = (dx / box.size.width * 55).clamp(0, 49).toInt();
+    final width = box.size.width;
+    print('dx: $dx, width: $width');
+    final newSegment = (dx / width * 55).clamp(0, 49).toInt();
+    print('newSegment: $newSegment');
     updateSelectedSegment(newSegment);
   }
 
@@ -405,6 +409,7 @@ class HomeCubit extends Cubit<HomeState> {
           minAmmount: 10000,
           maxAmmount: 50000,
           maxInstallments: 8,
+          minInstallments: 1,
           interest: 10.0,
         ),
         totalLoanAmount: 30000,

@@ -47,6 +47,7 @@ class HomeServiceImpl implements HomeService {
         maxAmmount: data['max_amount'],
         minAmmount: data['min_amount'],
         maxInstallments: data['number_max_of_installments'],
+        minInstallments: data['number_min_of_installments'],
         interest: data['interest'] * 1.0,
         selectedSegment: 25,
       );
@@ -55,6 +56,7 @@ class HomeServiceImpl implements HomeService {
         maxAmmount: 50000,
         minAmmount: 10000,
         maxInstallments: 8,
+        minInstallments: 2,
         selectedSegment: 25,
         interest: 10.0,
       );

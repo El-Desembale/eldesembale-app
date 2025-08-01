@@ -3,6 +3,41 @@ import 'package:flutter/material.dart';
 import 'colors.dart';
 
 class Utils {
+  static double getTotalAmount(
+    double totalLoan,
+    int selectedInstallments,
+    double interest,
+    paymentPeriod,
+  ) {
+    double loanInterest = 0.0;
+
+    loanInterest = (totalLoan * interest) - totalLoan;
+
+    final double capital = totalLoan / selectedInstallments;
+    return loanInterest + capital;
+  }
+
+  static DateTime calculateInstallmentDate({
+    required int installmentIndex,
+    required String paymentPeriod,
+  }) {
+    DateTime firstPaymentDate = DateTime(
+      DateTime.now().year,
+      DateTime.now().month + 2,
+      DateTime.now().day,
+    );
+
+    if (paymentPeriod == 'Mensual') {
+      return DateTime(
+        firstPaymentDate.year,
+        firstPaymentDate.month + installmentIndex,
+        firstPaymentDate.day,
+      );
+    } else {
+      return firstPaymentDate.add(Duration(days: 15 * installmentIndex));
+    }
+  }
+
   static InputDecoration customInputDecoration(String label) {
     return InputDecoration(
       contentPadding: const EdgeInsets.symmetric(

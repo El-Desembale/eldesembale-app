@@ -53,4 +53,6 @@ class LoanRequestEntity {
       installmentsPaid: installmentsPaid ?? this.installmentsPaid,
     );
   }
+
+  bool get canPay => status == 'approved' && installmentsPaid < installments;
 }

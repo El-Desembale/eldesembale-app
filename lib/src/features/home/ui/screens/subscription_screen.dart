@@ -178,20 +178,4 @@ class SubscriptionScreen extends StatelessWidget {
       ),
     );
   }
-
-  double getTotalAmount(
-    double totalLoan,
-    int selectedInstallments,
-    double interest,
-    paymentPeriod,
-  ) {
-    double loanInterest = 0.0;
-    if (paymentPeriod == "Mensual") {
-      loanInterest = totalLoan * (interest / 100);
-    } else {
-      loanInterest = totalLoan * ((interest / 2) / 100);
-    }
-    final double capital = totalLoan / selectedInstallments;
-    return loanInterest + capital;
-  }
 }

@@ -18,7 +18,7 @@ class LocalSharedPreferences {
     _prefs = await SharedPreferences.getInstance();
   }
 
-  static clear() async {
+  clear() async {
     _prefs.clear();
   }
 

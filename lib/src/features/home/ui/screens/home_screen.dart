@@ -65,6 +65,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _body(BuildContext context, HomeState state) {
+    final minInstallments = state.limits.minInstallments;
+    final maxInstallments = state.limits.maxInstallments;
     return Container(
       decoration: const BoxDecoration(
         color: Color.fromARGB(255, 6, 16, 0),
@@ -121,6 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     child: SizedBox(
                       height: 70,
+                      width: double.infinity,
                       child: Row(
                         children: List.generate(
                           50,
@@ -275,38 +278,38 @@ class _HomeScreenState extends State<HomeScreen> {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children:
-                          List.generate(state.limits.maxInstallments, (index) {
-                        int number = index + 1;
-                        return GestureDetector(
-                          onTap: () {
-                            widget.homeCubit.updateInstallments(number);
-                          },
-                          child: Container(
-                            height: 70,
-                            width: 40,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 5,
-                            ),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: state.selectedInstallments == number
-                                  ? Colors.white
-                                  : const Color.fromARGB(255, 21, 28, 16),
-                              borderRadius: BorderRadius.circular(22),
-                            ),
-                            child: Text(
-                              '$number',
-                              style: TextStyle(
+                      children: List.generate(
+                        maxInstallments - minInstallments + 1,
+                        (index) {
+                          int number = minInstallments + index;
+                          return GestureDetector(
+                            onTap: () {
+                              widget.homeCubit.updateInstallments(number);
+                            },
+                            child: Container(
+                              height: 70,
+                              width: 40,
+                              margin: const EdgeInsets.symmetric(horizontal: 5),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
                                 color: state.selectedInstallments == number
-                                    ? const Color.fromARGB(255, 21, 28, 16)
-                                    : Colors.white,
-                                fontWeight: FontWeight.bold,
+                                    ? Colors.white
+                                    : const Color.fromARGB(255, 21, 28, 16),
+                                borderRadius: BorderRadius.circular(22),
+                              ),
+                              child: Text(
+                                '$number',
+                                style: TextStyle(
+                                  color: state.selectedInstallments == number
+                                      ? const Color.fromARGB(255, 21, 28, 16)
+                                      : Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      }),
+                          );
+                        },
+                      ),
                     ),
                   ),
                   const SizedBox(height: 30),

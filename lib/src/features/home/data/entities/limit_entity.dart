@@ -3,6 +3,7 @@ class LimitEntity {
   final int minAmmount;
   final int maxAmmount;
   final int maxInstallments;
+  final int minInstallments;
   final double interest;
 
   LimitEntity({
@@ -10,6 +11,7 @@ class LimitEntity {
     required this.minAmmount,
     required this.maxAmmount,
     required this.maxInstallments,
+    required this.minInstallments,
     required this.interest,
   });
 }
