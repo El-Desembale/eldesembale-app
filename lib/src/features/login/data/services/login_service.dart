@@ -143,14 +143,12 @@ class LoginServiceImpl implements LoginService {
     required String countryCode,
   }) async {
     final FirebaseAuth auth = FirebaseAuth.instance;
-    final Completer<String> completer =
-        Completer<String>(); // Inicializar el Completer
+    final Completer<String> completer = Completer<String>();
 
     try {
       await auth.verifyPhoneNumber(
         phoneNumber: "$countryCode$phone",
         verificationCompleted: (PhoneAuthCredential credential) async {
-          // Aquí el OTP se completa automáticamente
           final verificationId = credential.verificationId ?? "";
           if (!completer.isCompleted) {
             completer.complete(verificationId);

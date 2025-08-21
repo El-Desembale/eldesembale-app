@@ -193,11 +193,10 @@ class LoanInfoDetailScreen extends StatelessWidget {
                               const SizedBox(width: 10),
                               Icon(
                                 Icons.check_circle_outline,
-                                color:
-                                    state.loans[loanIndex].installmentsPaid >=
-                                            index
-                                        ? const Color.fromRGBO(47, 255, 0, 1)
-                                        : Colors.white.withOpacity(0.5),
+                                color: state.loans[loanIndex].installmentsPaid >
+                                        index
+                                    ? const Color.fromRGBO(47, 255, 0, 1)
+                                    : Colors.white.withOpacity(0.5),
                                 size: 30,
                               ),
                             ],

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../config/auth/cubit/auth_cubit.dart';
 import '../../../../config/routes/routes.dart';
 import '../../../../core/di/injection_dependency.dart';
+import '../../../../core/preferences/shared_preference.dart';
 import '../../../../utils/colors.dart';
 import '../../../../utils/images.dart';
 
@@ -69,6 +70,11 @@ class DrawerWidget extends StatelessWidget {
                   "Cerrar sesión",
                   AssetImages.back,
                   () {
+                    final prefs = sl<LocalSharedPreferences>(
+                      instanceName: 'prefs',
+                    );
+                    prefs.clear();
+                    prefs.isLogged = true;
                     sl<AuthCubit>(instanceName: 'auth').logout();
                     context.go(AppRoutes.login);
                   },

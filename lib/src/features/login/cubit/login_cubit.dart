@@ -252,6 +252,9 @@ class LoginCubit extends Cubit<LoginState> {
                 const Spacer(),
                 InkWell(
                   onTap: () async {
+                    await sl<AuthCubit>(instanceName: 'auth').login(
+                      user: user,
+                    );
                     phoneController.text = "";
                     passwordController.text = "";
                     context.pop();

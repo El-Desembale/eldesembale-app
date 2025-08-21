@@ -7,6 +7,7 @@ import '../../../../utils/colors.dart';
 import '../../../../utils/modalbottomsheet.dart';
 import '../../cubit/login_cubit.dart';
 import '../widgets/otp_form.dart';
+import 'login_screen.dart';
 
 class RecoveryPasswordScreen extends StatefulWidget {
   const RecoveryPasswordScreen({
@@ -111,6 +112,7 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
           color: Color.fromARGB(255, 6, 16, 0),
         ),
         child: ListView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           children: [
             SizedBox(
               height: MediaQuery.sizeOf(context).height * 0.45,
@@ -171,172 +173,43 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
             ),
           ),
           const Spacer(),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 20),
-                      const Icon(
-                        Icons.lock_outline,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              "Contraseña",
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                            TextFormField(
-                              onChanged: (value) {
-                                setState(() {});
-                              },
-                              obscureText: obscurePassword,
-                              inputFormatters: [
-                                LengthLimitingTextInputFormatter(10),
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                              controller: passwordController,
-                              keyboardType: TextInputType.phone,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                              ),
-                              decoration: const InputDecoration(
-                                alignLabelWithHint: true,
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.auto,
-                                labelStyle: TextStyle(
-                                  color: Colors.white,
-                                ),
-                                fillColor: Colors.transparent,
-                                errorBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                disabledBorder: InputBorder.none,
-                                focusedErrorBorder: InputBorder.none,
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                      IconButton(
-                        onPressed: () {
-                          setState(() {
-                            obscurePassword = !obscurePassword;
-                          });
-                        },
-                        icon: Icon(
-                          obscurePassword
-                              ? Icons.remove_red_eye_sharp
-                              : Icons.remove_red_eye_outlined,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                    ],
-                  ),
-                ),
-              ),
+          FloatingLabelInput(
+            label: "Contraseña",
+            inputFormatters: [
+              LengthLimitingTextInputFormatter(10),
+              FilteringTextInputFormatter.digitsOnly,
             ],
+            icon: Icons.lock_outline,
+            onChanged: (value) {
+              setState(() {});
+            },
+            controller: passwordController,
+            keyboardType: TextInputType.phone,
+            obscureText: obscurePassword,
+            onPressedHint: () {
+              setState(() {
+                obscurePassword = !obscurePassword;
+              });
+            },
           ),
-          const Spacer(),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 20),
-                      const Icon(
-                        Icons.lock_outline,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              "Contraseña",
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                            TextFormField(
-                              onChanged: (value) {
-                                setState(() {});
-                              },
-                              obscureText: obscurePassword,
-                              inputFormatters: [
-                                LengthLimitingTextInputFormatter(10),
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                              controller: passwordConfirmController,
-                              keyboardType: TextInputType.phone,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                              ),
-                              decoration: const InputDecoration(
-                                alignLabelWithHint: true,
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.auto,
-                                labelStyle: TextStyle(
-                                  color: Colors.white,
-                                ),
-                                fillColor: Colors.transparent,
-                                errorBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                disabledBorder: InputBorder.none,
-                                focusedErrorBorder: InputBorder.none,
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                      IconButton(
-                        onPressed: () {
-                          setState(() {
-                            obscurePassword = !obscurePassword;
-                          });
-                        },
-                        icon: Icon(
-                          obscurePassword
-                              ? Icons.remove_red_eye_sharp
-                              : Icons.remove_red_eye_outlined,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                    ],
-                  ),
-                ),
-              ),
+          FloatingLabelInput(
+            label: "Confirmar contraseña",
+            inputFormatters: [
+              LengthLimitingTextInputFormatter(10),
+              FilteringTextInputFormatter.digitsOnly,
             ],
+            icon: Icons.lock_outline,
+            onChanged: (value) {
+              setState(() {});
+            },
+            controller: passwordConfirmController,
+            keyboardType: TextInputType.phone,
+            obscureText: obscurePassword,
+            onPressedHint: () {
+              setState(() {
+                obscurePassword = !obscurePassword;
+              });
+            },
           ),
           const Spacer(),
           InkWell(

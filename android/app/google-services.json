@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "461047496514",
+    "firebase_url": "https://el-desembale-app-default-rtdb.firebaseio.com",
     "project_id": "el-desembale-app",
     "storage_bucket": "el-desembale-app.appspot.com"
   },

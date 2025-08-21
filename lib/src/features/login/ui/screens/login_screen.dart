@@ -52,53 +52,58 @@ class _LoginScreenState extends State<LoginScreen> {
       bloc: widget.loginCubit,
       listener: (BuildContext context, LoginState state) {},
       builder: (BuildContext context, LoginState state) {
-        return Scaffold(
-          extendBodyBehindAppBar: true,
-          floatingActionButton: _pageController.hasClients &&
-                  _pageController.page! > 0.0
-              ? IconButton(
-                  onPressed: () {
-                    _pageController.jumpToPage(
-                      0,
-                    );
-                  },
-                  icon: Container(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.16),
-                      borderRadius: BorderRadius.circular(22),
-                    ),
-                    child: const Icon(
-                      Icons.arrow_back,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                  ),
-                )
-              : null,
-          floatingActionButtonLocation: FloatingActionButtonLocation.startTop,
-          body: Stack(
-            children: [
-              _body(context, state),
-              if (state.isLoading)
-                Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                  color: Colors.white.withOpacity(0.5),
-                  child: const Center(
-                    child: SizedBox(
-                      width: 50,
-                      height: 50,
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          UIColors.primaryYellow,
+        return GestureDetector(
+          onTap: () {
+            FocusScope.of(context).unfocus();
+          },
+          child: Scaffold(
+            extendBodyBehindAppBar: true,
+            floatingActionButton:
+                _pageController.hasClients && _pageController.page! > 0.0
+                    ? IconButton(
+                        onPressed: () {
+                          _pageController.jumpToPage(
+                            0,
+                          );
+                        },
+                        icon: Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 5, horizontal: 15),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.16),
+                            borderRadius: BorderRadius.circular(22),
+                          ),
+                          child: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                            size: 30,
+                          ),
+                        ),
+                      )
+                    : null,
+            floatingActionButtonLocation: FloatingActionButtonLocation.startTop,
+            body: Stack(
+              children: [
+                _body(context, state),
+                if (state.isLoading)
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height,
+                    color: Colors.white.withOpacity(0.5),
+                    child: const Center(
+                      child: SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            UIColors.primaryYellow,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -178,77 +183,39 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               Expanded(
                 flex: 2,
-                child: CountryCodePicker(
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  boxDecoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(22),
+                child: Container(
+                  margin: const EdgeInsets.only(top: 20),
+                  child: CountryCodePicker(
+                    padding: const EdgeInsets.symmetric(vertical: 5),
+                    boxDecoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.16),
+                      borderRadius: BorderRadius.circular(22),
+                    ),
+                    backgroundColor: Colors.white.withOpacity(0.16),
+                    onChanged: (country) {
+                      if (country.dialCode != null) {
+                        widget.loginCubit.updateCountryCode(country.dialCode!);
+                      }
+                    },
+                    initialSelection: 'CO',
+                    alignLeft: true,
                   ),
-                  backgroundColor: Colors.white.withOpacity(0.16),
-                  onChanged: (country) {
-                    if (country.dialCode != null) {
-                      widget.loginCubit.updateCountryCode(country.dialCode!);
-                    }
-                  },
-                  initialSelection: 'CO',
-                  alignLeft: true,
                 ),
               ),
               Expanded(
                 flex: 5,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 20),
-                      const Icon(
-                        Icons.phone_outlined,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: TextFormField(
-                          onChanged: (value) {
-                            setState(() {});
-                          },
-                          inputFormatters: [
-                            LengthLimitingTextInputFormatter(10),
-                            FilteringTextInputFormatter.digitsOnly,
-                          ],
-                          keyboardType: TextInputType.phone,
-                          controller: widget.loginCubit.phoneController,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                          ),
-                          decoration: const InputDecoration(
-                            contentPadding:
-                                EdgeInsets.symmetric(vertical: 10.0),
-                            floatingLabelStyle: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                            ),
-                            filled: true,
-                            labelText: "Celular",
-                            labelStyle: TextStyle(
-                              color: Colors.white,
-                            ),
-                            fillColor: Colors.transparent,
-                            errorBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            disabledBorder: InputBorder.none,
-                            focusedErrorBorder: InputBorder.none,
-                            border: InputBorder.none,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                child: FloatingLabelInput(
+                  label: "Celular",
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatter(10),
+                    FilteringTextInputFormatter.digitsOnly,
+                  ],
+                  icon: Icons.phone_outlined,
+                  onChanged: (value) {
+                    setState(() {});
+                  },
+                  controller: widget.loginCubit.phoneController,
+                  keyboardType: TextInputType.phone,
                 ),
               ),
             ],
@@ -340,89 +307,25 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-          const Spacer(),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 20),
-                      const Icon(
-                        Icons.lock_outline,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              "Contraseña",
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                            TextFormField(
-                              onChanged: (value) {
-                                setState(() {});
-                              },
-                              obscureText: obscurePassword,
-                              inputFormatters: [
-                                LengthLimitingTextInputFormatter(10),
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                              controller: widget.loginCubit.passwordController,
-                              keyboardType: TextInputType.phone,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                              ),
-                              decoration: const InputDecoration(
-                                alignLabelWithHint: true,
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.auto,
-                                labelStyle: TextStyle(
-                                  color: Colors.white,
-                                ),
-                                fillColor: Colors.transparent,
-                                errorBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                disabledBorder: InputBorder.none,
-                                focusedErrorBorder: InputBorder.none,
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                      IconButton(
-                        onPressed: () {
-                          setState(() {
-                            obscurePassword = !obscurePassword;
-                          });
-                        },
-                        icon: Icon(
-                          obscurePassword
-                              ? Icons.remove_red_eye_sharp
-                              : Icons.remove_red_eye_outlined,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                    ],
-                  ),
-                ),
-              ),
+          const SizedBox(height: 20),
+          FloatingLabelInput(
+            label: "Contraseña",
+            inputFormatters: [
+              LengthLimitingTextInputFormatter(10),
+              FilteringTextInputFormatter.digitsOnly,
             ],
+            icon: Icons.lock_outline,
+            onChanged: (value) {
+              setState(() {});
+            },
+            controller: widget.loginCubit.passwordController,
+            keyboardType: TextInputType.phone,
+            obscureText: obscurePassword,
+            onPressedHint: () {
+              setState(() {
+                obscurePassword = !obscurePassword;
+              });
+            },
           ),
           const SizedBox(height: 10),
           Align(
@@ -689,199 +592,37 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                flex: 5,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 20),
-                      const Icon(
-                        Icons.person_outline,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              "Nombre (s)",
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                            TextFormField(
-                              onChanged: (value) {
-                                name = value;
-                                setState(() {});
-                              },
-                              keyboardType: TextInputType.name,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                              ),
-                              decoration: const InputDecoration(
-                                alignLabelWithHint: true,
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.auto,
-                                labelStyle: TextStyle(
-                                  color: Colors.white,
-                                ),
-                                fillColor: Colors.transparent,
-                                errorBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                disabledBorder: InputBorder.none,
-                                focusedErrorBorder: InputBorder.none,
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+          FloatingLabelInput(
+            label: "Nombre (s)",
+            inputFormatters: <TextInputFormatter>[],
+            icon: Icons.person_outline,
+            onChanged: (value) {
+              name = value;
+              setState(() {});
+            },
+            keyboardType: TextInputType.name,
           ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                flex: 5,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 20),
-                      const Icon(
-                        Icons.person_outline,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              "Apellido (s)",
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                            TextFormField(
-                              onChanged: (value) {
-                                lastName = value;
-                                setState(() {});
-                              },
-                              keyboardType: TextInputType.name,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                              ),
-                              decoration: const InputDecoration(
-                                alignLabelWithHint: true,
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.auto,
-                                labelStyle: TextStyle(
-                                  color: Colors.white,
-                                ),
-                                fillColor: Colors.transparent,
-                                errorBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                disabledBorder: InputBorder.none,
-                                focusedErrorBorder: InputBorder.none,
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+          FloatingLabelInput(
+            label: "Apellido (s)",
+            inputFormatters: const [],
+            icon: Icons.person_outline,
+            onChanged: (value) {
+              lastName = value;
+              setState(() {});
+            },
+            keyboardType: TextInputType.name,
           ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                flex: 5,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 20),
-                      const Icon(
-                        Icons.email_outlined,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              "Correo electrónico",
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                            TextFormField(
-                              onChanged: (value) {
-                                email = value;
-                                setState(() {});
-                              },
-                              keyboardType: TextInputType.name,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                              ),
-                              decoration: const InputDecoration(
-                                alignLabelWithHint: true,
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.auto,
-                                labelStyle: TextStyle(
-                                  color: Colors.white,
-                                ),
-                                fillColor: Colors.transparent,
-                                errorBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                disabledBorder: InputBorder.none,
-                                focusedErrorBorder: InputBorder.none,
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+          FloatingLabelInput(
+            label: 'Correo electrónico',
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp('[a-zA-Z0-9@.]')),
             ],
+            icon: Icons.email_outlined,
+            onChanged: (value) {
+              email = value;
+              setState(() {});
+            },
+            keyboardType: TextInputType.emailAddress,
           ),
           const SizedBox(height: 20),
           Row(
@@ -978,12 +719,12 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 20),
           Row(
             children: [
               Expanded(
                 flex: 2,
                 child: Container(
+                  margin: const EdgeInsets.only(top: 20),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.16),
                     borderRadius: BorderRadius.circular(22),
@@ -1029,66 +770,18 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(width: 10),
               Expanded(
                 flex: 5,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 20),
-                      const Icon(
-                        Icons.person_pin_outlined,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(width: 15),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              "Número de documento",
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                            TextFormField(
-                              onChanged: (value) {
-                                documentNumber = value;
-                                setState(() {});
-                              },
-                              inputFormatters: [
-                                LengthLimitingTextInputFormatter(10),
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                              keyboardType: TextInputType.phone,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                              ),
-                              decoration: const InputDecoration(
-                                alignLabelWithHint: true,
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.auto,
-                                labelStyle: TextStyle(
-                                  color: Colors.white,
-                                ),
-                                fillColor: Colors.transparent,
-                                errorBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                disabledBorder: InputBorder.none,
-                                focusedErrorBorder: InputBorder.none,
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                child: FloatingLabelInput(
+                  label: "Número de documento",
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatter(10),
+                    FilteringTextInputFormatter.digitsOnly,
+                  ],
+                  icon: Icons.person_pin_outlined,
+                  onChanged: (value) {
+                    documentNumber = value;
+                    setState(() {});
+                  },
+                  keyboardType: TextInputType.name,
                 ),
               ),
             ],
@@ -1226,172 +919,43 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
           const SizedBox(height: 30),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 20),
-                      const Icon(
-                        Icons.lock_outline,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              "Contraseña",
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                            TextFormField(
-                              onChanged: (value) {
-                                setState(() {});
-                              },
-                              obscureText: obscurePassword,
-                              inputFormatters: [
-                                LengthLimitingTextInputFormatter(10),
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                              controller: passwordController,
-                              keyboardType: TextInputType.phone,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                              ),
-                              decoration: const InputDecoration(
-                                alignLabelWithHint: true,
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.auto,
-                                labelStyle: TextStyle(
-                                  color: Colors.white,
-                                ),
-                                fillColor: Colors.transparent,
-                                errorBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                disabledBorder: InputBorder.none,
-                                focusedErrorBorder: InputBorder.none,
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                      IconButton(
-                        onPressed: () {
-                          setState(() {
-                            obscurePassword = !obscurePassword;
-                          });
-                        },
-                        icon: Icon(
-                          obscurePassword
-                              ? Icons.remove_red_eye_sharp
-                              : Icons.remove_red_eye_outlined,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                    ],
-                  ),
-                ),
-              ),
+          FloatingLabelInput(
+            label: "Contraseña",
+            inputFormatters: [
+              LengthLimitingTextInputFormatter(10),
+              FilteringTextInputFormatter.digitsOnly,
             ],
+            icon: Icons.lock_outline,
+            onChanged: (value) {
+              setState(() {});
+            },
+            obscureText: obscurePassword,
+            onPressedHint: () {
+              setState(() {
+                obscurePassword = !obscurePassword;
+              });
+            },
+            controller: passwordController,
+            keyboardType: TextInputType.phone,
           ),
-          const SizedBox(height: 30),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 20),
-                      const Icon(
-                        Icons.lock_outline,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              "Contraseña",
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                            TextFormField(
-                              onChanged: (value) {
-                                setState(() {});
-                              },
-                              obscureText: obscurePassword,
-                              inputFormatters: [
-                                LengthLimitingTextInputFormatter(10),
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                              controller: passwordConfirmController,
-                              keyboardType: TextInputType.phone,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                              ),
-                              decoration: const InputDecoration(
-                                alignLabelWithHint: true,
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.auto,
-                                labelStyle: TextStyle(
-                                  color: Colors.white,
-                                ),
-                                fillColor: Colors.transparent,
-                                errorBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                disabledBorder: InputBorder.none,
-                                focusedErrorBorder: InputBorder.none,
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                      IconButton(
-                        onPressed: () {
-                          setState(() {
-                            obscurePassword = !obscurePassword;
-                          });
-                        },
-                        icon: Icon(
-                          obscurePassword
-                              ? Icons.remove_red_eye_sharp
-                              : Icons.remove_red_eye_outlined,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                    ],
-                  ),
-                ),
-              ),
+          FloatingLabelInput(
+            label: "Confirmar contraseña",
+            inputFormatters: [
+              LengthLimitingTextInputFormatter(10),
+              FilteringTextInputFormatter.digitsOnly,
             ],
+            icon: Icons.lock_outline,
+            onChanged: (value) {
+              setState(() {});
+            },
+            obscureText: obscurePassword,
+            onPressedHint: () {
+              setState(() {
+                obscurePassword = !obscurePassword;
+              });
+            },
+            controller: passwordConfirmController,
+            keyboardType: TextInputType.phone,
           ),
           const SizedBox(height: 30),
           InkWell(
@@ -1466,6 +1030,72 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class FloatingLabelInput extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Function(String)? onChanged;
+  final TextInputType keyboardType;
+  final List<TextInputFormatter> inputFormatters;
+  final bool obscureText;
+  final TextEditingController? controller;
+  final void Function()? onPressedHint;
+
+  const FloatingLabelInput({
+    super.key,
+    required this.label,
+    required this.icon,
+    required this.onChanged,
+    required this.inputFormatters,
+    this.controller,
+    this.keyboardType = TextInputType.text,
+    this.obscureText = false,
+    this.onPressedHint,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(top: 20),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.16),
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: TextFormField(
+        obscureText: obscureText,
+        controller: controller,
+        onChanged: onChanged,
+        inputFormatters: inputFormatters,
+        keyboardType: keyboardType,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+        ),
+        decoration: InputDecoration(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 15,
+          ),
+          prefixIcon: Icon(icon, color: Colors.white),
+          suffixIcon: onPressedHint != null
+              ? IconButton(
+                  icon: Icon(
+                      obscureText
+                          ? Icons.remove_red_eye_sharp
+                          : Icons.remove_red_eye_outlined,
+                      color: Colors.white),
+                  onPressed: onPressedHint ?? () {},
+                )
+              : null,
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.white),
+          border: InputBorder.none,
+          floatingLabelBehavior: FloatingLabelBehavior.auto,
+        ),
       ),
     );
   }

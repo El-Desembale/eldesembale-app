@@ -54,6 +54,7 @@ class DefaultFirebaseOptions {
     appId: '1:461047496514:android:f79827b771286fd852d2db',
     messagingSenderId: '461047496514',
     projectId: 'el-desembale-app',
+    databaseURL: 'https://el-desembale-app-default-rtdb.firebaseio.com',
     storageBucket: 'el-desembale-app.appspot.com',
   );
 
@@ -62,6 +63,7 @@ class DefaultFirebaseOptions {
     appId: '1:461047496514:ios:9f7e9f80b9664feb52d2db',
     messagingSenderId: '461047496514',
     projectId: 'el-desembale-app',
+    databaseURL: 'https://el-desembale-app-default-rtdb.firebaseio.com',
     storageBucket: 'el-desembale-app.appspot.com',
     iosBundleId: 'com.desembale.app',
   );
