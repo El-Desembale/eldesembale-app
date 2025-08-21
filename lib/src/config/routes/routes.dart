@@ -125,10 +125,14 @@ class AppRoutes {
     GoRoute(
       path: loanCamera,
       pageBuilder: (context, state) {
-        final onFileSelected = state.extra as void Function(File)?;
+        final extra = state.extra as Map<String, dynamic>;
+        final onFileSelected = extra['onFileSelected'] as void Function(File);
+        final isSelfie = extra['isSelfie'] as bool;
+
         return NoTransitionPage(
           child: LoanCameraScreen(
-            addFile: onFileSelected!,
+            addFile: onFileSelected,
+            isSelfie: isSelfie,
           ),
         );
       },

@@ -9,9 +9,11 @@ import '../../../../../utils/colors.dart';
 
 class LoanCameraScreen extends StatefulWidget {
   final void Function(File) addFile;
+  final bool isSelfie;
   const LoanCameraScreen({
     super.key,
     required this.addFile,
+    required this.isSelfie,
   });
 
   @override
@@ -32,7 +34,7 @@ class _LoanCameraScreenState extends State<LoanCameraScreen> {
   Future<void> initializeCamera() async {
     cameras = await availableCameras();
     _cameraController = CameraController(
-      cameras!.first,
+      widget.isSelfie ? cameras!.first : cameras!.last,
       ResolutionPreset.medium,
     );
     await _cameraController!.initialize();

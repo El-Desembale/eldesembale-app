@@ -196,7 +196,7 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                             width: 150,
                             child: TextField(
                               decoration: InputDecoration(
-                                hintText: 'Ingrese el teléfono',
+                                hintText: 'Ingrese el nombre',
                                 hintStyle: TextStyle(
                                     color: Colors.white.withOpacity(0.6)),
                                 enabledBorder: InputBorder.none,
@@ -531,35 +531,36 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
               const SizedBox(height: 35),
               GestureDetector(
                 onTap: () {
-                  if (secondReferenceRelationship == 'Otro') {
-                    if (secondOtherRelationship.isNotEmpty &&
-                        secondPhoneNumber != 0) {
-                      widget.homeCubit.setReferences(
-                        LoanReferenceEntity(
-                          relationship: firstOtherRelationship,
-                          phone: firstPhoneNumber,
-                        ),
-                        LoanReferenceEntity(
-                          relationship: secondOtherRelationship,
-                          phone: secondPhoneNumber,
-                        ),
-                      );
-                    }
-                  } else if (secondReferenceRelationship.isNotEmpty &&
-                      secondReferenceRelationship != "Otro" &&
-                      secondPhoneNumber != 0) {
+                  // Validaciones
+                  final isFirstValid = firstReferenceRelationship == "Otro"
+                      ? firstOtherRelationship.isNotEmpty &&
+                          firstPhoneNumber != 0
+                      : firstReferenceRelationship.isNotEmpty &&
+                          firstPhoneNumber != 0;
+
+                  final isSecondValid = secondReferenceRelationship == "Otro"
+                      ? secondOtherRelationship.isNotEmpty &&
+                          secondPhoneNumber != 0
+                      : secondReferenceRelationship.isNotEmpty &&
+                          secondPhoneNumber != 0;
+
+                  if (isFirstValid && isSecondValid) {
                     widget.homeCubit.setReferences(
                       LoanReferenceEntity(
-                        relationship: firstReferenceRelationship,
+                        relationship: firstReferenceRelationship == "Otro"
+                            ? firstOtherRelationship // 👈 toma lo escrito
+                            : firstReferenceRelationship,
                         phone: firstPhoneNumber,
                       ),
                       LoanReferenceEntity(
-                        relationship: secondReferenceRelationship,
+                        relationship: secondReferenceRelationship == "Otro"
+                            ? secondOtherRelationship // 👈 toma lo escrito
+                            : secondReferenceRelationship,
                         phone: secondPhoneNumber,
                       ),
                     );
+                    context.pop();
                   }
-                  context.pop();
                 },
                 child: Container(
                   height: 62,

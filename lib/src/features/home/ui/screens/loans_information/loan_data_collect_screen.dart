@@ -123,9 +123,15 @@ class LoanDataCollectScreen extends StatelessWidget {
             trailingIcon: Icons.camera_alt_outlined,
             isCompleted: state.loanInformation.ccFrontalPicture.path.isNotEmpty,
             onTap: () async {
-              await context.push(AppRoutes.loanCamera, extra: (File file) {
-                homeCubit.addFrontIdFile(file);
-              });
+              await context.push(
+                AppRoutes.loanCamera,
+                extra: {
+                  'onFileSelected': (File file) {
+                    homeCubit.addFrontIdFile(file);
+                  },
+                  'isSelfie': false,
+                },
+              );
             },
           ),
           const SizedBox(height: 10),
@@ -136,9 +142,15 @@ class LoanDataCollectScreen extends StatelessWidget {
             trailingIcon: Icons.camera_alt_outlined,
             isCompleted: state.loanInformation.ccBackPicture.path.isNotEmpty,
             onTap: () async {
-              await context.push(AppRoutes.loanCamera, extra: (File file) {
-                homeCubit.addBackIdFile(file);
-              });
+              await context.push(
+                AppRoutes.loanCamera,
+                extra: {
+                  'onFileSelected': (File file) {
+                    homeCubit.addBackIdFile(file);
+                  },
+                  'isSelfie': false,
+                },
+              );
             },
           ),
           const SizedBox(height: 10),
@@ -149,9 +161,15 @@ class LoanDataCollectScreen extends StatelessWidget {
             trailingIcon: Icons.camera_alt_outlined,
             isCompleted: state.loanInformation.selfiePicture.path.isNotEmpty,
             onTap: () async {
-              await context.push(AppRoutes.loanSelfie, extra: (File file) {
-                homeCubit.addSelfieFile(file);
-              });
+              await context.push(
+                AppRoutes.loanCamera,
+                extra: {
+                  'onFileSelected': (File file) {
+                    homeCubit.addSelfieFile(file);
+                  },
+                  'isSelfie': true,
+                },
+              );
             },
           ),
           const SizedBox(height: 10),
