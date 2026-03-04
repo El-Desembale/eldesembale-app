@@ -2,6 +2,13 @@ import 'dart:io';
 
 class LoanInformationEntity {
   final String direction;
+  final String directionWayType;
+  final String directionWayNumber;
+  final String directionWayNumber2;
+  final String directionWayNumber3;
+  final String directionInterior;
+  final String directionAdditionalInfo;
+  final String directionCity;
   final File empInvoiceFile;
   final File ccFrontalPicture;
   final File ccBackPicture;
@@ -11,6 +18,13 @@ class LoanInformationEntity {
   final LoanBankAccountEntity bankInformation;
   LoanInformationEntity({
     required this.direction,
+    this.directionWayType = 'Avenida',
+    this.directionWayNumber = '',
+    this.directionWayNumber2 = '',
+    this.directionWayNumber3 = '',
+    this.directionInterior = '',
+    this.directionAdditionalInfo = '',
+    this.directionCity = 'Medellín',
     required this.empInvoiceFile,
     required this.ccFrontalPicture,
     required this.ccBackPicture,
@@ -44,6 +58,13 @@ class LoanInformationEntity {
 
   LoanInformationEntity copyWith({
     String? direction,
+    String? directionWayType,
+    String? directionWayNumber,
+    String? directionWayNumber2,
+    String? directionWayNumber3,
+    String? directionInterior,
+    String? directionAdditionalInfo,
+    String? directionCity,
     File? empInvoiceFile,
     File? ccFrontalPicture,
     File? ccBackPicture,
@@ -54,6 +75,13 @@ class LoanInformationEntity {
   }) {
     return LoanInformationEntity(
       direction: direction ?? this.direction,
+      directionWayType: directionWayType ?? this.directionWayType,
+      directionWayNumber: directionWayNumber ?? this.directionWayNumber,
+      directionWayNumber2: directionWayNumber2 ?? this.directionWayNumber2,
+      directionWayNumber3: directionWayNumber3 ?? this.directionWayNumber3,
+      directionInterior: directionInterior ?? this.directionInterior,
+      directionAdditionalInfo: directionAdditionalInfo ?? this.directionAdditionalInfo,
+      directionCity: directionCity ?? this.directionCity,
       empInvoiceFile: empInvoiceFile ?? this.empInvoiceFile,
       ccFrontalPicture: ccFrontalPicture ?? this.ccFrontalPicture,
       ccBackPicture: ccBackPicture ?? this.ccBackPicture,

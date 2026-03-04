@@ -18,53 +18,73 @@ class CustomListTile extends StatelessWidget {
     required this.subTitle,
   });
 
+  static const _green = Color.fromRGBO(47, 255, 0, 1);
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
+      borderRadius: BorderRadius.circular(22.0),
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(
-            vertical: isCompleted ? 15.0 : 20, horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 16.0),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.16),
+          color: isCompleted
+              ? const Color.fromRGBO(47, 255, 0, 0.08)
+              : Colors.white.withOpacity(0.08),
           borderRadius: BorderRadius.circular(22.0),
+          border: Border.all(
+            color: isCompleted
+                ? _green.withOpacity(0.4)
+                : Colors.white.withOpacity(0.1),
+            width: 1.2,
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                SvgPicture.asset(
-                  leadingIcon,
-                ),
-                const SizedBox(width: 15.0),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18.0,
-                      ),
-                    ),
-                    if (isCompleted)
-                      Text(
-                        subTitle,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14.0,
+            Expanded(
+              child: Row(
+                children: [
+                  SvgPicture.asset(
+                    leadingIcon,
+                    colorFilter: isCompleted
+                        ? const ColorFilter.mode(_green, BlendMode.srcIn)
+                        : null,
+                  ),
+                  const SizedBox(width: 15.0),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            color: isCompleted ? _green : Colors.white,
+                            fontSize: 16.0,
+                            fontWeight: isCompleted
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
                         ),
-                      ),
-                  ],
-                ),
-              ],
+                        if (isCompleted)
+                          Text(
+                            subTitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.5),
+                              fontSize: 12.0,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-            Icon(
-              trailingIcon,
-              color: Colors.white,
-              size: 35,
-            ),
+            isCompleted
+                ? const Icon(Icons.check_circle, color: _green, size: 28)
+                : Icon(trailingIcon, color: Colors.white.withOpacity(0.5), size: 28),
           ],
         ),
       ),

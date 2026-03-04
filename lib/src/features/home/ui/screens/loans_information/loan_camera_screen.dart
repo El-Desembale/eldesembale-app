@@ -33,8 +33,13 @@ class _LoanCameraScreenState extends State<LoanCameraScreen> {
 
   Future<void> initializeCamera() async {
     cameras = await availableCameras();
+    if (cameras == null || cameras!.isEmpty) return;
+    // iOS: cameras[0] = back, cameras[1] = front (selfie)
+    final camera = widget.isSelfie
+        ? (cameras!.length > 1 ? cameras!.last : cameras!.first)
+        : cameras!.first;
     _cameraController = CameraController(
-      widget.isSelfie ? cameras!.first : cameras!.last,
+      camera,
       ResolutionPreset.medium,
     );
     await _cameraController!.initialize();

@@ -215,6 +215,32 @@ class HomeCubit extends Cubit<HomeState> {
     );
   }
 
+  void updateDirectionParts({
+    required String wayType,
+    required String wayNumber,
+    required String wayNumber2,
+    required String wayNumber3,
+    required String interior,
+    required String additionalInfo,
+    required String city,
+  }) {
+    final combined = "$wayType $wayNumber # $wayNumber2 - $wayNumber3 $interior, $additionalInfo, $city";
+    emit(
+      state.copyWith(
+        loanInformation: state.loanInformation.copyWith(
+          direction: combined,
+          directionWayType: wayType,
+          directionWayNumber: wayNumber,
+          directionWayNumber2: wayNumber2,
+          directionWayNumber3: wayNumber3,
+          directionInterior: interior,
+          directionAdditionalInfo: additionalInfo,
+          directionCity: city,
+        ),
+      ),
+    );
+  }
+
   void updateDirection(String newDirection) {
     emit(
       state.copyWith(
