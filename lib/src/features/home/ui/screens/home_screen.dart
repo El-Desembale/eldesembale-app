@@ -118,6 +118,11 @@ class _HomeScreenState extends State<HomeScreen> {
             : Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
                   SizedBox(height: MediaQuery.of(context).padding.top + 72),
                   const Text(
                     '¿Cuánto necesitas?',
@@ -389,7 +394,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(height: 20),
+                        ],
+                      ),
+                    ),
+                  ),
                   _buildBottomAction(context, state),
                   const SizedBox(height: 20),
                 ],
