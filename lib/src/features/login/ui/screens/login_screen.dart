@@ -204,6 +204,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         color: Colors.transparent,
                       ),
                       backgroundColor: Colors.transparent,
+                      textStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
                       onChanged: (country) {
                         if (country.dialCode != null) {
                           widget.loginCubit

@@ -30,6 +30,7 @@ class DrawerWidget extends StatelessWidget {
                   children: [
                     const SizedBox(width: 25),
                     FloatingActionButton(
+                      heroTag: 'drawer_fab',
                       shape: const CircleBorder(),
                       backgroundColor: UIColors.primeraGrey.withOpacity(0.15),
                       onPressed: () {

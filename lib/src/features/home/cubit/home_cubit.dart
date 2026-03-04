@@ -10,6 +10,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../config/auth/cubit/auth_cubit.dart';
+import '../../../config/routes/routes.dart';
 import '../../../core/di/injection_dependency.dart';
 import '../../../utils/modalbottomsheet.dart';
 import '../data/entities/loan_information_entity.dart';
@@ -401,8 +402,6 @@ class HomeCubit extends Cubit<HomeState> {
     response.fold(
       (error) => setError(error.toString()),
       (limits) {
-        context.pop();
-        context.pop();
         emit(
           state.copyWith(
             loanInformation: LoanInformationEntity.initial(),
@@ -411,8 +410,8 @@ class HomeCubit extends Cubit<HomeState> {
             paymentPeriod: 'Quincenal',
           ),
         );
-        ModalbottomsheetUtils.successBottomSheet(context, 'Solicitud Enviada',
-            'Tu solicitud ha sido enviada con éxito', 'Aceptar', null);
+        getLoans();
+        ModalbottomsheetUtils.loanSubmittedSheet(context);
       },
     );
     isLoading(false);
