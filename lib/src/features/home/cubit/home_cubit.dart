@@ -41,7 +41,7 @@ class HomeCubit extends Cubit<HomeState> {
             limits: LimitModel(
               selectedSegment: 25,
               minAmmount: 50000,
-              maxAmmount: 500000,
+              maxAmmount: 1000000,
               maxInstallments: 8,
               minInstallments: 2,
               interest: 10.0,
@@ -139,6 +139,18 @@ class HomeCubit extends Cubit<HomeState> {
   String generateUrl(String publicKey, int amountInCents, String reference,
       String integrity, String email, String name, String phone) {
     return "https://checkout.wompi.co/p/?public-key=$publicKey&currency=COP&amount-in-cents=$amountInCents&reference=$reference&signature:integrity=$integrity&tax-in-cents:vat=00&tax-in-cents:consumption=00&customer-data:email=$email&customer-data:full-name=$name&customer-data:phone-number=$phone&redirect-url=https://eldesembale.com.co";
+  }
+
+  void updateAmountDirectly(double amount) {
+    final min = state.limits.minAmmount.toDouble();
+    final max = state.limits.maxAmmount.toDouble();
+    final clamped = amount.clamp(min, max);
+    final segment =
+        ((clamped - min) / (max - min) * 49).round().clamp(0, 49);
+    emit(state.copyWith(
+      limits: state.limits.copyWith(selectedSegment: segment),
+      totalLoanAmount: clamped,
+    ));
   }
 
   void updateSelectedSegment(int newSegment) {

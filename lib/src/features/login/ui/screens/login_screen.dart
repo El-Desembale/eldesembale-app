@@ -163,62 +163,77 @@ class _LoginScreenState extends State<LoginScreen> {
       height: MediaQuery.of(context).size.height * 0.4,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.only(left: 5),
-            child: const Text(
-              "Inicio\nde sesión",
-              textAlign: TextAlign.start,
-              style: TextStyle(
-                fontFamily: "Unbounded",
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+          const Text(
+            "Inicio de sesión",
+            textAlign: TextAlign.start,
+            style: TextStyle(
+              fontFamily: "Unbounded",
+              fontSize: 34,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              height: 1.1,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            "Ingresa tu número de celular",
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.white.withOpacity(0.55),
+              height: 1.4,
             ),
           ),
           const Spacer(),
-          Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: Container(
-                  margin: const EdgeInsets.only(top: 20),
-                  child: CountryCodePicker(
-                    padding: const EdgeInsets.symmetric(vertical: 5),
-                    boxDecoration: BoxDecoration(
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 12),
+                    decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.16),
                       borderRadius: BorderRadius.circular(22),
                     ),
-                    backgroundColor: Colors.white.withOpacity(0.16),
-                    onChanged: (country) {
-                      if (country.dialCode != null) {
-                        widget.loginCubit.updateCountryCode(country.dialCode!);
-                      }
-                    },
-                    initialSelection: 'CO',
-                    alignLeft: true,
+                    child: CountryCodePicker(
+                      padding: EdgeInsets.zero,
+                      boxDecoration: const BoxDecoration(
+                        color: Colors.transparent,
+                      ),
+                      backgroundColor: Colors.transparent,
+                      onChanged: (country) {
+                        if (country.dialCode != null) {
+                          widget.loginCubit
+                              .updateCountryCode(country.dialCode!);
+                        }
+                      },
+                      initialSelection: 'CO',
+                      alignLeft: true,
+                    ),
                   ),
                 ),
-              ),
-              Expanded(
-                flex: 5,
-                child: FloatingLabelInput(
-                  label: "Celular",
-                  inputFormatters: [
-                    LengthLimitingTextInputFormatter(10),
-                    FilteringTextInputFormatter.digitsOnly,
-                  ],
-                  icon: Icons.phone_outlined,
-                  onChanged: (value) {
-                    setState(() {});
-                  },
-                  controller: widget.loginCubit.phoneController,
-                  keyboardType: TextInputType.phone,
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 5,
+                  child: FloatingLabelInput(
+                    label: "Celular",
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(10),
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    icon: Icons.phone_outlined,
+                    onChanged: (value) {
+                      setState(() {});
+                    },
+                    controller: widget.loginCubit.phoneController,
+                    keyboardType: TextInputType.phone,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const Spacer(),
           InkWell(
@@ -231,54 +246,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 );
               }
             },
-            child: Container(
-              height: 72,
-              margin: const EdgeInsets.symmetric(
-                horizontal: 10,
-              ),
-              decoration: BoxDecoration(
-                color: widget.loginCubit.phoneController.text.length < 10
-                    ? Colors.white.withOpacity(0.08)
-                    : const Color.fromRGBO(47, 255, 0, 1),
-                borderRadius: BorderRadius.circular(48),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 25),
-                    child: Text(
-                      'Continuar',
-                      style: TextStyle(
-                        color:
-                            widget.loginCubit.phoneController.text.length < 10
-                                ? Colors.white.withOpacity(0.16)
-                                : Colors.black,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: Container(
-                      width: 72,
-                      height: 55,
-                      decoration: BoxDecoration(
-                        color:
-                            widget.loginCubit.phoneController.text.length < 10
-                                ? Colors.white.withOpacity(0.16)
-                                : const Color.fromRGBO(255, 255, 255, 0.5),
-                        borderRadius: BorderRadius.circular(32),
-                      ),
-                      child: const Icon(
-                        Icons.arrow_forward,
-                        color: Colors.black,
-                        size: 30,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            child: _continueButton(
+              enabled: widget.loginCubit.phoneController.text.length >= 10,
             ),
           ),
           const Spacer(),
@@ -292,22 +261,29 @@ class _LoginScreenState extends State<LoginScreen> {
       height: MediaQuery.of(context).size.height * 0.4,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.only(left: 5),
-            child: const Text(
-              "Inicio\nde sesión",
-              textAlign: TextAlign.start,
-              style: TextStyle(
-                fontFamily: "Unbounded",
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+          const Text(
+            "Inicio de sesión",
+            textAlign: TextAlign.start,
+            style: TextStyle(
+              fontFamily: "Unbounded",
+              fontSize: 34,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              height: 1.1,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 6),
+          Text(
+            "Ingresa tu contraseña",
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.white.withOpacity(0.55),
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 12),
           FloatingLabelInput(
             label: "Contraseña",
             inputFormatters: [
@@ -363,55 +339,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 await widget.loginCubit.login(context: context);
               }
             },
-            child: Container(
-              height: 72,
-              margin: const EdgeInsets.symmetric(
-                horizontal: 10,
-              ),
-              decoration: BoxDecoration(
-                color: widget.loginCubit.passwordController.text.length < 6
-                    ? Colors.white.withOpacity(0.08)
-                    : const Color.fromRGBO(47, 255, 0, 1),
-                borderRadius: BorderRadius.circular(48),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 25),
-                    child: Text(
-                      'Continuar',
-                      style: TextStyle(
-                        color:
-                            widget.loginCubit.passwordController.text.length < 6
-                                ? Colors.white.withOpacity(0.16)
-                                : Colors.black,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: Container(
-                      width: 72,
-                      height: 55,
-                      decoration: BoxDecoration(
-                        color:
-                            widget.loginCubit.passwordController.text.length <
-                                    10
-                                ? Colors.white.withOpacity(0.16)
-                                : const Color.fromRGBO(255, 255, 255, 0.5),
-                        borderRadius: BorderRadius.circular(32),
-                      ),
-                      child: const Icon(
-                        Icons.arrow_forward,
-                        color: Colors.black,
-                        size: 30,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            child: _continueButton(
+              enabled: widget.loginCubit.passwordController.text.length >= 6,
             ),
           ),
           const Spacer(),
@@ -429,32 +358,26 @@ class _LoginScreenState extends State<LoginScreen> {
         height: MediaQuery.of(context).size.height * 0.4,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              alignment: Alignment.centerLeft,
-              padding: const EdgeInsets.only(left: 5),
-              child: const Text(
-                "Regístrate",
-                textAlign: TextAlign.start,
-                style: TextStyle(
-                  fontFamily: "Unbounded",
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+            const Text(
+              "Regístrate",
+              textAlign: TextAlign.start,
+              style: TextStyle(
+                fontFamily: "Unbounded",
+                fontSize: 34,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                height: 1.1,
               ),
             ),
-            Container(
-              alignment: Alignment.centerLeft,
-              padding: const EdgeInsets.only(left: 5),
-              child: const Text(
-                "Ingresa el código que te enviamos",
-                textAlign: TextAlign.start,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color.fromARGB(200, 243, 248, 241),
-                ),
+            const SizedBox(height: 6),
+            Text(
+              "Ingresa el código que te enviamos",
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white.withOpacity(0.55),
+                height: 1.4,
               ),
             ),
             const Spacer(),
@@ -489,53 +412,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 }
                 setState(() {});
               },
-              child: Container(
-                height: 72,
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: state.otp.length != 6
-                      ? Colors.white.withOpacity(0.08)
-                      : const Color.fromRGBO(47, 255, 0, 1),
-                  borderRadius: BorderRadius.circular(48),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 25),
-                      child: Text(
-                        'Continuar',
-                        style: TextStyle(
-                          color: state.otp.length != 6
-                              ? Colors.white.withOpacity(0.16)
-                              : Colors.black,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 16),
-                      child: Container(
-                        width: 72,
-                        height: 55,
-                        decoration: BoxDecoration(
-                          color: state.otp.length != 6
-                              ? Colors.white.withOpacity(0.16)
-                              : const Color.fromRGBO(255, 255, 255, 0.5),
-                          borderRadius: BorderRadius.circular(32),
-                        ),
-                        child: const Icon(
-                          Icons.arrow_forward,
-                          color: Colors.black,
-                          size: 30,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              child: _continueButton(enabled: state.otp.length == 6),
             ),
             const Spacer(),
           ],
@@ -562,36 +439,30 @@ class _LoginScreenState extends State<LoginScreen> {
       height: MediaQuery.of(context).size.height * 0.4,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Spacer(),
-          Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.only(left: 5),
-            child: const Text(
-              "Regístrate",
-              textAlign: TextAlign.start,
-              style: TextStyle(
-                fontFamily: "Unbounded",
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+          const Text(
+            "Regístrate",
+            textAlign: TextAlign.start,
+            style: TextStyle(
+              fontFamily: "Unbounded",
+              fontSize: 34,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              height: 1.1,
             ),
           ),
-          Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.only(left: 5),
-            child: const Text(
-              "Ingresa tus datos basicos",
-              textAlign: TextAlign.start,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color.fromARGB(200, 243, 248, 241),
-              ),
+          const SizedBox(height: 6),
+          Text(
+            "Ingresa tus datos básicos",
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.white.withOpacity(0.55),
+              height: 1.4,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           FloatingLabelInput(
             label: "Nombre (s)",
             inputFormatters: <TextInputFormatter>[],
@@ -624,25 +495,34 @@ class _LoginScreenState extends State<LoginScreen> {
             },
             keyboardType: TextInputType.emailAddress,
           ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
+          const SizedBox(height: 12),
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
               Expanded(
                 flex: 2,
-                child: CountryCodePicker(
-                  enabled: false,
-                  boxDecoration: BoxDecoration(
+                child: Container(
+                  decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.16),
                     borderRadius: BorderRadius.circular(22),
                   ),
-                  backgroundColor: Colors.white.withOpacity(0.16),
-                  onChanged: (country) {
-                    if (country.dialCode != null) {
-                      widget.loginCubit.updateCountryCode(country.dialCode!);
-                    }
-                  },
-                  initialSelection: 'CO',
-                  alignLeft: true,
+                  child: CountryCodePicker(
+                    enabled: false,
+                    padding: EdgeInsets.zero,
+                    boxDecoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(22),
+                    ),
+                    backgroundColor: Colors.transparent,
+                    onChanged: (country) {
+                      if (country.dialCode != null) {
+                        widget.loginCubit.updateCountryCode(country.dialCode!);
+                      }
+                    },
+                    initialSelection: 'CO',
+                    alignLeft: true,
+                  ),
                 ),
               ),
               Expanded(
@@ -685,7 +565,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               keyboardType: TextInputType.phone,
                               style: const TextStyle(
                                 color: Colors.grey,
-                                fontSize: 20,
+                                fontSize: 16,
                               ),
                               decoration: const InputDecoration(
                                 alignLabelWithHint: true,
@@ -719,12 +599,13 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ],
           ),
+        ),
           Row(
             children: [
               Expanded(
                 flex: 2,
                 child: Container(
-                  margin: const EdgeInsets.only(top: 20),
+                  margin: const EdgeInsets.only(top: 12),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.16),
                     borderRadius: BorderRadius.circular(22),
@@ -738,7 +619,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           value,
                           style: const TextStyle(
                             color: Colors.grey,
-                            fontSize: 20,
+                            fontSize: 16,
                           ),
                         ),
                       );
@@ -761,7 +642,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     style: const TextStyle(
                       color: Colors.grey,
-                      fontSize: 20,
+                      fontSize: 16,
                     ),
                     dropdownColor: const Color.fromARGB(255, 6, 16, 0),
                   ),
@@ -829,51 +710,51 @@ class _LoginScreenState extends State<LoginScreen> {
                 );
               }
             },
+            child: _continueButton(enabled: !isValid),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _continueButton({required bool enabled}) {
+    return Container(
+      height: 64,
+      decoration: BoxDecoration(
+        color: enabled
+            ? const Color.fromRGBO(47, 255, 0, 1)
+            : Colors.white.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(48),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 25),
+            child: Text(
+              'Continuar',
+              style: TextStyle(
+                color: enabled ? Colors.black : Colors.white.withOpacity(0.3),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
             child: Container(
-              height: 72,
-              margin: const EdgeInsets.symmetric(
-                horizontal: 10,
-              ),
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
-                color: isValid
-                    ? Colors.white.withOpacity(0.08)
-                    : const Color.fromRGBO(47, 255, 0, 1),
-                borderRadius: BorderRadius.circular(48),
+                color: enabled
+                    ? Colors.black.withOpacity(0.15)
+                    : Colors.white.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(32),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 25),
-                    child: Text(
-                      'Continuar',
-                      style: TextStyle(
-                        color: isValid
-                            ? Colors.white.withOpacity(0.16)
-                            : Colors.black,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: Container(
-                      width: 72,
-                      height: 55,
-                      decoration: BoxDecoration(
-                        color: isValid
-                            ? Colors.white.withOpacity(0.16)
-                            : const Color.fromRGBO(255, 255, 255, 0.5),
-                        borderRadius: BorderRadius.circular(32),
-                      ),
-                      child: const Icon(
-                        Icons.arrow_forward,
-                        color: Colors.black,
-                        size: 30,
-                      ),
-                    ),
-                  ),
-                ],
+              child: Icon(
+                Icons.arrow_forward_rounded,
+                color: enabled ? Colors.black : Colors.white.withOpacity(0.3),
+                size: 22,
               ),
             ),
           ),
@@ -889,36 +770,30 @@ class _LoginScreenState extends State<LoginScreen> {
       height: MediaQuery.of(context).size.height * 0.45,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Spacer(),
-          Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.only(left: 5),
-            child: const Text(
-              "Regístrate",
-              textAlign: TextAlign.start,
-              style: TextStyle(
-                fontFamily: "Unbounded",
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+          const Text(
+            "Regístrate",
+            textAlign: TextAlign.start,
+            style: TextStyle(
+              fontFamily: "Unbounded",
+              fontSize: 34,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              height: 1.1,
             ),
           ),
-          Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.only(left: 5),
-            child: const Text(
-              "Establece tu contraseña",
-              textAlign: TextAlign.start,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color.fromARGB(200, 243, 248, 241),
-              ),
+          const SizedBox(height: 6),
+          Text(
+            "Establece tu contraseña",
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.white.withOpacity(0.55),
+              height: 1.4,
             ),
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 20),
           FloatingLabelInput(
             label: "Contraseña",
             inputFormatters: [
@@ -975,58 +850,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 );
               }
             },
-            child: Container(
-              height: 72,
-              margin: const EdgeInsets.symmetric(
-                horizontal: 10,
-              ),
-              decoration: BoxDecoration(
-                color:
-                    passwordController.text != passwordConfirmController.text &&
-                            passwordController.text.isEmpty
-                        ? Colors.white.withOpacity(0.08)
-                        : const Color.fromRGBO(47, 255, 0, 1),
-                borderRadius: BorderRadius.circular(48),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 25),
-                    child: Text(
-                      'Continuar',
-                      style: TextStyle(
-                        color: passwordController.text !=
-                                    passwordConfirmController.text &&
-                                passwordController.text.isEmpty
-                            ? Colors.white.withOpacity(0.16)
-                            : Colors.black,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: Container(
-                      width: 72,
-                      height: 55,
-                      decoration: BoxDecoration(
-                        color: passwordController.text !=
-                                    passwordConfirmController.text &&
-                                passwordController.text.isEmpty
-                            ? Colors.white.withOpacity(0.16)
-                            : const Color.fromRGBO(255, 255, 255, 0.5),
-                        borderRadius: BorderRadius.circular(32),
-                      ),
-                      child: const Icon(
-                        Icons.arrow_forward,
-                        color: Colors.black,
-                        size: 30,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            child: _continueButton(
+              enabled: passwordController.text.isNotEmpty &&
+                  passwordController.text == passwordConfirmController.text,
             ),
           ),
         ],
@@ -1060,7 +886,7 @@ class FloatingLabelInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(top: 20),
+      margin: const EdgeInsets.only(top: 12),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.16),
         borderRadius: BorderRadius.circular(22),
@@ -1073,12 +899,12 @@ class FloatingLabelInput extends StatelessWidget {
         keyboardType: keyboardType,
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 20,
+          fontSize: 16,
         ),
         decoration: InputDecoration(
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 20,
-            vertical: 15,
+            vertical: 12,
           ),
           prefixIcon: Icon(icon, color: Colors.white),
           suffixIcon: onPressedHint != null

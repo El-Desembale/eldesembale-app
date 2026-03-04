@@ -1,5 +1,6 @@
 import 'package:desembale/src/config/routes/routes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -21,10 +22,27 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final TextEditingController _amountController = TextEditingController();
+
   @override
   initState() {
     widget.homeCubit.getLimits();
+    _amountController.text = NumberFormat('#,##0', 'en_US')
+        .format(widget.homeCubit.state.totalLoanAmount.toInt());
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    super.dispose();
+  }
+
+  void _syncController(double amount) {
+    final formatted = NumberFormat('#,##0', 'en_US').format(amount.toInt());
+    if (_amountController.text != formatted) {
+      _amountController.text = formatted;
+    }
   }
 
   @override
@@ -107,67 +125,123 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 30),
-                  GestureDetector(
-                    onHorizontalDragUpdate: (details) {
-                      widget.homeCubit.updateSegmentFromPosition(
-                        context,
-                        details.localPosition.dx,
-                      );
-                    },
-                    onTapDown: (details) {
-                      widget.homeCubit.updateSegmentFromPosition(
-                        context,
-                        details.localPosition.dx,
-                      );
-                    },
-                    child: SizedBox(
-                      height: 70,
-                      width: double.infinity,
-                      child: Row(
-                        children: List.generate(
-                          50,
-                          (index) {
-                            bool isSelected =
-                                index <= state.limits.selectedSegment;
-                            bool isLastSelected =
-                                index == state.limits.selectedSegment;
-                            bool isNearLimit =
-                                index == state.limits.selectedSegment - 1 ||
-                                    index == state.limits.selectedSegment - 2;
-                            return Expanded(
-                              child: Container(
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 2),
-                                color: isLastSelected
-                                    ? UIColors.primeraGrey
-                                    : isSelected
-                                        ? (isNearLimit
-                                            ? UIColors.primeraGrey
-                                                .withOpacity(0.4)
-                                            : UIColors.primeraGrey
-                                                .withOpacity(0.2))
-                                        : UIColors.primeraGrey
-                                            .withOpacity(0.05),
-                                height: index == state.limits.selectedSegment
-                                    ? 90
-                                    : 60,
-                              ),
-                            );
-                          },
-                        ),
+                  const SizedBox(height: 20),
+                  // Input manual de monto
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.06),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.1),
                       ),
                     ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          '\$',
+                          style: TextStyle(
+                            fontFamily: 'Unbounded',
+                            color: Colors.white.withOpacity(0.35),
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            controller: _amountController,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              _AmountInputFormatter(
+                                  max: state.limits.maxAmmount),
+                            ],
+                            style: const TextStyle(
+                              fontFamily: 'Unbounded',
+                              color: Colors.white,
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                            onChanged: (value) {
+                              final raw = value.replaceAll(',', '');
+                              final amount = double.tryParse(raw) ??
+                                  state.limits.minAmmount.toDouble();
+                              widget.homeCubit.updateAmountDirectly(amount);
+                            },
+                          ),
+                        ),
+                        Text(
+                          'COP',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.3),
+                            fontSize: 11,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  Text(
-                    NumberFormat("#,##0", "en_US")
-                        .format(state.totalLoanAmount),
-                    style: const TextStyle(
-                      fontFamily: "Unbounded",
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
+                  const SizedBox(height: 12),
+                  // Slider de monto
+                  SliderTheme(
+                    data: SliderThemeData(
+                      activeTrackColor: const Color.fromRGBO(47, 255, 0, 1),
+                      inactiveTrackColor: Colors.white.withOpacity(0.1),
+                      thumbColor: Colors.white,
+                      overlayColor:
+                          const Color.fromRGBO(47, 255, 0, 0.15),
+                      trackHeight: 4,
+                      thumbShape: const RoundSliderThumbShape(
+                          enabledThumbRadius: 10),
+                    ),
+                    child: Slider(
+                      value: state.totalLoanAmount.clamp(
+                        state.limits.minAmmount.toDouble(),
+                        state.limits.maxAmmount.toDouble(),
+                      ),
+                      min: state.limits.minAmmount.toDouble(),
+                      max: state.limits.maxAmmount.toDouble(),
+                      divisions: ((state.limits.maxAmmount -
+                                  state.limits.minAmmount) /
+                              10000)
+                          .toInt(),
+                      onChanged: (value) {
+                        final snapped =
+                            ((value / 10000).round() * 10000).toDouble();
+                        widget.homeCubit.updateAmountDirectly(snapped);
+                        _syncController(snapped);
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          NumberFormat('#,##0', 'en_US')
+                              .format(state.limits.minAmmount),
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.35),
+                            fontSize: 11,
+                          ),
+                        ),
+                        Text(
+                          NumberFormat('#,##0', 'en_US')
+                              .format(state.limits.maxAmmount),
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.35),
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -360,6 +434,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
       ),
+    );
+  }
+}
+
+class _AmountInputFormatter extends TextInputFormatter {
+  final int max;
+  _AmountInputFormatter({required this.max});
+
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    final raw = newValue.text.replaceAll(',', '');
+    if (raw.isEmpty) return newValue.copyWith(text: '');
+    final value = int.tryParse(raw);
+    if (value == null) return oldValue;
+    final clamped = value.clamp(0, max);
+    final formatted = NumberFormat('#,##0', 'en_US').format(clamped);
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }
