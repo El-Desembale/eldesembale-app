@@ -22,16 +22,23 @@ class RecoveryPasswordScreen extends StatefulWidget {
 class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
   final PageController _pageController = PageController(initialPage: 0);
   bool obscurePassword = true;
+  bool _otpSent = false;
 
   @override
   void initState() {
     super.initState();
-    // Escuchar los cambios de página
     _pageController.addListener(() {
-      // Llama a setState cuando la página cambia para actualizar el botón
       setState(() {});
     });
-    widget.loginCubit.sendOtpVerification(context: context);
+  }
+
+  Future<void> _sendOtp() async {
+    final sent = await widget.loginCubit.sendOtpVerification(context: context);
+    if (mounted) {
+      setState(() {
+        _otpSent = sent;
+      });
+    }
   }
 
   @override
@@ -301,7 +308,9 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
             alignment: Alignment.centerLeft,
             padding: const EdgeInsets.only(left: 5),
             child: Text(
-              "Ingresa el código que te enviamos al ${state.countryCode} ${widget.loginCubit.phoneController.text}",
+              _otpSent
+                  ? "Ingresa el código que te enviamos al ${state.countryCode} ${widget.loginCubit.phoneController.text}"
+                  : "Te enviaremos un código al ${state.countryCode} ${widget.loginCubit.phoneController.text}",
               textAlign: TextAlign.start,
               style: const TextStyle(
                 fontSize: 16,
@@ -311,21 +320,24 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
             ),
           ),
           const Spacer(),
-          Row(
-            children: [
-              Expanded(
-                flex: 1,
-                child: OtpInputWidget(
-                  onChanged: widget.loginCubit.updateOtp,
+          if (_otpSent)
+            Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: OtpInputWidget(
+                    onChanged: widget.loginCubit.updateOtp,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           const Spacer(),
           InkWell(
             onTap: () async {
               FocusScope.of(context).unfocus();
-              if (state.otp.length == 6) {
+              if (!_otpSent) {
+                await _sendOtp();
+              } else if (state.otp.length == 6) {
                 bool validated = await widget.loginCubit.validateOtp(
                   context: context,
                 );
@@ -335,20 +347,16 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
                     curve: Curves.easeIn,
                   );
                 } else {
-                  ModalbottomsheetUtils.invalidOtp(
-                    context,
-                  );
+                  ModalbottomsheetUtils.invalidOtp(context);
                 }
               }
               setState(() {});
             },
             child: Container(
               height: 72,
-              margin: const EdgeInsets.symmetric(
-                horizontal: 10,
-              ),
+              margin: const EdgeInsets.symmetric(horizontal: 10),
               decoration: BoxDecoration(
-                color: state.otp.length != 6
+                color: _otpSent && state.otp.length != 6
                     ? Colors.white.withOpacity(0.08)
                     : const Color.fromRGBO(47, 255, 0, 1),
                 borderRadius: BorderRadius.circular(48),
@@ -359,9 +367,9 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
                   Padding(
                     padding: const EdgeInsets.only(left: 25),
                     child: Text(
-                      'Continuar',
+                      _otpSent ? 'Continuar' : 'Enviar código',
                       style: TextStyle(
-                        color: state.otp.length != 6
+                        color: _otpSent && state.otp.length != 6
                             ? Colors.white.withOpacity(0.16)
                             : Colors.black,
                         fontSize: 16,
@@ -374,15 +382,15 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
                       width: 72,
                       height: 55,
                       decoration: BoxDecoration(
-                        color: state.otp.length != 6
+                        color: _otpSent && state.otp.length != 6
                             ? Colors.white.withOpacity(0.16)
                             : const Color.fromRGBO(255, 255, 255, 0.5),
                         borderRadius: BorderRadius.circular(32),
                       ),
-                      child: const Icon(
-                        Icons.arrow_forward,
+                      child: Icon(
+                        _otpSent ? Icons.arrow_forward : Icons.send_outlined,
                         color: Colors.black,
-                        size: 30,
+                        size: 26,
                       ),
                     ),
                   ),

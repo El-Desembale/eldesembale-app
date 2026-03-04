@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../utils/colors.dart';
 import '../../cubit/home_cubit.dart';
+import '../../data/entities/loan_request_entity.dart';
 import '../widgets/drawer.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -27,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   initState() {
     widget.homeCubit.getLimits();
+    widget.homeCubit.getLoans();
     _amountController.text = NumberFormat('#,##0', 'en_US')
         .format(widget.homeCubit.state.totalLoanAmount.toInt());
     super.initState();
@@ -59,6 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
           floatingActionButton: Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: FloatingActionButton(
+              heroTag: 'home_fab',
               shape: const CircleBorder(),
               backgroundColor: UIColors.primeraGrey.withOpacity(0.15),
               onPressed: () {
@@ -387,52 +390,277 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const Spacer(),
-                  GestureDetector(
-                    onTap: () {
-                      context.push(AppRoutes.loanInformation);
-                    },
-                    child: Container(
-                      height: 62,
-                      decoration: BoxDecoration(
-                        color: const Color.fromRGBO(47, 255, 0, 1),
-                        borderRadius: BorderRadius.circular(48),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.only(left: 25),
-                            child: Text(
-                              'Continuar con solicitud',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 15,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 16),
-                            child: Container(
-                              width: 62,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: const Color.fromRGBO(255, 255, 255, 0.5),
-                                borderRadius: BorderRadius.circular(32),
-                              ),
-                              child: const Icon(
-                                Icons.arrow_forward,
-                                color: Colors.black,
-                                size: 30,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  _buildBottomAction(context, state),
                   const SizedBox(height: 20),
                 ],
               ),
+      ),
+    );
+  }
+
+  Widget _buildLoanCard(BuildContext context, LoanRequestEntity loan) {
+    final isPending = loan.status == 'pending';
+    final statusLabel = isPending ? 'En revisión' : 'Aprobado';
+    final statusColor = isPending
+        ? Colors.white.withOpacity(0.6)
+        : const Color.fromRGBO(47, 255, 0, 1);
+    return GestureDetector(
+      onTap: () => context.go(AppRoutes.loansList),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.06),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: Colors.white.withOpacity(0.12)),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    NumberFormat('\$#,##0', 'en_US').format(loan.amount.toInt()),
+                    style: const TextStyle(
+                      fontFamily: 'Unbounded',
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${loan.installments} cuotas · ${loan.paymentPeriod}',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.5),
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      statusLabel,
+                      style: TextStyle(
+                        color: statusColor,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.white.withOpacity(0.5),
+                size: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNewRequestButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push(AppRoutes.loanInformation),
+      child: Container(
+        height: 62,
+        decoration: BoxDecoration(
+          color: const Color.fromRGBO(47, 255, 0, 1),
+          borderRadius: BorderRadius.circular(48),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(left: 25),
+              child: Text(
+                'Continuar con solicitud',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Container(
+                width: 46,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: const Icon(
+                  Icons.arrow_forward_rounded,
+                  color: Colors.black,
+                  size: 22,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBlockedButton() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.orange.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.orange.withOpacity(0.25)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.info_outline, color: Colors.orange.withOpacity(0.8), size: 18),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Tienes una solicitud en revisión. Espera la respuesta antes de hacer una nueva.',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          height: 62,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.06),
+            borderRadius: BorderRadius.circular(48),
+            border: Border.all(color: Colors.white.withOpacity(0.08)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 25),
+                child: Text(
+                  'Nueva solicitud',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.3),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Container(
+                  width: 46,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Icon(
+                    Icons.lock_outline_rounded,
+                    color: Colors.white.withOpacity(0.2),
+                    size: 20,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomAction(BuildContext context, HomeState state) {
+    final pendingLoan = state.loans
+        .where((l) => l.status == 'pending')
+        .firstOrNull;
+    final approvedLoan = state.loans
+        .where((l) => l.status == 'approved')
+        .firstOrNull;
+
+    // Si hay una solicitud en revisión: mostrar tarjeta + bloquear botón
+    if (pendingLoan != null) {
+      return Column(
+        children: [
+          _buildLoanCard(context, pendingLoan),
+          const SizedBox(height: 12),
+          _buildBlockedButton(),
+        ],
+      );
+    }
+
+    // Si hay una aprobada (en proceso de pago): mostrar tarjeta + permitir nueva
+    if (approvedLoan != null) {
+      return Column(
+        children: [
+          _buildLoanCard(context, approvedLoan),
+          const SizedBox(height: 12),
+          _buildNewRequestButton(context),
+        ],
+      );
+    }
+
+    // Sin solicitudes activas: mostrar solo el botón
+    return GestureDetector(
+      onTap: () => context.push(AppRoutes.loanInformation),
+      child: Container(
+        height: 62,
+        decoration: BoxDecoration(
+          color: const Color.fromRGBO(47, 255, 0, 1),
+          borderRadius: BorderRadius.circular(48),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(left: 25),
+              child: Text(
+                'Continuar con solicitud',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Container(
+                width: 46,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: const Icon(
+                  Icons.arrow_forward_rounded,
+                  color: Colors.black,
+                  size: 22,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

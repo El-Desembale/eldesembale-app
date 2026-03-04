@@ -1,3 +1,4 @@
+import 'package:desembale/src/config/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -40,10 +41,15 @@ class _LoansListScreenState extends State<LoansListScreen> {
           floatingActionButton: Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: FloatingActionButton(
+              heroTag: 'loans_list_fab',
               shape: const CircleBorder(),
               backgroundColor: UIColors.primeraGrey.withOpacity(0.15),
               onPressed: () {
-                context.pop();
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go(AppRoutes.home);
+                }
               },
               child: const Icon(
                 Icons.arrow_back,
