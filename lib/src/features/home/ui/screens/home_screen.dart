@@ -113,9 +113,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               )
             : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  const Spacer(),
+                  SizedBox(height: MediaQuery.of(context).padding.top + 72),
                   const Text(
                     '¿Cuánto necesitas?',
                     style: TextStyle(
@@ -386,7 +386,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  const Spacer(),
                   GestureDetector(
                     onTap: () {
                       context.push(AppRoutes.loanInformation);
