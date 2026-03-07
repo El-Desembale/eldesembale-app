@@ -97,7 +97,7 @@ class _LoansListScreenState extends State<LoansListScreen> {
                 ),
               )
             : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   const SizedBox(height: 50),
                   const Padding(
@@ -124,6 +124,78 @@ class _LoansListScreenState extends State<LoansListScreen> {
   }
 
   Widget _loansList(BuildContext context, HomeState state) {
+    if (state.loans.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              height: 100,
+              width: 100,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(32),
+              ),
+              child: SvgPicture.asset(
+                AssetImages.request,
+                colorFilter: const ColorFilter.mode(
+                  Color.fromRGBO(47, 255, 0, 0.6),
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
+            const SizedBox(height: 28),
+            const Text(
+              'Sin solicitudes aún',
+              style: TextStyle(
+                fontFamily: 'Unbounded',
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Aquí verás el historial\nde tus préstamos.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white54,
+                fontSize: 14,
+                height: 1.6,
+              ),
+            ),
+            const SizedBox(height: 36),
+            InkWell(
+              onTap: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go(AppRoutes.home);
+                }
+              },
+              borderRadius: BorderRadius.circular(48),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
+                decoration: BoxDecoration(
+                  color: const Color.fromRGBO(47, 255, 0, 1),
+                  borderRadius: BorderRadius.circular(48),
+                ),
+                child: const Text(
+                  'Solicitar préstamo',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return ListView.builder(
       itemCount: state.loans.length,
       itemBuilder: (BuildContext context, int index) {

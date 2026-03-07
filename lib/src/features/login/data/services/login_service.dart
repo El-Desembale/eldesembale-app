@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../config/auth/data/models/user_model.dart';
@@ -146,6 +147,9 @@ class LoginServiceImpl implements LoginService {
     final Completer<String> completer = Completer<String>();
 
     try {
+      if (kDebugMode) {
+        await auth.setSettings(appVerificationDisabledForTesting: true);
+      }
       await auth.verifyPhoneNumber(
         phoneNumber: "$countryCode$phone",
         verificationCompleted: (PhoneAuthCredential credential) async {

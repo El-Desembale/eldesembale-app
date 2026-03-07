@@ -370,8 +370,7 @@ class LoginCubit extends Cubit<LoginState> {
             curve: Curves.ease,
           );
         } else {
-          await sendOtpVerification(context: context);
-          pageController.jumpToPage(2);
+          pageController.jumpToPage(3);
         }
       },
     );

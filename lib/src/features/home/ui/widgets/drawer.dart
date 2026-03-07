@@ -61,6 +61,7 @@ class DrawerWidget extends StatelessWidget {
                   "Mis solicitudes",
                   AssetImages.request,
                   () {
+                    Navigator.of(context).pop(); // cierra el drawer
                     context.push(AppRoutes.loansList);
                   },
                 ),
