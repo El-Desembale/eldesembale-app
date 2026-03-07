@@ -14,6 +14,7 @@ abstract class HomeRepository {
     required String paymentPeriod,
     required String phone,
     required LoanInformationEntity loan,
+    String? clientName,
   });
   Future<Either<ErrorModel, List<LoanRequestEntity>>> getLoans({
     required String phone,

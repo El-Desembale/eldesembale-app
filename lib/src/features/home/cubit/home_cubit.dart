@@ -390,13 +390,15 @@ class HomeCubit extends Cubit<HomeState> {
 
   Future<void> submitLoan(BuildContext context) async {
     isLoading(true);
+    final authUser = sl<AuthCubit>(instanceName: 'auth').state.user;
     final response = await _createLoanUseCase.call(
       interest: state.limits.interest,
       loan: state.loanInformation,
       paymentPeriod: state.paymentPeriod,
       selectedInstallments: state.selectedInstallments,
       totalLoanAmount: state.totalLoanAmount,
-      phone: sl<AuthCubit>(instanceName: 'auth').state.user.phone,
+      phone: authUser.phone,
+      clientName: '${authUser.name} ${authUser.lastName}'.trim(),
     );
 
     response.fold(

@@ -18,6 +18,7 @@ class CreateLoanUseCase {
     required String paymentPeriod,
     required String phone,
     required LoanInformationEntity loan,
+    String? clientName,
   }) async {
     return await _homeRepository.createLoan(
       selectedInstallments: selectedInstallments,
@@ -26,6 +27,7 @@ class CreateLoanUseCase {
       paymentPeriod: paymentPeriod,
       loan: loan,
       phone: phone,
+      clientName: clientName,
     );
   }
 }
