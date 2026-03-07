@@ -149,8 +149,7 @@ class LoanDataCollectScreen extends StatelessWidget {
           CustomListTile(
             leadingIcon: AssetImages.references,
             title: 'Referencias',
-            subTitle:
-                "${state.loanInformation.firstReference.relationship} y ${state.loanInformation.secondReference.relationship}",
+            subTitle: '${state.loanInformation.firstReference.relationship}  ·  ${state.loanInformation.secondReference.relationship}',
             trailingIcon: Icons.arrow_forward,
             isCompleted: state
                     .loanInformation.firstReference.relationship.isNotEmpty &&

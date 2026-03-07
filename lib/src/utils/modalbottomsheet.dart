@@ -6,104 +6,59 @@ import 'package:go_router/go_router.dart';
 import 'images.dart';
 
 class ModalbottomsheetUtils {
+  static const _bg = Color.fromARGB(255, 6, 16, 0);
+  static const _green = Color.fromRGBO(47, 255, 0, 1);
+
   static Future<void> invalidOtp(BuildContext context) {
     return showModalBottomSheet(
       isDismissible: true,
-      backgroundColor: Colors.black,
+      backgroundColor: _bg,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       context: context,
-      builder: (context) => Container(
-        height: 400,
-        alignment: Alignment.center,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Spacer(),
-            Container(
-              height: 64,
-              width: 64,
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(20, 255, 255, 255),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: SvgPicture.asset(
-                AssetImages.cancel,
-              ),
-            ),
-            const Spacer(),
-            const Text(
-              'Código incorrecto',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: "Unbounded",
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const Text(
-              'El código ingresado es incorrecto.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const Spacer(),
-            InkWell(
-              onTap: () async {
-                context.pop();
-              },
-              child: Container(
-                height: 72,
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(48),
+                  color: Colors.red.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(left: 25),
-                      child: Text(
-                        'Volver a intentar',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 16),
-                      child: Container(
-                        width: 72,
-                        height: 55,
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 47, 255, 0)
-                              .withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(32),
-                        ),
-                        child: const Icon(
-                          Icons.replay_outlined,
-                          color: Colors.black,
-                          size: 30,
-                        ),
-                      ),
-                    ),
-                  ],
+                child: const Icon(Icons.error_outline, color: Colors.red, size: 36),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Código incorrecto',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Unbounded',
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-            const Spacer(),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                'El código ingresado no es válido. Inténtalo de nuevo.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 14),
+              ),
+              const SizedBox(height: 28),
+              _primaryButton(
+                label: 'Volver a intentar',
+                icon: Icons.replay_outlined,
+                color: Colors.white,
+                textColor: Colors.black,
+                onTap: () => context.pop(),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -116,101 +71,53 @@ class ModalbottomsheetUtils {
   ) {
     return showModalBottomSheet(
       isDismissible: true,
-      backgroundColor: Colors.black,
+      backgroundColor: _bg,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       context: context,
-      builder: (context) => Container(
-        height: 400,
-        alignment: Alignment.center,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Spacer(),
-            Container(
-              height: 64,
-              width: 64,
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(20, 255, 255, 255),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: SvgPicture.asset(
-                AssetImages.cancel,
-              ),
-            ),
-            const Spacer(),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontFamily: "Unbounded",
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const Spacer(),
-            InkWell(
-              onTap: () async {
-                context.pop();
-              },
-              child: Container(
-                height: 72,
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(48),
+                  color: Colors.red.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(left: 25),
-                      child: Text(
-                        'Volver a intentar',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 16),
-                      child: Container(
-                        width: 72,
-                        height: 55,
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 47, 255, 0)
-                              .withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(32),
-                        ),
-                        child: const Icon(
-                          Icons.replay_outlined,
-                          color: Colors.black,
-                          size: 30,
-                        ),
-                      ),
-                    ),
-                  ],
+                child: const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 36),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: 'Unbounded',
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-            const Spacer(),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 14),
+              ),
+              const SizedBox(height: 28),
+              _primaryButton(
+                label: 'Entendido',
+                icon: Icons.close,
+                color: Colors.white.withOpacity(0.1),
+                textColor: Colors.white,
+                onTap: () => context.pop(),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -225,103 +132,54 @@ class ModalbottomsheetUtils {
   ) {
     return showModalBottomSheet(
       isDismissible: false,
-      backgroundColor: Colors.black,
+      backgroundColor: _bg,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       context: context,
-      builder: (context) => Container(
-        height: 400,
-        alignment: Alignment.center,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Spacer(),
-            if (title != '¿Deseas editar tus datos?')
-              Container(
-                height: 64,
-                width: 64,
-                padding: const EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(20, 255, 255, 255),
-                  borderRadius: BorderRadius.circular(24),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (title != '¿Deseas editar tus datos?')
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: _green.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Icon(Icons.check_circle_outline, color: _green, size: 36),
                 ),
-                child: SvgPicture.asset(
-                  AssetImages.done,
-                ),
-              ),
-            const Spacer(),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontFamily: "Unbounded",
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const Spacer(),
-            InkWell(
-              onTap: onTapp ??
-                  () async {
-                    context.pop();
-                  },
-              child: Container(
-                height: 72,
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 47, 255, 0),
-                  borderRadius: BorderRadius.circular(48),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 25),
-                      child: Text(
-                        buttonText,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 16),
-                      child: Container(
-                        width: 72,
-                        height: 55,
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 47, 255, 0)
-                              .withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(32),
-                        ),
-                        child: const Icon(
-                          Icons.check,
-                          color: Colors.black,
-                          size: 30,
-                        ),
-                      ),
-                    ),
-                  ],
+              const SizedBox(height: 20),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: 'Unbounded',
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-            const Spacer(),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 14),
+              ),
+              const SizedBox(height: 28),
+              _primaryButton(
+                label: buttonText,
+                icon: Icons.check,
+                color: _green,
+                textColor: Colors.black,
+                onTap: onTapp ?? () => context.pop(),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -330,7 +188,7 @@ class ModalbottomsheetUtils {
   static Future<void> loanSubmittedSheet(BuildContext context) {
     return showModalBottomSheet(
       isDismissible: false,
-      backgroundColor: const Color.fromARGB(255, 6, 16, 0),
+      backgroundColor: _bg,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
@@ -345,12 +203,12 @@ class ModalbottomsheetUtils {
                 width: 72,
                 height: 72,
                 decoration: BoxDecoration(
-                  color: const Color.fromRGBO(47, 255, 0, 0.12),
+                  color: _green.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: const Icon(
                   Icons.check_circle_outline,
-                  color: Color.fromRGBO(47, 255, 0, 1),
+                  color: _green,
                   size: 40,
                 ),
               ),
@@ -383,7 +241,7 @@ class ModalbottomsheetUtils {
                 child: Container(
                   height: 62,
                   decoration: BoxDecoration(
-                    color: const Color.fromRGBO(47, 255, 0, 1),
+                    color: _green,
                     borderRadius: BorderRadius.circular(48),
                   ),
                   child: Row(
@@ -409,8 +267,7 @@ class ModalbottomsheetUtils {
                             color: const Color.fromRGBO(255, 255, 255, 0.4),
                             borderRadius: BorderRadius.circular(32),
                           ),
-                          child: const Icon(Icons.list_alt_outlined,
-                              color: Colors.black, size: 26),
+                          child: const Icon(Icons.list_alt_outlined, color: Colors.black, size: 26),
                         ),
                       ),
                     ],
@@ -452,8 +309,7 @@ class ModalbottomsheetUtils {
                             color: Colors.white.withOpacity(0.08),
                             borderRadius: BorderRadius.circular(32),
                           ),
-                          child: Icon(Icons.home_outlined,
-                              color: Colors.white.withOpacity(0.6), size: 26),
+                          child: Icon(Icons.home_outlined, color: Colors.white.withOpacity(0.6), size: 26),
                         ),
                       ),
                     ],
@@ -462,6 +318,49 @@ class ModalbottomsheetUtils {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  static Widget _primaryButton({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required Color textColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 62,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(48),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 25),
+              child: Text(
+                label,
+                style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w600),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Container(
+                width: 56,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: textColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(32),
+                ),
+                child: Icon(icon, color: textColor, size: 24),
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -105,7 +105,7 @@ class SubscriptionScreen extends StatelessWidget {
               ),
             ),
             const Text(
-              '19,000',
+              '22,000',
               style: TextStyle(
                 fontFamily: "Unbounded",
                 color: Colors.white,
