@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dio/dio.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
@@ -102,6 +103,23 @@ class HomeServiceImpl implements HomeService {
         'created_at': DateTime.now(),
         'loan_information': loanInformation,
       });
+
+      // Notificar al admin por WhatsApp
+      try {
+        await Dio().post(
+          'https://eldesembale-admin.vercel.app/api/notify-new-loan',
+          data: {
+            'loanId': generatedId,
+            'amount': totalLoanAmount,
+            'phone': phone,
+            'installments': selectedInstallments,
+            'paymentPeriod': paymentPeriod,
+          },
+        );
+      } catch (_) {
+        // La notificación es best-effort, no bloquea el flujo
+      }
+
       return true;
     } catch (e) {
       return false;
