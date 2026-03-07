@@ -74,7 +74,7 @@ class HomeCubit extends Cubit<HomeState> {
     final priv_key = dotenv.env['PRIVATE_INTEGRITY_KEY_TEST'];
     final public_key = dotenv.env['PUBLIC_TEST_KEY'];
 
-    const amountInCents = 1900000;
+    const amountInCents = 2200000;
 
     final reference =
         'subscription${user.phone}${DateTime.now().millisecondsSinceEpoch}';

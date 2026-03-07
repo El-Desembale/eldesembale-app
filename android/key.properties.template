@@ -1,0 +1,4 @@
+storePassword=TU_STORE_PASSWORD
+keyPassword=TU_KEY_PASSWORD
+keyAlias=TU_KEY_ALIAS
+storeFile=/ruta/absoluta/al/KeyGD.keystore
