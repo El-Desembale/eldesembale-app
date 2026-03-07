@@ -19,6 +19,7 @@ abstract class HomeService {
     required String paymentPeriod,
     required String phone,
     required LoanInformationEntity loan,
+    String? clientName,
   });
   Future<List<LoanRequestEntity>> getLoans({
     required String phone,
@@ -72,6 +73,7 @@ class HomeServiceImpl implements HomeService {
     required String paymentPeriod,
     required String phone,
     required LoanInformationEntity loan,
+    String? clientName,
   }) async {
     try {
       final ccFrontalPicture =
@@ -114,6 +116,8 @@ class HomeServiceImpl implements HomeService {
             'phone': phone,
             'installments': selectedInstallments,
             'paymentPeriod': paymentPeriod,
+            if (clientName != null && clientName.isNotEmpty)
+              'clientName': clientName,
           },
         );
       } catch (_) {

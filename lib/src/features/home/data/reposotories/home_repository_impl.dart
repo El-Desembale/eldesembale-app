@@ -37,6 +37,7 @@ class HomeRepositoryImpl implements HomeRepository {
     required String paymentPeriod,
     required LoanInformationEntity loan,
     required String phone,
+    String? clientName,
   }) async {
     try {
       return Right(
@@ -47,6 +48,7 @@ class HomeRepositoryImpl implements HomeRepository {
           selectedInstallments: selectedInstallments,
           totalLoanAmount: totalLoanAmount,
           phone: phone,
+          clientName: clientName,
         ),
       );
     } catch (e) {
