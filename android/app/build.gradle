@@ -43,9 +43,9 @@ android {
     defaultConfig {
         applicationId = "com.desembale.app"
         minSdkVersion = flutter.minSdkVersion
-        targetSdk = 34
-        versionCode = 10
-        versionName = "1.0.0"
+        targetSdk = 35
+        versionCode = flutterVersionCode.toInteger()
+        versionName = flutterVersionName
     }
     signingConfigs {
         release {
