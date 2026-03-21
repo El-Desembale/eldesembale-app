@@ -599,7 +599,37 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildBudgetExhaustedBanner() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.red.withOpacity(0.25)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.money_off_rounded, color: Colors.red.withOpacity(0.8), size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'No hay presupuesto disponible en este momento. Intenta más tarde.',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBottomAction(BuildContext context, HomeState state) {
+    final budgetAvailable = state.limits.budgetAvailable;
+    final budgetExhausted = budgetAvailable != null && budgetAvailable <= 0;
+
     final pendingLoan = state.loans
         .where((l) => l.status == 'pending')
         .firstOrNull;
@@ -614,6 +644,59 @@ class _HomeScreenState extends State<HomeScreen> {
           _buildLoanCard(context, pendingLoan),
           const SizedBox(height: 12),
           _buildBlockedButton(),
+        ],
+      );
+    }
+
+    // Si el presupuesto está agotado: mostrar banner + bloquear
+    if (budgetExhausted) {
+      return Column(
+        children: [
+          if (approvedLoan != null) ...[
+            _buildLoanCard(context, approvedLoan),
+            const SizedBox(height: 12),
+          ],
+          _buildBudgetExhaustedBanner(),
+          Container(
+            height: 62,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.06),
+              borderRadius: BorderRadius.circular(48),
+              border: Border.all(color: Colors.white.withOpacity(0.08)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 25),
+                  child: Text(
+                    'Presupuesto agotado',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.3),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: Container(
+                    width: 46,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Icon(
+                      Icons.lock_outline_rounded,
+                      color: Colors.white.withOpacity(0.2),
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       );
     }

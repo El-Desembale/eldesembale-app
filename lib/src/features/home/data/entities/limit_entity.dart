@@ -5,6 +5,7 @@ class LimitEntity {
   final int maxInstallments;
   final int minInstallments;
   final double interest;
+  final double? budgetAvailable;
 
   LimitEntity({
     required this.selectedSegment,
@@ -13,5 +14,6 @@ class LimitEntity {
     required this.maxInstallments,
     required this.minInstallments,
     required this.interest,
+    this.budgetAvailable,
   });
 }
