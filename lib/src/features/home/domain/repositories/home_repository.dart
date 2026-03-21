@@ -26,4 +26,16 @@ abstract class HomeRepository {
   Future<Either<ErrorModel, bool>> updateUserSubscription({
     required String email,
   });
+  Future<Either<ErrorModel, bool>> savePaymentRecord({
+    required String transactionId,
+    required String reference,
+    required String type,
+    required String status,
+    required int amountInCents,
+    required String userPhone,
+    required String userEmail,
+    required String userName,
+    String? loanId,
+    int? installmentNumber,
+  });
 }

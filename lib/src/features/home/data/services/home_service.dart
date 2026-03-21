@@ -30,6 +30,18 @@ abstract class HomeService {
   Future<bool> updateLoan({
     required LoanRequestEntity loan,
   });
+  Future<bool> savePaymentRecord({
+    required String transactionId,
+    required String reference,
+    required String type,
+    required String status,
+    required int amountInCents,
+    required String userPhone,
+    required String userEmail,
+    required String userName,
+    String? loanId,
+    int? installmentNumber,
+  });
 }
 
 class HomeServiceImpl implements HomeService {
@@ -191,6 +203,41 @@ class HomeServiceImpl implements HomeService {
       return false;
     }
     return true;
+  }
+  @override
+  Future<bool> savePaymentRecord({
+    required String transactionId,
+    required String reference,
+    required String type,
+    required String status,
+    required int amountInCents,
+    required String userPhone,
+    required String userEmail,
+    required String userName,
+    String? loanId,
+    int? installmentNumber,
+  }) async {
+    try {
+      await _database.collection('payments').doc(transactionId).set({
+        'id': transactionId,
+        'reference': reference,
+        'type': type,
+        'status': status,
+        'amount': amountInCents / 100,
+        'amount_in_cents': amountInCents,
+        'currency': 'COP',
+        'user_phone': userPhone,
+        'user_email': userEmail,
+        'user_name': userName,
+        'loan_id': loanId,
+        'installment_number': installmentNumber,
+        'created_at': DateTime.now(),
+      });
+      return true;
+    } catch (e) {
+      debugPrint('Error saving payment record: $e');
+      return false;
+    }
   }
 }
 

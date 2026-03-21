@@ -212,14 +212,19 @@ class LoanInfoDetailScreen extends StatelessWidget {
             if (state.loans[loanIndex].canPay)
               GestureDetector(
                 onTap: () async {
-                  final url = await homeCubit.generatePayment(
+                  final payment = await homeCubit.generatePayment(
                       context, totalAmount.truncate());
 
                   await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (_) => WebPaymentView(
-                        paymentUrl: url,
+                        paymentUrl: payment.url,
+                        homeCubit: homeCubit,
+                        reference: payment.reference,
+                        amountInCents: payment.amountInCents,
+                        loanId: state.loans[loanIndex].id,
+                        installmentNumber: state.loans[loanIndex].installmentsPaid + 1,
                         onSuccessfulPayment: () async {
                           final status = await homeCubit.updateLoanInstallments(
                             state.loans[loanIndex],
