@@ -45,3 +45,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+.vercel
+.firebase/
+.env.local
+.next/
+node_modules/
