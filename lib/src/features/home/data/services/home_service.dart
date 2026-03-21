@@ -55,6 +55,34 @@ class HomeServiceImpl implements HomeService {
     QuerySnapshot querySnapshot =
         await _database.collection('app_config').get();
 
+    // Calculate available budget
+    double? budgetAvailable;
+    try {
+      final budgetDoc = await _database.collection('settings').doc('budget').get();
+      if (budgetDoc.exists) {
+        final budgetData = budgetDoc.data() as Map<String, dynamic>;
+        final totalCapital = (budgetData['total_capital'] as num?)?.toDouble() ?? 0;
+        if (totalCapital > 0) {
+          final loansSnap = await _database.collection('loan_request')
+              .where('status', isEqualTo: 'approved')
+              .get();
+          double capitalLent = 0;
+          double capitalRecovered = 0;
+          for (final doc in loansSnap.docs) {
+            final d = doc.data();
+            final amount = (d['amount'] as num?)?.toDouble() ?? 0;
+            final installments = (d['installments'] as num?)?.toInt() ?? 0;
+            final installmentsPaid = (d['installments_paid'] as num?)?.toInt() ?? 0;
+            capitalLent += amount;
+            if (installments > 0) {
+              capitalRecovered += installmentsPaid * (amount / installments);
+            }
+          }
+          budgetAvailable = totalCapital - capitalLent + capitalRecovered;
+        }
+      }
+    } catch (_) {}
+
     if (querySnapshot.docs.isNotEmpty) {
       final data = querySnapshot.docs.first.data() as Map<String, dynamic>;
       return LimitModel(
@@ -64,6 +92,7 @@ class HomeServiceImpl implements HomeService {
         minInstallments: data['number_min_of_installments'],
         interest: data['interest'] * 1.0,
         selectedSegment: 25,
+        budgetAvailable: budgetAvailable,
       );
     } else {
       return LimitModel(
@@ -73,6 +102,7 @@ class HomeServiceImpl implements HomeService {
         minInstallments: 2,
         selectedSegment: 25,
         interest: 10.0,
+        budgetAvailable: budgetAvailable,
       );
     }
   }

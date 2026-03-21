@@ -8,6 +8,7 @@ class LimitModel extends LimitEntity {
     required super.maxInstallments,
     required super.minInstallments,
     required super.interest,
+    super.budgetAvailable,
   });
 
   LimitModel copyWith({
@@ -17,6 +18,7 @@ class LimitModel extends LimitEntity {
     int? maxInstallments,
     int? minInstallments,
     double? interest,
+    double? budgetAvailable,
   }) {
     return LimitModel(
       selectedSegment: selectedSegment ?? this.selectedSegment,
@@ -25,6 +27,7 @@ class LimitModel extends LimitEntity {
       maxInstallments: maxInstallments ?? this.maxInstallments,
       minInstallments: minInstallments ?? this.minInstallments,
       interest: interest ?? this.interest,
+      budgetAvailable: budgetAvailable ?? this.budgetAvailable,
     );
   }
 }
