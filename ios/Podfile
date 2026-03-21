@@ -43,6 +43,21 @@ post_install do |installer|
     target.build_configurations.each do |config|
       config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
       config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
+      config.build_settings['GCC_TREAT_WARNINGS_AS_ERRORS'] = 'NO'
     end
+  end
+
+  # Strip resource forks to fix CodeSign on paths with special characters
+  main_project = installer.aggregate_targets.first.user_project
+  runner_target = main_project.targets.find { |t| t.name == 'Runner' }
+  if runner_target
+    phase_name = 'Strip Resource Forks'
+    unless runner_target.shell_script_build_phases.any? { |p| p.name == phase_name }
+      phase = runner_target.new_shell_script_build_phase(phase_name)
+      phase.shell_script = "find \"${BUILT_PRODUCTS_DIR}\" -name '._*' -delete 2>/dev/null\nxattr -cr \"${BUILT_PRODUCTS_DIR}\" 2>/dev/null\nexit 0\n"
+      # Move it before the existing Embed Frameworks phase
+      runner_target.build_phases.move(phase, 0)
+    end
+    main_project.save
   end
 end

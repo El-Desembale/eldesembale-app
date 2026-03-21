@@ -20,9 +20,17 @@ import '../domain/use_case/create_loan_use_case.dart';
 import '../domain/use_case/get_limits_use_case.dart';
 import '../domain/use_case/get_loans_use_case.dart';
 import '../domain/use_case/update_loan_use_case.dart';
+import '../domain/use_case/save_payment_record_use_case.dart';
 import '../domain/use_case/update_user_subscription_use_case.dart';
 
 part 'home_state.dart';
+
+class PaymentData {
+  final String url;
+  final String reference;
+  final int amountInCents;
+  PaymentData({required this.url, required this.reference, required this.amountInCents});
+}
 
 class HomeCubit extends Cubit<HomeState> {
   final GetLimitsUseCase _getLimitsCase;
@@ -30,12 +38,14 @@ class HomeCubit extends Cubit<HomeState> {
   final GetLoansUseCase _getLoansUseCase;
   final UpdateUserSubscriptionUseCase _updateUserSubscriptionUseCase;
   final UpdateLoanUseCase _updateLoanUseCase;
+  final SavePaymentRecordUseCase _savePaymentRecordUseCase;
   HomeCubit(
     this._getLimitsCase,
     this._createLoanUseCase,
     this._getLoansUseCase,
     this._updateUserSubscriptionUseCase,
     this._updateLoanUseCase,
+    this._savePaymentRecordUseCase,
   ) : super(
           HomeState(
             loanInformation: LoanInformationEntity.initial(),
@@ -69,7 +79,7 @@ class HomeCubit extends Cubit<HomeState> {
     updateSelectedSegment(newSegment);
   }
 
-  Future<String> generateSubscriptionPayment(BuildContext context) async {
+  Future<PaymentData> generateSubscriptionPayment(BuildContext context) async {
     final user = sl<AuthCubit>(instanceName: 'auth').state.user;
     final priv_key = dotenv.env['PRIVATE_INTEGRITY_KEY_TEST'];
     final public_key = dotenv.env['PUBLIC_TEST_KEY'];
@@ -94,10 +104,10 @@ class HomeCubit extends Cubit<HomeState> {
       user.phone,
     );
 
-    return url;
+    return PaymentData(url: url, reference: reference, amountInCents: amountInCents);
   }
 
-  Future<String> generatePayment(
+  Future<PaymentData> generatePayment(
     BuildContext context,
     int amountInCents,
   ) async {
@@ -125,7 +135,7 @@ class HomeCubit extends Cubit<HomeState> {
       user.phone,
     );
 
-    return url;
+    return PaymentData(url: url, reference: reference, amountInCents: amountInCents);
   }
 
   String _generateIntegrityHash(
@@ -436,6 +446,30 @@ class HomeCubit extends Cubit<HomeState> {
         ),
       );
     }
+  }
+
+  Future<void> savePaymentRecord({
+    required String transactionId,
+    required String reference,
+    required String status,
+    required int amountInCents,
+    String? loanId,
+    int? installmentNumber,
+  }) async {
+    final user = sl<AuthCubit>(instanceName: 'auth').state.user;
+    final type = reference.startsWith('subscription') ? 'subscription' : 'installment';
+    await _savePaymentRecordUseCase.call(
+      transactionId: transactionId,
+      reference: reference,
+      type: type,
+      status: status,
+      amountInCents: amountInCents,
+      userPhone: user.phone,
+      userEmail: user.email,
+      userName: '${user.name} ${user.lastName}'.trim(),
+      loanId: loanId,
+      installmentNumber: installmentNumber,
+    );
   }
 
   void clear() {

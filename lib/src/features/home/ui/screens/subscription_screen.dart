@@ -116,13 +116,16 @@ class SubscriptionScreen extends StatelessWidget {
             const SizedBox(height: 25),
             GestureDetector(
               onTap: () async {
-                final url =
+                final payment =
                     await homeCubit.generateSubscriptionPayment(context);
                 await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => WebPaymentView(
-                      paymentUrl: url,
+                      paymentUrl: payment.url,
+                      homeCubit: homeCubit,
+                      reference: payment.reference,
+                      amountInCents: payment.amountInCents,
                       onSuccessfulPayment: () async {
                         context.pop(true);
                         context.pop(true);

@@ -11,15 +11,26 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 import '../../../../utils/colors.dart';
 import '../../../../utils/modalbottomsheet.dart';
+import '../../cubit/home_cubit.dart';
 
 class WebPaymentView extends StatefulWidget {
   final String paymentUrl;
   final Future<void> Function() onSuccessfulPayment;
+  final HomeCubit homeCubit;
+  final String reference;
+  final int amountInCents;
+  final String? loanId;
+  final int? installmentNumber;
 
   const WebPaymentView({
     super.key,
     required this.paymentUrl,
     required this.onSuccessfulPayment,
+    required this.homeCubit,
+    required this.reference,
+    required this.amountInCents,
+    this.loanId,
+    this.installmentNumber,
   });
 
   @override
@@ -202,6 +213,21 @@ class _WebPaymentViewState extends State<WebPaymentView> {
     }
   }
 
+  Future<void> _savePayment(String transaccionId, String status) async {
+    try {
+      await widget.homeCubit.savePaymentRecord(
+        transactionId: transaccionId,
+        reference: widget.reference,
+        status: status,
+        amountInCents: widget.amountInCents,
+        loanId: widget.loanId,
+        installmentNumber: widget.installmentNumber,
+      );
+    } catch (_) {
+      // Best-effort, no bloquea el flujo
+    }
+  }
+
   Future<void> getTransaccionStatus(String transaccionId) async {
     final dio = Dio();
     // https://production.wompi.co/v1/transactions
@@ -217,6 +243,7 @@ class _WebPaymentViewState extends State<WebPaymentView> {
       _isLocked = false;
       _procesingPayment = false;
       setState(() {});
+      await _savePayment(transaccionId, status);
       ModalbottomsheetUtils.successBottomSheet(
         context,
         'Tu pago ha sido aprobado',
@@ -230,6 +257,7 @@ class _WebPaymentViewState extends State<WebPaymentView> {
       _timer?.cancel();
       _isLocked = false;
       _procesingPayment = false;
+      await _savePayment(transaccionId, status);
 
       context.pop();
       ModalbottomsheetUtils.customError(
@@ -241,6 +269,7 @@ class _WebPaymentViewState extends State<WebPaymentView> {
       _timer?.cancel();
       _isLocked = false;
       _procesingPayment = false;
+      await _savePayment(transaccionId, status);
 
       context.pop();
       ModalbottomsheetUtils.customError(

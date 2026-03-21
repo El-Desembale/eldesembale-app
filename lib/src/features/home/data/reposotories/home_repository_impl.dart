@@ -116,4 +116,41 @@ class HomeRepositoryImpl implements HomeRepository {
       );
     }
   }
+
+  @override
+  Future<Either<ErrorModel, bool>> savePaymentRecord({
+    required String transactionId,
+    required String reference,
+    required String type,
+    required String status,
+    required int amountInCents,
+    required String userPhone,
+    required String userEmail,
+    required String userName,
+    String? loanId,
+    int? installmentNumber,
+  }) async {
+    try {
+      return Right(
+        await _homeService.savePaymentRecord(
+          transactionId: transactionId,
+          reference: reference,
+          type: type,
+          status: status,
+          amountInCents: amountInCents,
+          userPhone: userPhone,
+          userEmail: userEmail,
+          userName: userName,
+          loanId: loanId,
+          installmentNumber: installmentNumber,
+        ),
+      );
+    } catch (e) {
+      return Left(
+        ErrorModel(
+          code: '$e',
+        ),
+      );
+    }
+  }
 }
