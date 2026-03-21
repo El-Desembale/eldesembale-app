@@ -96,6 +96,12 @@ class LoginServiceImpl implements LoginService {
         'password': password,
       });
 
+      // Ensure Firebase Auth session exists for Storage uploads
+      final auth = FirebaseAuth.instance;
+      if (auth.currentUser == null) {
+        await auth.signInAnonymously();
+      }
+
       return UserModel(
         email: email,
         phone: user,
@@ -123,6 +129,11 @@ class LoginServiceImpl implements LoginService {
 
       if (userQuery.docs.isNotEmpty) {
         final doc = userQuery.docs.first.data() as Map<String, dynamic>;
+        // Ensure Firebase Auth session exists for Storage uploads
+        final auth = FirebaseAuth.instance;
+        if (auth.currentUser == null) {
+          await auth.signInAnonymously();
+        }
         return UserModel(
           email: doc['email'] ?? "",
           phone: user,
