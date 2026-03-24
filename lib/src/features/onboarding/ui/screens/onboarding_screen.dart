@@ -94,7 +94,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
               decoration: BoxDecoration(
                 color: const Color.fromRGBO(47, 255, 0, 1),
-                borderRadius: BorderRadius.circular(48),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -118,7 +118,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       height: 55,
                       decoration: BoxDecoration(
                         color: const Color.fromRGBO(255, 255, 255, 0.5),
-                        borderRadius: BorderRadius.circular(32),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
                         Icons.arrow_forward,
@@ -162,7 +162,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             textAlign: TextAlign.start,
             style: const TextStyle(
               fontFamily: "Unbounded",
-              fontSize: 40,
+              fontSize: 26,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
@@ -175,7 +175,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             description,
             textAlign: TextAlign.start,
             style: const TextStyle(
-              fontSize: 20,
+              fontSize: 15,
               color: Colors.white,
             ),
           ),

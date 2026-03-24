@@ -9,20 +9,23 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      theme: ThemeData(
-        fontFamily: 'Lexend_Deca',
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: MaterialApp.router(
+        theme: ThemeData(
+          fontFamily: 'Lexend_Deca',
+        ),
+        routerConfig: AppRoutes.routerConfig,
+        debugShowCheckedModeBanner: false,
+        title: 'El Desembale',
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          S.delegate,
+        ],
+        supportedLocales: S.delegate.supportedLocales,
       ),
-      routerConfig: AppRoutes.routerConfig,
-      debugShowCheckedModeBanner: false,
-      title: 'El Desembale',
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        S.delegate,
-      ],
-      supportedLocales: S.delegate.supportedLocales,
     );
   }
 }

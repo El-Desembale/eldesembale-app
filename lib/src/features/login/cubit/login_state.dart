@@ -5,13 +5,13 @@ class LoginState {
   final String otp;
   final UserModel? user;
   final String countryCode;
-  final String verificationId;
+  final String otpEmail;
   String? error;
   LoginState({
     required this.isLoading,
     required this.otp,
     required this.countryCode,
-    required this.verificationId,
+    this.otpEmail = '',
     this.user,
     this.error,
   });
@@ -25,7 +25,7 @@ class LoginState {
     String? otp,
     String? validateOtp,
     String? countryCode,
-    String? verificationId,
+    String? otpEmail,
   }) {
     return LoginState(
       isLoading: isLoading ?? this.isLoading,
@@ -33,7 +33,7 @@ class LoginState {
       user: user ?? this.user,
       otp: otp ?? this.otp,
       countryCode: countryCode ?? this.countryCode,
-      verificationId: verificationId ?? this.verificationId,
+      otpEmail: otpEmail ?? this.otpEmail,
     );
   }
 }

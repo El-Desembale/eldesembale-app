@@ -10,13 +10,11 @@ class SendOtpRecoveryPasswordUseCase {
     this._loginRepository,
   );
 
-  Future<Either<ErrorModel, String>> call({
-    required String phone,
-    required String countryCode,
+  Future<Either<ErrorModel, bool>> call({
+    required String email,
   }) async {
-    return await _loginRepository.sendOtpVerification(
-      phone: phone,
-      countryCode: countryCode,
+    return await _loginRepository.sendEmailOtp(
+      email: email,
     );
   }
 }

@@ -118,13 +118,13 @@ class _LoanSelfieScreenState extends State<LoanSelfieScreen> {
                           padding: const EdgeInsets.all(5),
                           width: 80,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(48),
+                            borderRadius: BorderRadius.circular(12),
                             color: const Color.fromRGBO(47, 255, 0, 1),
                           ),
                           child: Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(48),
+                              borderRadius: BorderRadius.circular(12),
                               color: const Color.fromRGBO(255, 255, 255, 0.5),
                             ),
                             child: const Icon(
@@ -147,7 +147,7 @@ class _LoanSelfieScreenState extends State<LoanSelfieScreen> {
                         margin: const EdgeInsets.symmetric(horizontal: 20),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(48),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -170,7 +170,7 @@ class _LoanSelfieScreenState extends State<LoanSelfieScreen> {
                                 decoration: BoxDecoration(
                                   color: const Color.fromARGB(255, 47, 255, 0)
                                       .withOpacity(0.08),
-                                  borderRadius: BorderRadius.circular(32),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: const Icon(
                                   Icons.replay_outlined,
@@ -195,7 +195,7 @@ class _LoanSelfieScreenState extends State<LoanSelfieScreen> {
                         margin: const EdgeInsets.symmetric(horizontal: 20),
                         decoration: BoxDecoration(
                           color: const Color.fromRGBO(47, 255, 0, 1),
-                          borderRadius: BorderRadius.circular(48),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -218,7 +218,7 @@ class _LoanSelfieScreenState extends State<LoanSelfieScreen> {
                                 decoration: BoxDecoration(
                                   color:
                                       const Color.fromRGBO(255, 255, 255, 0.5),
-                                  borderRadius: BorderRadius.circular(32),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: const Icon(
                                   Icons.check_circle_outline,

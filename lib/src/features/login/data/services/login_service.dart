@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -28,13 +29,15 @@ abstract class LoginService {
     required String countryCode,
     required BuildContext context,
   });
-  Future<String> sendOtpVerification({
-    required String countryCode,
-    required String phone,
+  Future<bool> sendEmailOtp({
+    required String email,
   });
-  Future<bool> verifyOtp({
-    required String verificationId,
+  Future<bool> verifyEmailOtp({
+    required String email,
     required String otp,
+  });
+  Future<String?> getEmailByPhone({
+    required String phone,
   });
   Future<bool> newPassword({
     required String phone,
@@ -96,10 +99,14 @@ class LoginServiceImpl implements LoginService {
         'password': password,
       });
 
-      // Ensure Firebase Auth session exists for Storage uploads
-      final auth = FirebaseAuth.instance;
-      if (auth.currentUser == null) {
-        await auth.signInAnonymously();
+      // Try to create Firebase Auth session for Storage uploads (non-blocking)
+      try {
+        final auth = FirebaseAuth.instance;
+        if (auth.currentUser == null) {
+          await auth.signInAnonymously();
+        }
+      } catch (_) {
+        // Anonymous auth may not be enabled, don't block registration
       }
 
       return UserModel(
@@ -110,7 +117,8 @@ class LoginServiceImpl implements LoginService {
         isSubscribed: false,
       );
     } catch (e) {
-      throw Exception("Ha ocurrido un error inesperado.");
+      debugPrint('Register service error: $e');
+      throw Exception("Ha ocurrido un error inesperado: $e");
     }
   }
 
@@ -126,14 +134,15 @@ class LoginServiceImpl implements LoginService {
           .where('phone', isEqualTo: user)
           .where('password', isEqualTo: password)
           .get();
-
       if (userQuery.docs.isNotEmpty) {
         final doc = userQuery.docs.first.data() as Map<String, dynamic>;
-        // Ensure Firebase Auth session exists for Storage uploads
-        final auth = FirebaseAuth.instance;
-        if (auth.currentUser == null) {
-          await auth.signInAnonymously();
-        }
+        // Try Firebase Auth session for Storage uploads (non-blocking)
+        try {
+          final auth = FirebaseAuth.instance;
+          if (auth.currentUser == null) {
+            await auth.signInAnonymously();
+          }
+        } catch (_) {}
         return UserModel(
           email: doc['email'] ?? "",
           phone: user,
@@ -145,82 +154,77 @@ class LoginServiceImpl implements LoginService {
         throw Exception("Usuario o contraseña incorrecta.");
       }
     } catch (e) {
-      throw Exception("Ha ocurrido un error inesperado.");
+      debugPrint('Login error: $e');
+      rethrow;
     }
   }
 
   @override
-  Future<String> sendOtpVerification({
-    required String phone,
-    required String countryCode,
+  Future<bool> sendEmailOtp({
+    required String email,
   }) async {
-    final FirebaseAuth auth = FirebaseAuth.instance;
-    final Completer<String> completer = Completer<String>();
-
     try {
-      if (kDebugMode) {
-        await auth.setSettings(appVerificationDisabledForTesting: true);
-      }
-      await auth.verifyPhoneNumber(
-        phoneNumber: "$countryCode$phone",
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          final verificationId = credential.verificationId ?? "";
-          if (!completer.isCompleted) {
-            completer.complete(verificationId);
-          }
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          if (!completer.isCompleted) {
-            completer.completeError(e);
-          }
-        },
-        codeSent: (String verificationId, int? resendToken) async {
-          if (!completer.isCompleted) {
-            completer.complete(verificationId);
-          }
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {
-          if (!completer.isCompleted) {
-            completer.complete(verificationId);
-          }
-        },
-      );
-
-      return await completer.future;
+      final callable = FirebaseFunctions.instance.httpsCallable('sendOtpEmail');
+      final result = await callable.call({'email': email});
+      return result.data['success'] == true;
     } catch (e) {
-      debugPrint('Error enviando OTP: $e');
-      return ""; // Hubo un error al enviar el OTP
+      debugPrint('Error enviando OTP por email: $e');
+      return false;
     }
   }
 
   @override
-  Future<bool> verifyOtp({
-    required String verificationId,
+  Future<bool> verifyEmailOtp({
+    required String email,
     required String otp,
   }) async {
-    final FirebaseAuth auth = FirebaseAuth.instance;
     try {
-      // Crear las credenciales con el verificationId y el código OTP ingresado
-      PhoneAuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: verificationId,
-        smsCode: otp,
-      );
+      final querySnapshot = await _database
+          .collection('otp_codes')
+          .where('email', isEqualTo: email.toLowerCase().trim())
+          .where('code', isEqualTo: otp)
+          .where('used', isEqualTo: false)
+          .get();
 
-      // Iniciar sesión con las credenciales
-      final response = await auth.signInWithCredential(credential);
-      if (response.user != null) {
-        debugPrint("OTP verificado correctamente");
-        return true;
-      } else {
+      if (querySnapshot.docs.isEmpty) {
         return false;
       }
-      // Si la autenticación es exitosa
-    } on OSError {
-      return false;
+
+      final doc = querySnapshot.docs.first;
+      final data = doc.data();
+      final expiresAt = (data['expiresAt'] as Timestamp).toDate();
+
+      if (DateTime.now().isAfter(expiresAt)) {
+        return false;
+      }
+
+      await doc.reference.update({'used': true});
+      return true;
     } catch (e) {
-      // Si ocurre algún error en la verificación
       debugPrint('Error verificando OTP: $e');
       return false;
+    }
+  }
+
+  @override
+  Future<String?> getEmailByPhone({
+    required String phone,
+  }) async {
+    try {
+      final querySnapshot = await _database
+          .collection('users')
+          .where('phone', isEqualTo: phone)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final data = querySnapshot.docs.first.data();
+        return data['email'] as String?;
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error obteniendo email: $e');
+      return null;
     }
   }
 

@@ -100,7 +100,7 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                 style: TextStyle(
                   fontFamily: "Unbounded",
                   color: Colors.white,
-                  fontSize: 20,
+                  fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -115,6 +115,12 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                         firstReferenceRelationship = '';
                       } else {
                         firstReferenceRelationship = relationshipList[index];
+                        // Si la segunda referencia es igual, limpiarla
+                        if (secondReferenceRelationship == firstReferenceRelationship &&
+                            firstReferenceRelationship != 'Otro') {
+                          secondReferenceRelationship = '';
+                          secondPhoneNumber = 0;
+                        }
                       }
                       setState(() {});
                     },
@@ -141,7 +147,7 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                               relationshipList[index],
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 20,
+                                fontSize: 15,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -182,7 +188,8 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                         size: 30,
                       ),
                       const SizedBox(width: 15.0),
-                      Column(
+                      Expanded(
+                        child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
@@ -192,25 +199,23 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                               fontSize: 18.0,
                             ),
                           ),
-                          SizedBox(
-                            width: 150,
-                            child: TextField(
-                              decoration: InputDecoration(
-                                hintText: 'Ingrese el nombre',
-                                hintStyle: TextStyle(
-                                    color: Colors.white.withOpacity(0.6)),
-                                enabledBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                              ),
-                              style: const TextStyle(color: Colors.white),
-                              keyboardType: TextInputType.name,
-                              onChanged: (value) {
-                                firstOtherRelationship = value;
-                                setState(() {});
-                              },
+                          TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Ingrese el nombre',
+                              hintStyle: TextStyle(
+                                  color: Colors.white.withOpacity(0.6)),
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
                             ),
+                            style: const TextStyle(color: Colors.white),
+                            keyboardType: TextInputType.name,
+                            onChanged: (value) {
+                              firstOtherRelationship = value;
+                              setState(() {});
+                            },
                           ),
                         ],
+                      ),
                       ),
                     ],
                   ),
@@ -232,19 +237,18 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                         size: 30,
                       ),
                       const SizedBox(width: 15.0),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Teléfono de $firstReferenceRelationship',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18.0,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Teléfono de $firstReferenceRelationship',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18.0,
+                              ),
                             ),
-                          ),
-                          SizedBox(
-                            width: 150,
-                            child: TextField(
+                            TextField(
                               decoration: InputDecoration(
                                 hintText: 'Ingrese el teléfono',
                                 hintStyle: TextStyle(
@@ -266,85 +270,72 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                                 setState(() {});
                               },
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
               const SizedBox(height: 35),
-              GestureDetector(
-                onTap: () {
-                  if (firstReferenceRelationship == 'Otro') {
-                    if (firstOtherRelationship.isNotEmpty &&
-                        firstPhoneNumber != 0) {
+              Builder(builder: (context) {
+                final isFirstValid = firstReferenceRelationship == 'Otro'
+                    ? firstOtherRelationship.isNotEmpty && firstPhoneNumber != 0
+                    : firstReferenceRelationship.isNotEmpty && firstPhoneNumber != 0;
+                return GestureDetector(
+                  onTap: () {
+                    if (isFirstValid) {
                       _pageController.animateToPage(
                         1,
                         duration: const Duration(milliseconds: 400),
                         curve: Curves.easeInOut,
                       );
                     }
-                  } else if (firstReferenceRelationship.isNotEmpty &&
-                      firstReferenceRelationship != "Otro" &&
-                      firstPhoneNumber != 0) {
-                    _pageController.animateToPage(
-                      1,
-                      duration: const Duration(milliseconds: 400),
-                      curve: Curves.easeInOut,
-                    );
-                  }
-                },
-                child: Container(
-                  height: 62,
-                  decoration: BoxDecoration(
-                    color: firstReferenceRelationship.isNotEmpty &&
-                            firstReferenceRelationship != "Otro" &&
-                            firstPhoneNumber != 0
-                        ? const Color.fromRGBO(47, 255, 0, 1)
-                        : firstOtherRelationship.isEmpty
-                            ? const Color.fromARGB(255, 21, 28, 16)
-                            : const Color.fromRGBO(47, 255, 0, 1),
-                    borderRadius: BorderRadius.circular(48),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 25),
-                        child: Text(
-                          'Continuar',
-                          style: TextStyle(
-                            color: firstReferenceRelationship.isNotEmpty &&
-                                    firstReferenceRelationship != "Otro" &&
-                                    firstPhoneNumber != 0
-                                ? Colors.black
-                                : firstOtherRelationship.isEmpty
-                                    ? Colors.grey
-                                    : Colors.black,
-                            fontSize: 15,
+                  },
+                  child: Container(
+                    height: 62,
+                    decoration: BoxDecoration(
+                      color: isFirstValid
+                          ? const Color.fromRGBO(47, 255, 0, 1)
+                          : Colors.white.withOpacity(0.06),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 25),
+                          child: Text(
+                            'Continuar',
+                            style: TextStyle(
+                              color: isFirstValid ? Colors.black : Colors.white24,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 16),
-                        child: Container(
-                          width: 62,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: const Color.fromRGBO(255, 255, 255, 0.5),
-                            borderRadius: BorderRadius.circular(32),
-                          ),
-                          child: const Icon(
-                            Icons.check_circle_outline_rounded,
-                            color: Colors.black,
-                            size: 30,
+                        Padding(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: Container(
+                            width: 46,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: isFirstValid
+                                  ? Colors.black.withOpacity(0.1)
+                                  : Colors.white.withOpacity(0.06),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              Icons.arrow_forward_rounded,
+                              color: isFirstValid ? Colors.black : Colors.white24,
+                              size: 22,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ),
+                );
+              }),
               const SizedBox(height: 30),
             ],
           ),
@@ -356,7 +347,7 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                 style: TextStyle(
                   fontFamily: "Unbounded",
                   color: Colors.white,
-                  fontSize: 20,
+                  fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -364,8 +355,13 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
               Column(
                 children: List.generate(
                   relationshipList.length,
-                  (index) => GestureDetector(
-                    onTap: () {
+                  (index) {
+                    // No permitir repetir el mismo tipo (excepto "Otro")
+                    final item = relationshipList[index];
+                    final isDisabled = item != 'Otro' &&
+                        item == firstReferenceRelationship;
+                    return GestureDetector(
+                    onTap: isDisabled ? null : () {
                       if (secondReferenceRelationship ==
                           relationshipList[index]) {
                         secondReferenceRelationship = '';
@@ -374,51 +370,55 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                       }
                       setState(() {});
                     },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 40,
-                        vertical: 20,
-                      ),
-                      margin: const EdgeInsets.only(bottom: 15),
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 21, 28, 16),
-                        borderRadius: BorderRadius.circular(22),
-                        border: Border.all(
-                          color: secondReferenceRelationship ==
-                                  relationshipList[index]
-                              ? Colors.white
-                              : Colors.transparent,
+                    child: Opacity(
+                      opacity: isDisabled ? 0.3 : 1.0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 40,
+                          vertical: 20,
                         ),
-                      ),
-                      child: Center(
-                        child: Row(
-                          children: [
-                            Text(
-                              relationshipList[index],
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const Spacer(),
-                            secondReferenceRelationship ==
+                        margin: const EdgeInsets.only(bottom: 15),
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 21, 28, 16),
+                          borderRadius: BorderRadius.circular(22),
+                          border: Border.all(
+                            color: secondReferenceRelationship ==
                                     relationshipList[index]
-                                ? const Icon(
-                                    Icons.check_circle_outline_rounded,
-                                    color: Colors.white,
-                                    size: 30,
-                                  )
-                                : const Icon(
-                                    Icons.circle_outlined,
-                                    color: Colors.white,
-                                    size: 30,
-                                  ),
-                          ],
+                                ? Colors.white
+                                : Colors.transparent,
+                          ),
+                        ),
+                        child: Center(
+                          child: Row(
+                            children: [
+                              Text(
+                                relationshipList[index],
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const Spacer(),
+                              secondReferenceRelationship ==
+                                      relationshipList[index]
+                                  ? const Icon(
+                                      Icons.check_circle_outline_rounded,
+                                      color: Colors.white,
+                                      size: 30,
+                                    )
+                                  : const Icon(
+                                      Icons.circle_outlined,
+                                      color: Colors.white,
+                                      size: 30,
+                                    ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  );
+                  },
                 ),
               ),
               SizedBox(height: MediaQuery.sizeOf(context).height * 0.05),
@@ -438,21 +438,20 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                         size: 30,
                       ),
                       const SizedBox(width: 15.0),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            '¿Qué otro?',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18.0,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              '¿Qué otro?',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18.0,
+                              ),
                             ),
-                          ),
-                          SizedBox(
-                            width: 150,
-                            child: TextField(
+                            TextField(
                               decoration: InputDecoration(
-                                hintText: 'Ingrese el teléfono',
+                                hintText: 'Ingrese el nombre',
                                 hintStyle: TextStyle(
                                     color: Colors.white.withOpacity(0.6)),
                                 enabledBorder: InputBorder.none,
@@ -465,8 +464,8 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                                 setState(() {});
                               },
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -488,19 +487,18 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                         size: 30,
                       ),
                       const SizedBox(width: 15.0),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Teléfono de $secondReferenceRelationship',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18.0,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Teléfono de $secondReferenceRelationship',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18.0,
+                              ),
                             ),
-                          ),
-                          SizedBox(
-                            width: 150,
-                            child: TextField(
+                            TextField(
                               decoration: InputDecoration(
                                 hintText: 'Ingrese el teléfono',
                                 hintStyle: TextStyle(
@@ -522,97 +520,82 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                                 setState(() {});
                               },
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
               const SizedBox(height: 35),
-              GestureDetector(
-                onTap: () {
-                  // Validaciones
-                  final isFirstValid = firstReferenceRelationship == "Otro"
-                      ? firstOtherRelationship.isNotEmpty &&
-                          firstPhoneNumber != 0
-                      : firstReferenceRelationship.isNotEmpty &&
-                          firstPhoneNumber != 0;
-
-                  final isSecondValid = secondReferenceRelationship == "Otro"
-                      ? secondOtherRelationship.isNotEmpty &&
-                          secondPhoneNumber != 0
-                      : secondReferenceRelationship.isNotEmpty &&
-                          secondPhoneNumber != 0;
-
-                  if (isFirstValid && isSecondValid) {
-                    widget.homeCubit.setReferences(
-                      LoanReferenceEntity(
-                        relationship: firstReferenceRelationship == "Otro"
-                            ? firstOtherRelationship // 👈 toma lo escrito
-                            : firstReferenceRelationship,
-                        phone: firstPhoneNumber,
-                      ),
-                      LoanReferenceEntity(
-                        relationship: secondReferenceRelationship == "Otro"
-                            ? secondOtherRelationship // 👈 toma lo escrito
-                            : secondReferenceRelationship,
-                        phone: secondPhoneNumber,
-                      ),
-                    );
-                    context.pop();
-                  }
-                },
-                child: Container(
-                  height: 62,
-                  decoration: BoxDecoration(
-                    color: secondReferenceRelationship.isNotEmpty &&
-                            secondReferenceRelationship != "Otro" &&
-                            secondPhoneNumber != 0
-                        ? const Color.fromRGBO(47, 255, 0, 1)
-                        : secondOtherRelationship.isEmpty
-                            ? const Color.fromARGB(255, 21, 28, 16)
-                            : const Color.fromRGBO(47, 255, 0, 1),
-                    borderRadius: BorderRadius.circular(48),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 25),
-                        child: Text(
-                          'Aceptar',
-                          style: TextStyle(
-                            color: secondReferenceRelationship.isNotEmpty &&
-                                    secondReferenceRelationship != "Otro" &&
-                                    secondPhoneNumber != 0
-                                ? Colors.black
-                                : secondOtherRelationship.isEmpty
-                                    ? Colors.grey
-                                    : Colors.black,
-                            fontSize: 15,
+              Builder(builder: (context) {
+                final isSecondValid = secondReferenceRelationship == "Otro"
+                    ? secondOtherRelationship.isNotEmpty && secondPhoneNumber != 0
+                    : secondReferenceRelationship.isNotEmpty && secondPhoneNumber != 0;
+                return GestureDetector(
+                  onTap: () {
+                    if (isSecondValid) {
+                      widget.homeCubit.setReferences(
+                        LoanReferenceEntity(
+                          relationship: firstReferenceRelationship == "Otro"
+                              ? firstOtherRelationship
+                              : firstReferenceRelationship,
+                          phone: firstPhoneNumber,
+                        ),
+                        LoanReferenceEntity(
+                          relationship: secondReferenceRelationship == "Otro"
+                              ? secondOtherRelationship
+                              : secondReferenceRelationship,
+                          phone: secondPhoneNumber,
+                        ),
+                      );
+                      context.pop();
+                    }
+                  },
+                  child: Container(
+                    height: 62,
+                    decoration: BoxDecoration(
+                      color: isSecondValid
+                          ? const Color.fromRGBO(47, 255, 0, 1)
+                          : Colors.white.withOpacity(0.06),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 25),
+                          child: Text(
+                            'Aceptar',
+                            style: TextStyle(
+                              color: isSecondValid ? Colors.black : Colors.white24,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 16),
-                        child: Container(
-                          width: 62,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: const Color.fromRGBO(255, 255, 255, 0.5),
-                            borderRadius: BorderRadius.circular(32),
-                          ),
-                          child: const Icon(
-                            Icons.check_circle_outline_rounded,
-                            color: Colors.black,
-                            size: 30,
+                        Padding(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: Container(
+                            width: 46,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: isSecondValid
+                                  ? Colors.black.withOpacity(0.1)
+                                  : Colors.white.withOpacity(0.06),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              Icons.arrow_forward_rounded,
+                              color: isSecondValid ? Colors.black : Colors.white24,
+                              size: 22,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ),
+                );
+              }),
               const SizedBox(height: 30),
             ],
           ),

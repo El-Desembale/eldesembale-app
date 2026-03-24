@@ -20,7 +20,7 @@ class UserModel extends UserEntity {
         phone: json["phone"],
         name: json["name"],
         lastName: json["last_name"],
-        isSubscribed: json["isSubscribed"],
+        isSubscribed: json["isSubscribed"] ?? false,
       );
 
   Map<String, dynamic> toJson() => {

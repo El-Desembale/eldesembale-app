@@ -68,7 +68,7 @@ class LoanInformationScreen extends StatelessWidget {
               style: TextStyle(
                 fontFamily: "Unbounded",
                 color: Colors.white,
-                fontSize: 20,
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -87,7 +87,7 @@ class LoanInformationScreen extends StatelessWidget {
               style: const TextStyle(
                 fontFamily: "Unbounded",
                 color: Colors.white,
-                fontSize: 40,
+                fontSize: 26,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -148,7 +148,7 @@ class LoanInformationScreen extends StatelessWidget {
               style: TextStyle(
                 fontFamily: "Unbounded",
                 color: Colors.white,
-                fontSize: 20,
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -204,7 +204,7 @@ class LoanInformationScreen extends StatelessWidget {
                 height: 62,
                 decoration: BoxDecoration(
                   color: const Color.fromRGBO(47, 255, 0, 1),
-                  borderRadius: BorderRadius.circular(48),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -226,7 +226,7 @@ class LoanInformationScreen extends StatelessWidget {
                         height: 40,
                         decoration: BoxDecoration(
                           color: const Color.fromRGBO(255, 255, 255, 0.5),
-                          borderRadius: BorderRadius.circular(32),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(
                           Icons.arrow_forward,

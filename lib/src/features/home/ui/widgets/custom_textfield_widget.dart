@@ -101,7 +101,7 @@ class CustomDropDowndWidget extends StatelessWidget {
                 hintText,
                 style: const TextStyle(
                   color: Colors.grey,
-                  fontSize: 20,
+                  fontSize: 15,
                 ),
               ),
               items: options.map((String value) {
@@ -111,7 +111,7 @@ class CustomDropDowndWidget extends StatelessWidget {
                     value,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 20,
+                      fontSize: 15,
                     ),
                   ),
                 );
@@ -131,7 +131,7 @@ class CustomDropDowndWidget extends StatelessWidget {
               ),
               style: const TextStyle(
                 color: Colors.grey,
-                fontSize: 20,
+                fontSize: 15,
               ),
               dropdownColor: Colors.black,
             ),

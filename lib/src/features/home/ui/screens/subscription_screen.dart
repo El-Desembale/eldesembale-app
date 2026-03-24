@@ -66,7 +66,7 @@ class SubscriptionScreen extends StatelessWidget {
               style: TextStyle(
                 fontFamily: "Unbounded",
                 color: Colors.white,
-                fontSize: 30,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -94,7 +94,33 @@ class SubscriptionScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const Spacer(flex: 5),
+            const Spacer(),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white.withOpacity(0.08)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.info_outline, color: Colors.white.withOpacity(0.5), size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      '¿Por qué suscribirse?\nTu suscripción nos ayuda a cubrir los costos operativos de la plataforma y así poder seguir ofreciéndote un servicio confiable y de calidad.',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.55),
+                        fontSize: 13,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Spacer(flex: 2),
             Text(
               'Suscríbete por',
               style: TextStyle(
@@ -109,7 +135,7 @@ class SubscriptionScreen extends StatelessWidget {
               style: TextStyle(
                 fontFamily: "Unbounded",
                 color: Colors.white,
-                fontSize: 40,
+                fontSize: 26,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -140,7 +166,7 @@ class SubscriptionScreen extends StatelessWidget {
                 height: 62,
                 decoration: BoxDecoration(
                   color: const Color.fromRGBO(47, 255, 0, 1),
-                  borderRadius: BorderRadius.circular(48),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -162,7 +188,7 @@ class SubscriptionScreen extends StatelessWidget {
                         height: 40,
                         decoration: BoxDecoration(
                           color: const Color.fromRGBO(255, 255, 255, 0.5),
-                          borderRadius: BorderRadius.circular(32),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(
                           Icons.arrow_forward,

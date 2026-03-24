@@ -159,7 +159,7 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
             style: TextStyle(
               fontFamily: "Unbounded",
               color: Colors.white,
-              fontSize: 20,
+              fontSize: 15,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -188,7 +188,7 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
                                   border: InputBorder.none,
                                 ),
                                 style: const TextStyle(color: Colors.white),
-                                onChanged: (value) => wayType = value,
+                                onChanged: (value) => setState(() => wayType = value),
                               ),
                             ),
                             GestureDetector(
@@ -305,7 +305,7 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
           _inputBox(
             child: TextField(
               controller: _interiorController,
-              onChanged: (value) => interior = value,
+              onChanged: (value) => setState(() => interior = value),
               decoration: InputDecoration(
                 hintText: 'Apartamento, Casa, Piso',
                 hintStyle: TextStyle(color: Colors.white.withOpacity(0.35)),
@@ -328,7 +328,7 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
             ),
             child: TextField(
               controller: _additionalInfoController,
-              onChanged: (value) => additionalInfo = value,
+              onChanged: (value) => setState(() => additionalInfo = value),
               maxLines: null,
               keyboardType: TextInputType.multiline,
               decoration: InputDecoration(
@@ -396,7 +396,7 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
                 color: enabled
                     ? const Color.fromRGBO(47, 255, 0, 1)
                     : Colors.white.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(48),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -420,7 +420,7 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
                         color: enabled
                             ? const Color.fromRGBO(255, 255, 255, 0.5)
                             : Colors.white.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(32),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(Icons.check_circle_outline,
                           color: enabled ? Colors.black : Colors.white.withOpacity(0.3),

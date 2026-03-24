@@ -48,7 +48,7 @@ class CustomUneditableWidget extends StatelessWidget {
                         keyboardType: TextInputType.name,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 20,
+                          fontSize: 15,
                         ),
                         decoration: const InputDecoration(
                           alignLabelWithHint: true,

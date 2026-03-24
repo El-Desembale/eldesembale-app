@@ -33,15 +33,33 @@ class LoginRepositoryImpl implements LoginRepository {
   }
 
   @override
-  Future<Either<ErrorModel, String>> sendOtpVerification({
-    required String phone,
-    required String countryCode,
+  Future<Either<ErrorModel, bool>> sendEmailOtp({
+    required String email,
   }) async {
     try {
       return Right(
-        await _loginService.sendOtpVerification(
+        await _loginService.sendEmailOtp(
+          email: email,
+        ),
+      );
+    } on Exception catch (e) {
+      return Left(
+        ErrorModel(
+          code: 'xxx',
+          message: e.toString().split("Exception:").last,
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<Either<ErrorModel, String?>> getEmailByPhone({
+    required String phone,
+  }) async {
+    try {
+      return Right(
+        await _loginService.getEmailByPhone(
           phone: phone,
-          countryCode: countryCode,
         ),
       );
     } on Exception catch (e) {
@@ -77,14 +95,14 @@ class LoginRepositoryImpl implements LoginRepository {
   }
 
   @override
-  Future<Either<ErrorModel, bool>> verifyOtp({
-    required String verificationId,
+  Future<Either<ErrorModel, bool>> verifyEmailOtp({
+    required String email,
     required String otp,
   }) async {
     try {
       return Right(
-        await _loginService.verifyOtp(
-          verificationId: verificationId,
+        await _loginService.verifyEmailOtp(
+          email: email,
           otp: otp,
         ),
       );

@@ -24,13 +24,15 @@ abstract class LoginRepository {
     required String countryCode,
     required BuildContext context,
   });
-  Future<Either<ErrorModel, String>> sendOtpVerification({
-    required String phone,
-    required String countryCode,
+  Future<Either<ErrorModel, bool>> sendEmailOtp({
+    required String email,
   });
-  Future<Either<ErrorModel, bool>> verifyOtp({
-    required String verificationId,
+  Future<Either<ErrorModel, bool>> verifyEmailOtp({
+    required String email,
     required String otp,
+  });
+  Future<Either<ErrorModel, String?>> getEmailByPhone({
+    required String phone,
   });
   Future<Either<ErrorModel, bool>> newPassword({
     required String phone,
