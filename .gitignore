@@ -50,3 +50,6 @@ app.*.map.json
 .env.local
 .next/
 node_modules/
+
+# Cloud Functions
+functions/node_modules/
