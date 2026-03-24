@@ -4,14 +4,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../config/auth/cubit/auth_cubit.dart';
 import '../../../config/auth/data/models/user_model.dart';
 import '../../../config/routes/routes.dart';
 import '../../../core/di/injection_dependency.dart';
-import '../../../utils/images.dart';
+import '../../../utils/modalbottomsheet.dart';
+import '../domain/use_cases/get_email_by_phone_use_case.dart';
 import '../domain/use_cases/login_use_case.dart';
 import '../domain/use_cases/new_password_use_case.dart';
 import '../domain/use_cases/register_use_case.dart';
@@ -29,6 +29,7 @@ class LoginCubit extends Cubit<LoginState> {
   final SendOtpRecoveryPasswordUseCase _sendOtpVerificationUseCase;
   final VerifyOtpRecoveryPasswordUseCase _verifyOtpUseCase;
   final ChangePasswordUseCase _changePasswordUseCase;
+  final GetEmailByPhoneUseCase _getEmailByPhoneUseCase;
 
   LoginCubit(
     this._loginUseCase,
@@ -37,12 +38,12 @@ class LoginCubit extends Cubit<LoginState> {
     this._changePasswordUseCase,
     this._sendOtpVerificationUseCase,
     this._verifyOtpUseCase,
+    this._getEmailByPhoneUseCase,
   ) : super(
           LoginState(
             isLoading: false,
             otp: "",
             countryCode: "+57",
-            verificationId: "",
           ),
         );
 
@@ -54,7 +55,7 @@ class LoginCubit extends Cubit<LoginState> {
   }) async {
     isLoading(true);
     final response = await _verifyOtpUseCase.call(
-      verificationId: state.verificationId,
+      email: state.otpEmail,
       otp: state.otp,
     );
     return response.fold(
@@ -85,98 +86,16 @@ class LoginCubit extends Cubit<LoginState> {
       (user) {
         isLoading(false);
         updateOtp("");
-        showModalBottomSheet(
-          isDismissible: false,
-          backgroundColor: Colors.black,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero,
-          ),
-          context: context,
-          builder: (context) => Container(
-            height: 400,
-            alignment: Alignment.center,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Spacer(),
-                Container(
-                  height: 64,
-                  width: 64,
-                  padding: const EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(20, 255, 255, 255),
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  child: SvgPicture.asset(
-                    AssetImages.done,
-                  ),
-                ),
-                const Spacer(),
-                const Text(
-                  'Contraseña actualizada',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: "Unbounded",
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const Spacer(),
-                InkWell(
-                  onTap: () async {
-                    context.pop();
-                    context.pop();
-                    context.push(AppRoutes.home);
-                  },
-                  child: Container(
-                    height: 72,
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color.fromRGBO(47, 255, 0, 1),
-                      borderRadius: BorderRadius.circular(48),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.only(left: 25),
-                          child: Text(
-                            'Aceptar',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 16),
-                          child: Container(
-                            width: 72,
-                            height: 55,
-                            decoration: BoxDecoration(
-                              color: const Color.fromARGB(255, 47, 255, 0)
-                                  .withOpacity(0.08),
-                              borderRadius: BorderRadius.circular(32),
-                            ),
-                            child: const Icon(
-                              Icons.check_circle_outlined,
-                              color: Colors.black,
-                              size: 30,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const Spacer(),
-              ],
-            ),
-          ),
+        ModalbottomsheetUtils.successBottomSheet(
+          context,
+          'Contraseña actualizada',
+          'Tu contraseña ha sido cambiada exitosamente.',
+          'Aceptar',
+          () {
+            context.pop();
+            context.pop();
+            context.push(AppRoutes.home);
+          },
         );
       },
     );
@@ -208,129 +127,65 @@ class LoginCubit extends Cubit<LoginState> {
     return response.fold(
       (error) {
         isLoading(false);
+        debugPrint('Register error: $error');
+        if (context.mounted) {
+          ModalbottomsheetUtils.customError(
+            context,
+            'Error en el registro',
+            error,
+          );
+        }
       },
       (user) {
         isLoading(false);
-        showModalBottomSheet(
-          isDismissible: false,
-          backgroundColor: Colors.black,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero,
-          ),
-          context: context,
-          builder: (context) => Container(
-            height: 400,
-            alignment: Alignment.center,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Spacer(),
-                Container(
-                  height: 64,
-                  width: 64,
-                  padding: const EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(20, 255, 255, 255),
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  child: SvgPicture.asset(
-                    AssetImages.done,
-                  ),
-                ),
-                const Spacer(),
-                const Text(
-                  'Registro exitoso',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: "Unbounded",
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const Spacer(),
-                InkWell(
-                  onTap: () async {
-                    await sl<AuthCubit>(instanceName: 'auth').login(
-                      user: user,
-                    );
-                    phoneController.text = "";
-                    passwordController.text = "";
-                    context.pop();
-                    context.go(AppRoutes.home);
-                  },
-                  child: Container(
-                    height: 72,
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color.fromRGBO(47, 255, 0, 1),
-                      borderRadius: BorderRadius.circular(48),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.only(left: 25),
-                          child: Text(
-                            'Aceptar',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 16),
-                          child: Container(
-                            width: 72,
-                            height: 55,
-                            decoration: BoxDecoration(
-                              color: const Color.fromARGB(255, 47, 255, 0)
-                                  .withOpacity(0.08),
-                              borderRadius: BorderRadius.circular(32),
-                            ),
-                            child: const Icon(
-                              Icons.check_circle_outlined,
-                              color: Colors.black,
-                              size: 30,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const Spacer(),
-              ],
-            ),
-          ),
+        ModalbottomsheetUtils.successBottomSheet(
+          context,
+          'Registro exitoso',
+          'Tu cuenta ha sido creada correctamente.',
+          'Aceptar',
+          () async {
+            await sl<AuthCubit>(instanceName: 'auth').login(
+              user: user,
+            );
+            phoneController.text = "";
+            passwordController.text = "";
+            context.pop();
+            context.go(AppRoutes.home);
+          },
         );
       },
     );
   }
 
   Future<bool> sendOtpVerification({
+    required String email,
     required BuildContext context,
   }) async {
     isLoading(true);
+    emit(state.copyWith(otpEmail: email));
     final response = await _sendOtpVerificationUseCase.call(
-      phone: phoneController.text,
-      countryCode: state.countryCode,
+      email: email,
     );
     return response.fold(
       (error) {
         isLoading(false);
         return false;
       },
-      (verificationId) {
-        emit(state.copyWith(verificationId: verificationId));
+      (success) {
         _startTimer();
         isLoading(false);
-        return true;
+        return success;
       },
+    );
+  }
+
+  Future<String?> getEmailByPhone({
+    required String phone,
+  }) async {
+    final response = await _getEmailByPhoneUseCase.call(phone: phone);
+    return response.fold(
+      (error) => null,
+      (email) => email,
     );
   }
 
@@ -435,95 +290,10 @@ class LoginCubit extends Cubit<LoginState> {
   }
 
   void showError(BuildContext context, String error) {
-    showModalBottomSheet(
-      backgroundColor: Colors.black,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
-      ),
-      context: context,
-      builder: (context) => Container(
-        height: 400,
-        alignment: Alignment.center,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Spacer(),
-            Container(
-              height: 64,
-              width: 64,
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(20, 255, 255, 255),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: SvgPicture.asset(
-                AssetImages.cancel,
-              ),
-            ),
-            const Spacer(),
-            const Text(
-              'Contraseña incorrecta',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: "Unbounded",
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const Spacer(),
-            InkWell(
-              onTap: () async {
-                context.pop();
-              },
-              child: Container(
-                height: 72,
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(48),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(left: 25),
-                      child: Text(
-                        'Volver a intentar',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 16),
-                      child: Container(
-                        width: 72,
-                        height: 55,
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 47, 255, 0)
-                              .withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(32),
-                        ),
-                        child: const Icon(
-                          Icons.replay_outlined,
-                          color: Colors.black,
-                          size: 30,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const Spacer(),
-          ],
-        ),
-      ),
+    ModalbottomsheetUtils.customError(
+      context,
+      'Contraseña incorrecta',
+      'La contraseña ingresada no es correcta. Inténtalo de nuevo.',
     );
   }
 
@@ -533,7 +303,6 @@ class LoginCubit extends Cubit<LoginState> {
         isLoading: false,
         otp: "",
         countryCode: "+57",
-        verificationId: "",
       ),
     );
   }

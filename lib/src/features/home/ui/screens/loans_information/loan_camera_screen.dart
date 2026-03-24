@@ -139,7 +139,7 @@ class _LoanCameraScreenState extends State<LoanCameraScreen> {
                         margin: const EdgeInsets.symmetric(horizontal: 20),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(48),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -162,7 +162,7 @@ class _LoanCameraScreenState extends State<LoanCameraScreen> {
                                 decoration: BoxDecoration(
                                   color: const Color.fromARGB(255, 47, 255, 0)
                                       .withOpacity(0.08),
-                                  borderRadius: BorderRadius.circular(32),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: const Icon(
                                   Icons.replay_outlined,
@@ -187,7 +187,7 @@ class _LoanCameraScreenState extends State<LoanCameraScreen> {
                         margin: const EdgeInsets.symmetric(horizontal: 20),
                         decoration: BoxDecoration(
                           color: const Color.fromRGBO(47, 255, 0, 1),
-                          borderRadius: BorderRadius.circular(48),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -210,7 +210,7 @@ class _LoanCameraScreenState extends State<LoanCameraScreen> {
                                 decoration: BoxDecoration(
                                   color:
                                       const Color.fromRGBO(255, 255, 255, 0.5),
-                                  borderRadius: BorderRadius.circular(32),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: const Icon(
                                   Icons.check_circle_outline,

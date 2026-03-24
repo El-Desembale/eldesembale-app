@@ -10,6 +10,10 @@ import '../../../../utils/images.dart';
 import '../../../../utils/modalbottomsheet.dart';
 import '../../cubit/login_cubit.dart';
 import '../widgets/otp_form.dart';
+import 'terms_screen.dart';
+
+const _green = Color.fromRGBO(47, 255, 0, 1);
+const _bg = Color.fromARGB(255, 6, 16, 0);
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({
@@ -22,18 +26,18 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final PageController _pageController = PageController(
-    initialPage: 0,
-  );
+  final PageController _pageController = PageController(initialPage: 0);
   bool obscurePassword = true;
 
   @override
   void initState() {
+    super.initState();
+    widget.loginCubit.phoneController.clear();
+    widget.loginCubit.passwordController.clear();
+    widget.loginCubit.clear();
     _pageController.addListener(() {
-      // Llama a setState cuando la página cambia para actualizar el botón
       setState(() {});
     });
-    super.initState();
   }
 
   @override
@@ -41,7 +45,6 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_pageController.hasClients && _pageController.page != 0) {
       _pageController.jumpTo(0);
     }
-
     _pageController.dispose();
     super.dispose();
   }
@@ -53,55 +56,20 @@ class _LoginScreenState extends State<LoginScreen> {
       listener: (BuildContext context, LoginState state) {},
       builder: (BuildContext context, LoginState state) {
         return GestureDetector(
-          onTap: () {
-            FocusScope.of(context).unfocus();
-          },
+          onTap: () => FocusScope.of(context).unfocus(),
           child: Scaffold(
             extendBodyBehindAppBar: true,
-            floatingActionButton:
-                _pageController.hasClients && _pageController.page! > 0.0
-                    ? IconButton(
-                        onPressed: () {
-                          _pageController.jumpToPage(
-                            0,
-                          );
-                        },
-                        icon: Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 5, horizontal: 15),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.16),
-                            borderRadius: BorderRadius.circular(22),
-                          ),
-                          child: const Icon(
-                            Icons.arrow_back,
-                            color: Colors.white,
-                            size: 30,
-                          ),
-                        ),
-                      )
-                    : null,
-            floatingActionButtonLocation: FloatingActionButtonLocation.startTop,
+            backgroundColor: _bg,
             body: Stack(
               children: [
                 _body(context, state),
-                if (state.isLoading)
-                  Container(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height,
-                    color: Colors.white.withOpacity(0.5),
-                    child: const Center(
-                      child: SizedBox(
-                        width: 50,
-                        height: 50,
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            UIColors.primaryYellow,
-                          ),
-                        ),
-                      ),
-                    ),
+                if (_pageController.hasClients && _pageController.page! > 0.0)
+                  Positioned(
+                    top: MediaQuery.of(context).padding.top + 8,
+                    left: 16,
+                    child: _backButton(),
                   ),
+                if (state.isLoading) _loadingOverlay(),
               ],
             ),
           ),
@@ -110,10 +78,42 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  Widget _backButton() {
+    return GestureDetector(
+      onTap: () => _pageController.jumpToPage(0),
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+      ),
+    );
+  }
+
+  Widget _loadingOverlay() {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: Colors.black.withOpacity(0.6),
+      child: const Center(
+        child: SizedBox(
+          width: 48,
+          height: 48,
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(_green),
+            strokeWidth: 3,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildImage() {
     if (_pageController.hasClients) {
       final currentPage = _pageController.page!;
-
       if (currentPage < 2.0) {
         return Image.asset(AssetImages.login);
       } else if (currentPage == 3.0 || currentPage == 4.0) {
@@ -122,25 +122,24 @@ class _LoginScreenState extends State<LoginScreen> {
         return Image.asset(AssetImages.register);
       }
     }
-
     return Image.asset(AssetImages.login);
   }
 
   Widget _body(BuildContext context, LoginState state) {
+    final isFullPage = _pageController.hasClients &&
+        (_pageController.page! == 3.0 || _pageController.page! == 4.0);
     return Container(
-      decoration: const BoxDecoration(
-        color: Color.fromARGB(255, 6, 16, 0),
-      ),
+      color: _bg,
       child: ListView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        padding: EdgeInsets.zero,
         children: [
-          _buildImage(),
+          if (!isFullPage) _buildImage(),
+          if (isFullPage) SizedBox(height: MediaQuery.of(context).padding.top + 56),
           SizedBox(
-            height: _pageController.hasClients &&
-                    (_pageController.page! == 3.0 ||
-                        _pageController.page! == 4.0)
-                ? MediaQuery.sizeOf(context).height * 0.95
-                : MediaQuery.sizeOf(context).height * 0.5,
+            height: isFullPage
+                ? MediaQuery.sizeOf(context).height * 0.85
+                : MediaQuery.sizeOf(context).height * 0.4,
             child: PageView(
               physics: const NeverScrollableScrollPhysics(),
               controller: _pageController,
@@ -148,8 +147,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 _phoneForm(state),
                 _passwordForm(state),
                 _registerForm(state),
-                _registerCompliteForm(state),
-                _newPassword(state)
+                _registerCompleteForm(state),
+                _newPassword(state),
               ],
             ),
           ),
@@ -158,89 +157,90 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // ─── HEADER HELPER ───
+  Widget _header(String title, String subtitle) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontFamily: "Unbounded",
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            height: 1.15,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          subtitle,
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.white.withOpacity(0.5),
+            height: 1.4,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ═══════════════════════════════════════════
+  // PAGE 0 – Phone
+  // ═══════════════════════════════════════════
   Widget _phoneForm(LoginState state) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.4,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Inicio de sesión",
-            textAlign: TextAlign.start,
-            style: TextStyle(
-              fontFamily: "Unbounded",
-              fontSize: 34,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              height: 1.1,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            "Ingresa tu número de celular",
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white.withOpacity(0.55),
-              height: 1.4,
-            ),
+          _header("Inicia sesión o regístrate", "Ingresa tu número de celular"),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              // Country code
+              Container(
+                width: 110,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white.withOpacity(0.06)),
+                ),
+                child: CountryCodePicker(
+                  padding: EdgeInsets.zero,
+                  boxDecoration: const BoxDecoration(color: Colors.transparent),
+                  backgroundColor: Colors.transparent,
+                  textStyle: const TextStyle(color: Colors.white, fontSize: 15),
+                  onChanged: (country) {
+                    if (country.dialCode != null) {
+                      widget.loginCubit.updateCountryCode(country.dialCode!);
+                    }
+                  },
+                  initialSelection: 'CO',
+                  alignLeft: true,
+                ),
+              ),
+              const SizedBox(width: 10),
+              // Phone input
+              Expanded(
+                child: FloatingLabelInput(
+                  label: "Celular",
+                  icon: Icons.phone_outlined,
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatter(10),
+                    FilteringTextInputFormatter.digitsOnly,
+                  ],
+                  onChanged: (value) => setState(() {}),
+                  controller: widget.loginCubit.phoneController,
+                  keyboardType: TextInputType.phone,
+                ),
+              ),
+            ],
           ),
           const Spacer(),
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: Container(
-                    margin: const EdgeInsets.only(top: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.16),
-                      borderRadius: BorderRadius.circular(22),
-                    ),
-                    child: CountryCodePicker(
-                      padding: EdgeInsets.zero,
-                      boxDecoration: const BoxDecoration(
-                        color: Colors.transparent,
-                      ),
-                      backgroundColor: Colors.transparent,
-                      textStyle: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                      ),
-                      onChanged: (country) {
-                        if (country.dialCode != null) {
-                          widget.loginCubit
-                              .updateCountryCode(country.dialCode!);
-                        }
-                      },
-                      initialSelection: 'CO',
-                      alignLeft: true,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 5,
-                  child: FloatingLabelInput(
-                    label: "Celular",
-                    inputFormatters: [
-                      LengthLimitingTextInputFormatter(10),
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
-                    icon: Icons.phone_outlined,
-                    onChanged: (value) {
-                      setState(() {});
-                    },
-                    controller: widget.loginCubit.phoneController,
-                    keyboardType: TextInputType.phone,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Spacer(),
-          InkWell(
+          _actionButton(
+            enabled: widget.loginCubit.phoneController.text.length >= 10,
             onTap: () async {
               FocusScope.of(context).unfocus();
               if (widget.loginCubit.phoneController.text.length >= 10) {
@@ -250,145 +250,94 @@ class _LoginScreenState extends State<LoginScreen> {
                 );
               }
             },
-            child: _continueButton(
-              enabled: widget.loginCubit.phoneController.text.length >= 10,
-            ),
           ),
-          const Spacer(),
+          const SizedBox(height: 32),
         ],
       ),
     );
   }
 
+  // ═══════════════════════════════════════════
+  // PAGE 1 – Password
+  // ═══════════════════════════════════════════
   Widget _passwordForm(LoginState state) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.4,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Inicio de sesión",
-            textAlign: TextAlign.start,
-            style: TextStyle(
-              fontFamily: "Unbounded",
-              fontSize: 34,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              height: 1.1,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            "Ingresa tu contraseña",
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white.withOpacity(0.55),
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 12),
+          _header("Inicio de sesión", "Ingresa tu contraseña"),
+          const SizedBox(height: 24),
           FloatingLabelInput(
             label: "Contraseña",
-            inputFormatters: [
-              LengthLimitingTextInputFormatter(10),
-              FilteringTextInputFormatter.digitsOnly,
-            ],
             icon: Icons.lock_outline,
-            onChanged: (value) {
-              setState(() {});
-            },
+            inputFormatters: [
+              LengthLimitingTextInputFormatter(20),
+            ],
+            onChanged: (value) => setState(() {}),
             controller: widget.loginCubit.passwordController,
-            keyboardType: TextInputType.phone,
+            keyboardType: TextInputType.visiblePassword,
             obscureText: obscurePassword,
-            onPressedHint: () {
-              setState(() {
-                obscurePassword = !obscurePassword;
-              });
+            onToggleObscure: () {
+              setState(() => obscurePassword = !obscurePassword);
             },
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Align(
             alignment: Alignment.centerRight,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: TextButton(
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 15,
-                  ),
+            child: TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.white.withOpacity(0.06),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                onPressed: () {
-                  context.push(AppRoutes.recoveryPassword);
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              ),
+              onPressed: () => context.push(AppRoutes.recoveryPassword),
+              child: const Text(
+                'Olvidé mi contraseña',
+                style: TextStyle(color: Colors.white70, fontSize: 13),
+              ),
+            ),
+          ),
+          const Spacer(),
+          ValueListenableBuilder(
+            valueListenable: widget.loginCubit.passwordController,
+            builder: (context, value, _) {
+              final enabled = value.text.length >= 8;
+              return _actionButton(
+                enabled: enabled,
+                onTap: () async {
+                  if (enabled) {
+                    FocusScope.of(context).unfocus();
+                    await widget.loginCubit.login(context: context);
+                  }
                 },
-                child: const Text(
-                  'Olvidé mi contraseña',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const Spacer(),
-          InkWell(
-            onTap: () async {
-              setState(() {});
-              if (widget.loginCubit.passwordController.text.length >= 6) {
-                FocusScope.of(context).unfocus();
-                await widget.loginCubit.login(context: context);
-              }
+              );
             },
-            child: _continueButton(
-              enabled: widget.loginCubit.passwordController.text.length >= 6,
-            ),
           ),
-          const Spacer(),
+          const SizedBox(height: 32),
         ],
       ),
     );
   }
 
+  // ═══════════════════════════════════════════
+  // PAGE 2 – OTP
+  // ═══════════════════════════════════════════
   Widget _registerForm(LoginState state) {
     return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-      },
-      child: Container(
-        height: MediaQuery.of(context).size.height * 0.4,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Regístrate",
-              textAlign: TextAlign.start,
-              style: TextStyle(
-                fontFamily: "Unbounded",
-                fontSize: 34,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                height: 1.1,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              "Ingresa el código que te enviamos",
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.white.withOpacity(0.55),
-                height: 1.4,
-              ),
-            ),
+            _header("Regístrate", "Ingresa el código que enviamos a tu correo"),
             const Spacer(),
             Row(
               children: [
                 Expanded(
-                  flex: 1,
                   child: OtpInputWidget(
                     onChanged: widget.loginCubit.updateOtp,
                   ),
@@ -396,7 +345,8 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
             ),
             const Spacer(),
-            InkWell(
+            _actionButton(
+              enabled: state.otp.length == 6,
               onTap: () async {
                 FocusScope.of(context).unfocus();
                 if (state.otp.length == 6) {
@@ -404,467 +354,388 @@ class _LoginScreenState extends State<LoginScreen> {
                     context: context,
                   );
                   if (validated) {
-                    _pageController.nextPage(
-                      duration: const Duration(milliseconds: 500),
-                      curve: Curves.easeIn,
-                    );
+                    _pageController.jumpToPage(4);
                   } else {
-                    ModalbottomsheetUtils.invalidOtp(
-                      context,
-                    );
+                    ModalbottomsheetUtils.invalidOtp(context);
                   }
                 }
                 setState(() {});
               },
-              child: _continueButton(enabled: state.otp.length == 6),
             ),
-            const Spacer(),
+            const SizedBox(height: 32),
           ],
         ),
       ),
     );
   }
 
+  // ═══════════════════════════════════════════
+  // PAGE 3 – Registration form
+  // ═══════════════════════════════════════════
   String name = "";
   String lastName = "";
   String email = "";
-  String documentType = "";
+  String documentType = "CC";
   String documentNumber = "";
   bool checkboxValue = false;
-  get isValid =>
-      !checkboxValue ||
-      name.isEmpty ||
-      lastName.isEmpty ||
-      email.isEmpty ||
-      documentType.isEmpty ||
-      documentNumber.isEmpty;
-  Widget _registerCompliteForm(LoginState state) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.4,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Spacer(),
-          const Text(
-            "Regístrate",
-            textAlign: TextAlign.start,
-            style: TextStyle(
-              fontFamily: "Unbounded",
-              fontSize: 34,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              height: 1.1,
+
+  bool get _isFormValid =>
+      checkboxValue &&
+      name.isNotEmpty &&
+      lastName.isNotEmpty &&
+      email.isNotEmpty &&
+      documentType.isNotEmpty &&
+      documentNumber.isNotEmpty;
+
+  Widget _registerCompleteForm(LoginState state) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 8),
+            _header("Regístrate", "Ingresa tus datos básicos"),
+            const SizedBox(height: 16),
+            FloatingLabelInput(
+              label: "Nombre(s)",
+              icon: Icons.person_outline,
+              inputFormatters: const [],
+              onChanged: (v) { name = v; setState(() {}); },
+              keyboardType: TextInputType.name,
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            "Ingresa tus datos básicos",
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white.withOpacity(0.55),
-              height: 1.4,
+            const SizedBox(height: 12),
+            FloatingLabelInput(
+              label: "Apellido(s)",
+              icon: Icons.person_outline,
+              inputFormatters: const [],
+              onChanged: (v) { lastName = v; setState(() {}); },
+              keyboardType: TextInputType.name,
             ),
-          ),
-          const SizedBox(height: 16),
-          FloatingLabelInput(
-            label: "Nombre (s)",
-            inputFormatters: <TextInputFormatter>[],
-            icon: Icons.person_outline,
-            onChanged: (value) {
-              name = value;
-              setState(() {});
-            },
-            keyboardType: TextInputType.name,
-          ),
-          FloatingLabelInput(
-            label: "Apellido (s)",
-            inputFormatters: const [],
-            icon: Icons.person_outline,
-            onChanged: (value) {
-              lastName = value;
-              setState(() {});
-            },
-            keyboardType: TextInputType.name,
-          ),
-          FloatingLabelInput(
-            label: 'Correo electrónico',
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp('[a-zA-Z0-9@.]')),
-            ],
-            icon: Icons.email_outlined,
-            onChanged: (value) {
-              email = value;
-              setState(() {});
-            },
-            keyboardType: TextInputType.emailAddress,
-          ),
-          const SizedBox(height: 12),
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-              Expanded(
-                flex: 2,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(22),
+            const SizedBox(height: 12),
+            FloatingLabelInput(
+              label: "Correo electrónico",
+              icon: Icons.email_outlined,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp('[a-zA-Z0-9@._+-]')),
+              ],
+              onChanged: (v) { email = v; setState(() {}); },
+              keyboardType: TextInputType.emailAddress,
+            ),
+            const SizedBox(height: 12),
+            // Phone (read-only, verified)
+            Container(
+              height: 52,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white.withOpacity(0.06)),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  const Icon(Icons.phone_outlined, color: Colors.white38, size: 20),
+                  const SizedBox(width: 12),
+                  Text(
+                    "${state.countryCode} ",
+                    style: const TextStyle(color: Colors.white38, fontSize: 15),
                   ),
-                  child: CountryCodePicker(
-                    enabled: false,
-                    padding: EdgeInsets.zero,
-                    boxDecoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(22),
+                  Text(
+                    widget.loginCubit.phoneController.text,
+                    style: const TextStyle(color: Colors.white54, fontSize: 15),
+                  ),
+                  const Spacer(),
+                  const Icon(Icons.check_circle, color: _green, size: 18),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Document type + number
+            Row(
+              children: [
+                Container(
+                  width: 90,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.white.withOpacity(0.06)),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: documentType,
+                      isExpanded: true,
+                      dropdownColor: const Color(0xFF0d1f0d),
+                      icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white30, size: 18),
+                      style: const TextStyle(color: Colors.white, fontSize: 15),
+                      items: ["CC", "TI", "PP"].map((v) {
+                        return DropdownMenuItem(value: v, child: Text(v));
+                      }).toList(),
+                      onChanged: (v) {
+                        if (v != null) setState(() => documentType = v);
+                      },
                     ),
-                    backgroundColor: Colors.transparent,
-                    onChanged: (country) {
-                      if (country.dialCode != null) {
-                        widget.loginCubit.updateCountryCode(country.dialCode!);
-                      }
-                    },
-                    initialSelection: 'CO',
-                    alignLeft: true,
                   ),
                 ),
-              ),
-              Expanded(
-                flex: 5,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(22),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: FloatingLabelInput(
+                    label: "Nº documento",
+                    icon: Icons.badge_outlined,
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(10),
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    onChanged: (v) { documentNumber = v; setState(() {}); },
+                    keyboardType: TextInputType.number,
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 5),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // Terms
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () => setState(() => checkboxValue = !checkboxValue),
                   child: Row(
                     children: [
-                      const SizedBox(width: 20),
-                      const Icon(
-                        Icons.phone_outlined,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              "Celular",
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                            TextFormField(
-                              enabled: false,
-                              onChanged: (value) {
-                                setState(() {});
-                              },
-                              inputFormatters: [
-                                LengthLimitingTextInputFormatter(10),
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                              controller: widget.loginCubit.phoneController,
-                              keyboardType: TextInputType.phone,
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 16,
-                              ),
-                              decoration: const InputDecoration(
-                                alignLabelWithHint: true,
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.auto,
-                                labelStyle: TextStyle(
-                                  color: Colors.white,
-                                ),
-                                fillColor: Colors.transparent,
-                                errorBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                disabledBorder: InputBorder.none,
-                                focusedErrorBorder: InputBorder.none,
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ],
+                      Container(
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: checkboxValue ? _green : Colors.white30,
+                            width: 2,
+                          ),
+                          color: checkboxValue ? _green : Colors.transparent,
                         ),
+                        child: checkboxValue
+                            ? const Icon(Icons.check, size: 14, color: Colors.black)
+                            : null,
                       ),
-                      const SizedBox(width: 20),
-                      const Icon(
-                        Icons.check_circle_outline,
-                        size: 30,
-                        color: Color.fromRGBO(47, 255, 0, 1),
+                      const SizedBox(width: 10),
+                      const Text(
+                        "Acepto los ",
+                        style: TextStyle(color: Colors.white60, fontSize: 13),
                       ),
-                      const SizedBox(width: 20),
                     ],
                   ),
                 ),
-              ),
-            ],
-          ),
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const TermsScreen(),
+                    ),
+                  ),
+                  child: const Text(
+                    "términos y condiciones",
+                    style: TextStyle(
+                      color: _green,
+                      fontSize: 13,
+                      decoration: TextDecoration.underline,
+                      decorationColor: _green,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            _actionButton(
+              enabled: _isFormValid,
+              onTap: () async {
+                FocusScope.of(context).unfocus();
+                if (_isFormValid) {
+                  final sent = await widget.loginCubit.sendOtpVerification(
+                    email: email,
+                    context: context,
+                  );
+                  if (sent) {
+                    _pageController.jumpToPage(2);
+                  }
+                }
+              },
+            ),
+            const SizedBox(height: 32),
+          ],
         ),
-          Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: Container(
-                  margin: const EdgeInsets.only(top: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  child: DropdownButtonFormField(
-                    items: ["CC", "TI", "PP"].map((String value) {
-                      return DropdownMenuItem(
-                        value: value,
-                        child: Text(
-                          value,
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 16,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        documentType = value;
-                      }
-                    },
-                    decoration: const InputDecoration(
-                      contentPadding:
-                          EdgeInsets.symmetric(vertical: 5, horizontal: 20),
-                      filled: true,
-                      fillColor: Colors.transparent,
-                      errorBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      disabledBorder: InputBorder.none,
-                      focusedErrorBorder: InputBorder.none,
-                    ),
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 16,
-                    ),
-                    dropdownColor: const Color.fromARGB(255, 6, 16, 0),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                flex: 5,
-                child: FloatingLabelInput(
-                  label: "Número de documento",
-                  inputFormatters: [
-                    LengthLimitingTextInputFormatter(10),
-                    FilteringTextInputFormatter.digitsOnly,
-                  ],
-                  icon: Icons.person_pin_outlined,
-                  onChanged: (value) {
-                    documentNumber = value;
-                    setState(() {});
-                  },
-                  keyboardType: TextInputType.name,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Checkbox.adaptive(
-                shape: const CircleBorder(),
-                value: checkboxValue,
-                activeColor: const Color.fromRGBO(47, 255, 0, 1),
-                onChanged: (value) {
-                  setState(() {
-                    checkboxValue = value!;
-                  });
-                },
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                checkColor: Colors.transparent,
-                visualDensity: VisualDensity.adaptivePlatformDensity,
-              ),
-              const Text(
-                "Acepto ",
-                style: TextStyle(
-                  color: Colors.white,
-                ),
-              ),
-              const Text(
-                "Terminos y condiciones",
-                style: TextStyle(
-                  color: Colors.white,
-                  decoration: TextDecoration.underline,
-                  decorationColor: Colors.white,
-                ),
-              )
-            ],
-          ),
-          const SizedBox(height: 20),
-          InkWell(
-            onTap: () async {
-              FocusScope.of(context).unfocus();
-              if (!isValid) {
-                _pageController.nextPage(
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.easeIn,
-                );
-              }
-            },
-            child: _continueButton(enabled: !isValid),
-          ),
-        ],
       ),
     );
   }
 
-  Widget _continueButton({required bool enabled}) {
-    return Container(
-      height: 64,
-      decoration: BoxDecoration(
-        color: enabled
-            ? const Color.fromRGBO(47, 255, 0, 1)
-            : Colors.white.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(48),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 25),
-            child: Text(
-              'Continuar',
-              style: TextStyle(
-                color: enabled ? Colors.black : Colors.white.withOpacity(0.3),
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: enabled
-                    ? Colors.black.withOpacity(0.15)
-                    : Colors.white.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(32),
-              ),
-              child: Icon(
-                Icons.arrow_forward_rounded,
-                color: enabled ? Colors.black : Colors.white.withOpacity(0.3),
-                size: 22,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
+  // ═══════════════════════════════════════════
+  // PAGE 4 – Create password
+  // ═══════════════════════════════════════════
   TextEditingController passwordController = TextEditingController();
   TextEditingController passwordConfirmController = TextEditingController();
+
   Widget _newPassword(LoginState state) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.45,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Spacer(),
-          const Text(
-            "Regístrate",
-            textAlign: TextAlign.start,
-            style: TextStyle(
-              fontFamily: "Unbounded",
-              fontSize: 34,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              height: 1.1,
+    final pwd = passwordController.text;
+    final hasMinLength = pwd.length >= 8;
+    final hasLetter = pwd.contains(RegExp(r'[a-zA-Z]'));
+    final hasNumber = pwd.contains(RegExp(r'[0-9]'));
+    final passwordsMatch = pwd.isNotEmpty &&
+        pwd == passwordConfirmController.text;
+    final allValid = hasMinLength && hasLetter && hasNumber && passwordsMatch;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 8),
+            _header("Crea tu contraseña", "Establece una contraseña segura"),
+            const SizedBox(height: 24),
+            FloatingLabelInput(
+              label: "Contraseña",
+              icon: Icons.lock_outline,
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(20),
+              ],
+              onChanged: (value) => setState(() {}),
+              obscureText: obscurePassword,
+              onToggleObscure: () {
+                setState(() => obscurePassword = !obscurePassword);
+              },
+              controller: passwordController,
+              keyboardType: TextInputType.visiblePassword,
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            "Establece tu contraseña",
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white.withOpacity(0.55),
-              height: 1.4,
+            const SizedBox(height: 12),
+            FloatingLabelInput(
+              label: "Confirmar contraseña",
+              icon: Icons.lock_outline,
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(20),
+              ],
+              onChanged: (value) => setState(() {}),
+              obscureText: obscurePassword,
+              onToggleObscure: () {
+                setState(() => obscurePassword = !obscurePassword);
+              },
+              controller: passwordConfirmController,
+              keyboardType: TextInputType.visiblePassword,
             ),
-          ),
-          const SizedBox(height: 20),
-          FloatingLabelInput(
-            label: "Contraseña",
-            inputFormatters: [
-              LengthLimitingTextInputFormatter(10),
-              FilteringTextInputFormatter.digitsOnly,
-            ],
-            icon: Icons.lock_outline,
-            onChanged: (value) {
-              setState(() {});
-            },
-            obscureText: obscurePassword,
-            onPressedHint: () {
-              setState(() {
-                obscurePassword = !obscurePassword;
-              });
-            },
-            controller: passwordController,
-            keyboardType: TextInputType.phone,
-          ),
-          FloatingLabelInput(
-            label: "Confirmar contraseña",
-            inputFormatters: [
-              LengthLimitingTextInputFormatter(10),
-              FilteringTextInputFormatter.digitsOnly,
-            ],
-            icon: Icons.lock_outline,
-            onChanged: (value) {
-              setState(() {});
-            },
-            obscureText: obscurePassword,
-            onPressedHint: () {
-              setState(() {
-                obscurePassword = !obscurePassword;
-              });
-            },
-            controller: passwordConfirmController,
-            keyboardType: TextInputType.phone,
-          ),
-          const SizedBox(height: 30),
-          InkWell(
-            onTap: () async {
-              FocusScope.of(context).unfocus();
-              if (passwordController.text == passwordConfirmController.text) {
-                await widget.loginCubit.register(
-                  context: context,
-                  name: name,
-                  lastName: lastName,
-                  email: email,
-                  documentType: documentType,
-                  documentNumberm: documentNumber,
-                  password: passwordController.text,
-                  countryCode: state.countryCode,
-                  user: widget.loginCubit.phoneController.text,
-                );
-              }
-            },
-            child: _continueButton(
-              enabled: passwordController.text.isNotEmpty &&
-                  passwordController.text == passwordConfirmController.text,
+            const SizedBox(height: 16),
+            _passwordCheck("Mínimo 8 caracteres", hasMinLength),
+            const SizedBox(height: 6),
+            _passwordCheck("Contiene al menos una letra", hasLetter),
+            const SizedBox(height: 6),
+            _passwordCheck("Contiene al menos un número", hasNumber),
+            const SizedBox(height: 6),
+            _passwordCheck("Las contraseñas coinciden", passwordsMatch),
+            const SizedBox(height: 24),
+            _actionButton(
+              enabled: allValid,
+              onTap: () async {
+                FocusScope.of(context).unfocus();
+                if (allValid) {
+                  await widget.loginCubit.register(
+                    context: context,
+                    name: name,
+                    lastName: lastName,
+                    email: email,
+                    documentType: documentType,
+                    documentNumberm: documentNumber,
+                    password: passwordController.text,
+                    countryCode: state.countryCode,
+                    user: widget.loginCubit.phoneController.text,
+                  );
+                }
+              },
             ),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+  // ═══════════════════════════════════════════
+  // PASSWORD CHECK ITEM
+  // ═══════════════════════════════════════════
+  Widget _passwordCheck(String label, bool passed) {
+    return Row(
+      children: [
+        Icon(
+          passed ? Icons.check_circle : Icons.radio_button_unchecked,
+          color: passed ? _green : Colors.white24,
+          size: 18,
+        ),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: TextStyle(
+            color: passed ? Colors.white70 : Colors.white30,
+            fontSize: 12,
           ),
-        ],
+        ),
+      ],
+    );
+  }
+
+  // ═══════════════════════════════════════════
+  // ACTION BUTTON
+  // ═══════════════════════════════════════════
+  Widget _actionButton({
+    required bool enabled,
+    required VoidCallback onTap,
+    String label = "Continuar",
+  }) {
+    return GestureDetector(
+      onTap: enabled ? onTap : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        height: 58,
+        decoration: BoxDecoration(
+          color: enabled ? _green : Colors.white.withOpacity(0.06),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 24),
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: enabled ? Colors.black : Colors.white24,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: enabled
+                      ? Colors.black.withOpacity(0.15)
+                      : Colors.white.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.arrow_forward_rounded,
+                  color: enabled ? Colors.black : Colors.white24,
+                  size: 20,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
+// ═══════════════════════════════════════════
+// REUSABLE INPUT WIDGET
+// ═══════════════════════════════════════════
 class FloatingLabelInput extends StatelessWidget {
   final String label;
   final IconData icon;
@@ -873,7 +744,8 @@ class FloatingLabelInput extends StatelessWidget {
   final List<TextInputFormatter> inputFormatters;
   final bool obscureText;
   final TextEditingController? controller;
-  final void Function()? onPressedHint;
+  final VoidCallback? onToggleObscure;
+  final VoidCallback? onPressedHint;
 
   const FloatingLabelInput({
     super.key,
@@ -884,47 +756,54 @@ class FloatingLabelInput extends StatelessWidget {
     this.controller,
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
+    this.onToggleObscure,
     this.onPressedHint,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(top: 12),
+      height: 52,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.16),
-        borderRadius: BorderRadius.circular(22),
+        color: Colors.white.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withOpacity(0.06)),
       ),
-      child: TextFormField(
-        obscureText: obscureText,
-        controller: controller,
-        onChanged: onChanged,
-        inputFormatters: inputFormatters,
-        keyboardType: keyboardType,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-        ),
-        decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 12,
+      child: Center(
+        child: TextFormField(
+          obscureText: obscureText,
+          controller: controller,
+          onChanged: onChanged,
+          inputFormatters: inputFormatters,
+          keyboardType: keyboardType,
+          textAlignVertical: TextAlignVertical.center,
+          style: const TextStyle(color: Colors.white, fontSize: 15),
+          decoration: InputDecoration(
+            isCollapsed: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            prefixIcon: Padding(
+              padding: const EdgeInsets.only(left: 16, right: 12),
+              child: Icon(icon, color: Colors.white38, size: 20),
+            ),
+            prefixIconConstraints: const BoxConstraints(minHeight: 0, minWidth: 0),
+            suffixIcon: (onToggleObscure ?? onPressedHint) != null
+                ? Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: IconButton(
+                      icon: Icon(
+                        obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        color: Colors.white30,
+                        size: 20,
+                      ),
+                      onPressed: onToggleObscure ?? onPressedHint,
+                    ),
+                  )
+                : null,
+            suffixIconConstraints: const BoxConstraints(minHeight: 0, minWidth: 0),
+            hintText: label,
+            hintStyle: TextStyle(color: Colors.white.withOpacity(0.25), fontSize: 14),
+            border: InputBorder.none,
           ),
-          prefixIcon: Icon(icon, color: Colors.white),
-          suffixIcon: onPressedHint != null
-              ? IconButton(
-                  icon: Icon(
-                      obscureText
-                          ? Icons.remove_red_eye_sharp
-                          : Icons.remove_red_eye_outlined,
-                      color: Colors.white),
-                  onPressed: onPressedHint ?? () {},
-                )
-              : null,
-          labelText: label,
-          labelStyle: const TextStyle(color: Colors.white),
-          border: InputBorder.none,
-          floatingLabelBehavior: FloatingLabelBehavior.auto,
         ),
       ),
     );

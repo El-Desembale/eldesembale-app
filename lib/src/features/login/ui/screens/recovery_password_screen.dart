@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../utils/colors.dart';
+import '../../../../utils/images.dart';
 import '../../../../utils/modalbottomsheet.dart';
 import '../../cubit/login_cubit.dart';
 import '../widgets/otp_form.dart';
@@ -23,6 +24,16 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
   final PageController _pageController = PageController(initialPage: 0);
   bool obscurePassword = true;
   bool _otpSent = false;
+  String? _userEmail;
+
+  String get _maskedEmail {
+    if (_userEmail == null || !_userEmail!.contains('@')) return '';
+    final parts = _userEmail!.split('@');
+    final name = parts[0];
+    final domain = parts[1];
+    if (name.length <= 2) return '${name[0]}***@$domain';
+    return '${name[0]}${'*' * (name.length - 2)}${name[name.length - 1]}@$domain';
+  }
 
   @override
   void initState() {
@@ -33,7 +44,25 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
   }
 
   Future<void> _sendOtp() async {
-    final sent = await widget.loginCubit.sendOtpVerification(context: context);
+    // First get the email associated with this phone
+    final email = await widget.loginCubit.getEmailByPhone(
+      phone: widget.loginCubit.phoneController.text,
+    );
+    if (email == null || email.isEmpty) {
+      if (mounted) {
+        ModalbottomsheetUtils.customError(
+          context,
+          'Correo no encontrado',
+          'No se encontró un correo asociado a este número.',
+        );
+      }
+      return;
+    }
+    _userEmail = email;
+    final sent = await widget.loginCubit.sendOtpVerification(
+      email: email,
+      context: context,
+    );
     if (mounted) {
       setState(() {
         _otpSent = sent;
@@ -120,13 +149,9 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
         ),
         child: ListView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: EdgeInsets.zero,
           children: [
-            SizedBox(
-              height: MediaQuery.sizeOf(context).height * 0.45,
-              child: const Column(
-                children: [],
-              ),
-            ),
+            Image.asset(AssetImages.login),
             SizedBox(
               height: MediaQuery.sizeOf(context).height * 0.5,
               child: PageView(
@@ -156,11 +181,12 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
             alignment: Alignment.centerLeft,
             padding: const EdgeInsets.only(left: 5),
             child: const Text(
-              "Recupera tu\ncontraseña",
+              "Recupera tu contraseña",
               textAlign: TextAlign.start,
+              maxLines: 1,
               style: TextStyle(
                 fontFamily: "Unbounded",
-                fontSize: 40,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
@@ -173,7 +199,7 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
               "Establece tu contraseña",
               textAlign: TextAlign.start,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: Color.fromARGB(200, 243, 248, 241),
               ),
@@ -183,15 +209,14 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
           FloatingLabelInput(
             label: "Contraseña",
             inputFormatters: [
-              LengthLimitingTextInputFormatter(10),
-              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(20),
             ],
             icon: Icons.lock_outline,
             onChanged: (value) {
               setState(() {});
             },
             controller: passwordController,
-            keyboardType: TextInputType.phone,
+            keyboardType: TextInputType.visiblePassword,
             obscureText: obscurePassword,
             onPressedHint: () {
               setState(() {
@@ -199,18 +224,18 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
               });
             },
           ),
+          const SizedBox(height: 8),
           FloatingLabelInput(
             label: "Confirmar contraseña",
             inputFormatters: [
-              LengthLimitingTextInputFormatter(10),
-              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(20),
             ],
             icon: Icons.lock_outline,
             onChanged: (value) {
               setState(() {});
             },
             controller: passwordConfirmController,
-            keyboardType: TextInputType.phone,
+            keyboardType: TextInputType.visiblePassword,
             obscureText: obscurePassword,
             onPressedHint: () {
               setState(() {
@@ -218,16 +243,28 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
               });
             },
           ),
+          const SizedBox(height: 12),
+          _buildPasswordCheck("Mínimo 8 caracteres", passwordController.text.length >= 8),
+          const SizedBox(height: 4),
+          _buildPasswordCheck("Contiene al menos una letra", passwordController.text.contains(RegExp(r'[a-zA-Z]'))),
+          const SizedBox(height: 4),
+          _buildPasswordCheck("Contiene al menos un número", passwordController.text.contains(RegExp(r'[0-9]'))),
+          const SizedBox(height: 4),
+          _buildPasswordCheck("Las contraseñas coinciden", passwordController.text.isNotEmpty && passwordController.text == passwordConfirmController.text),
           const Spacer(),
           InkWell(
             onTap: () async {
+              final pwd = passwordController.text;
+              final valid = pwd.length >= 8 &&
+                  pwd.contains(RegExp(r'[a-zA-Z]')) &&
+                  pwd.contains(RegExp(r'[0-9]')) &&
+                  pwd == passwordConfirmController.text;
+              if (!valid) return;
               FocusScope.of(context).unfocus();
-              if (passwordController.text == passwordConfirmController.text) {
-                await widget.loginCubit.changePassword(
-                  context: context,
-                  password: passwordController.text,
-                );
-              }
+              await widget.loginCubit.changePassword(
+                context: context,
+                password: pwd,
+              );
             },
             child: Container(
               height: 72,
@@ -235,25 +272,33 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
                 horizontal: 10,
               ),
               decoration: BoxDecoration(
-                color: passwordController.text != passwordConfirmController.text
-                    ? Colors.white.withOpacity(0.08)
-                    : const Color.fromRGBO(47, 255, 0, 1),
-                borderRadius: BorderRadius.circular(48),
+                color: (passwordController.text.length >= 8 &&
+                        passwordController.text.contains(RegExp(r'[a-zA-Z]')) &&
+                        passwordController.text.contains(RegExp(r'[0-9]')) &&
+                        passwordController.text == passwordConfirmController.text)
+                    ? const Color.fromRGBO(47, 255, 0, 1)
+                    : Colors.white.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(left: 25),
-                    child: Text(
-                      'Continuar',
-                      style: TextStyle(
-                        color: passwordController.text !=
-                                passwordConfirmController.text
-                            ? Colors.white.withOpacity(0.16)
-                            : Colors.black,
-                        fontSize: 16,
-                      ),
+                    child: Builder(
+                      builder: (context) {
+                        final valid = passwordController.text.length >= 8 &&
+                            passwordController.text.contains(RegExp(r'[a-zA-Z]')) &&
+                            passwordController.text.contains(RegExp(r'[0-9]')) &&
+                            passwordController.text == passwordConfirmController.text;
+                        return Text(
+                          'Continuar',
+                          style: TextStyle(
+                            color: valid ? Colors.black : Colors.white.withOpacity(0.16),
+                            fontSize: 16,
+                          ),
+                        );
+                      },
                     ),
                   ),
                   Padding(
@@ -262,11 +307,13 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
                       width: 72,
                       height: 55,
                       decoration: BoxDecoration(
-                        color: passwordController.text !=
-                                passwordConfirmController.text
-                            ? Colors.white.withOpacity(0.16)
-                            : const Color.fromRGBO(255, 255, 255, 0.5),
-                        borderRadius: BorderRadius.circular(32),
+                        color: (passwordController.text.length >= 8 &&
+                                passwordController.text.contains(RegExp(r'[a-zA-Z]')) &&
+                                passwordController.text.contains(RegExp(r'[0-9]')) &&
+                                passwordController.text == passwordConfirmController.text)
+                            ? const Color.fromRGBO(255, 255, 255, 0.5)
+                            : Colors.white.withOpacity(0.16),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
                         Icons.arrow_forward,
@@ -294,11 +341,12 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
             alignment: Alignment.centerLeft,
             padding: const EdgeInsets.only(left: 5),
             child: const Text(
-              "Recupera tu\ncontraseña",
+              "Recupera tu contraseña",
               textAlign: TextAlign.start,
+              maxLines: 1,
               style: TextStyle(
                 fontFamily: "Unbounded",
-                fontSize: 40,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
@@ -309,11 +357,11 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
             padding: const EdgeInsets.only(left: 5),
             child: Text(
               _otpSent
-                  ? "Ingresa el código que te enviamos al ${state.countryCode} ${widget.loginCubit.phoneController.text}"
-                  : "Te enviaremos un código al ${state.countryCode} ${widget.loginCubit.phoneController.text}",
+                  ? "Ingresa el código que enviamos a $_maskedEmail"
+                  : "Te enviaremos un código a tu correo electrónico registrado",
               textAlign: TextAlign.start,
               style: const TextStyle(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: Color.fromARGB(200, 243, 248, 241),
               ),
@@ -359,7 +407,7 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
                 color: _otpSent && state.otp.length != 6
                     ? Colors.white.withOpacity(0.08)
                     : const Color.fromRGBO(47, 255, 0, 1),
-                borderRadius: BorderRadius.circular(48),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -385,7 +433,7 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
                         color: _otpSent && state.otp.length != 6
                             ? Colors.white.withOpacity(0.16)
                             : const Color.fromRGBO(255, 255, 255, 0.5),
-                        borderRadius: BorderRadius.circular(32),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(
                         _otpSent ? Icons.arrow_forward : Icons.send_outlined,
@@ -401,6 +449,26 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
           const Spacer(),
         ],
       ),
+    );
+  }
+
+  Widget _buildPasswordCheck(String label, bool passed) {
+    return Row(
+      children: [
+        Icon(
+          passed ? Icons.check_circle : Icons.radio_button_unchecked,
+          color: passed ? const Color.fromRGBO(47, 255, 0, 1) : Colors.white24,
+          size: 18,
+        ),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: TextStyle(
+            color: passed ? Colors.white70 : Colors.white30,
+            fontSize: 12,
+          ),
+        ),
+      ],
     );
   }
 }

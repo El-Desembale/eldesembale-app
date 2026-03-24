@@ -55,7 +55,7 @@ class AccountInformationScreen extends StatelessWidget {
               "Datos personales",
               textAlign: TextAlign.start,
               style: TextStyle(
-                fontSize: 30,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
@@ -123,7 +123,7 @@ class AccountInformationScreen extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: const Color.fromRGBO(47, 255, 0, 1),
-                borderRadius: BorderRadius.circular(48),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -145,7 +145,7 @@ class AccountInformationScreen extends StatelessWidget {
                       height: 55,
                       decoration: BoxDecoration(
                         color: const Color.fromRGBO(255, 255, 255, 0.5),
-                        borderRadius: BorderRadius.circular(32),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
                         Icons.arrow_forward,

@@ -20,6 +20,7 @@ import '../../features/login/domain/repositories/login_repository.dart';
 import '../../features/login/domain/use_cases/login_use_case.dart';
 import '../../features/login/domain/use_cases/new_password_use_case.dart';
 import '../../features/login/domain/use_cases/register_use_case.dart';
+import '../../features/login/domain/use_cases/get_email_by_phone_use_case.dart';
 import '../../features/login/domain/use_cases/send_otp_verification_use_case.dart';
 import '../../features/login/domain/use_cases/validate_phone_use_case.dart';
 import '../../features/login/domain/use_cases/verift_otp_use_case.dart';
@@ -46,7 +47,7 @@ class Dependencies {
       () => HomeCubit(sl(), sl(), sl(), sl(), sl(), sl()),
     );
     sl.registerFactory(
-      () => LoginCubit(sl(), sl(), sl(), sl(), sl(), sl()),
+      () => LoginCubit(sl(), sl(), sl(), sl(), sl(), sl(), sl()),
     );
   }
 
@@ -78,6 +79,9 @@ class Dependencies {
     );
     sl.registerLazySingleton(
       () => ChangePasswordUseCase(sl()),
+    );
+    sl.registerLazySingleton(
+      () => GetEmailByPhoneUseCase(sl()),
     );
     sl.registerLazySingleton(
       () => GetLimitsUseCase(sl()),

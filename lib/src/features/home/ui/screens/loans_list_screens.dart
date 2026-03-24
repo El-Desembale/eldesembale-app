@@ -135,7 +135,7 @@ class _LoansListScreenState extends State<LoansListScreen> {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.06),
-                borderRadius: BorderRadius.circular(32),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: SvgPicture.asset(
                 AssetImages.request,
@@ -174,12 +174,12 @@ class _LoansListScreenState extends State<LoansListScreen> {
                   context.go(AppRoutes.home);
                 }
               },
-              borderRadius: BorderRadius.circular(48),
+              borderRadius: BorderRadius.circular(12),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
                 decoration: BoxDecoration(
                   color: const Color.fromRGBO(47, 255, 0, 1),
-                  borderRadius: BorderRadius.circular(48),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Text(
                   'Solicitar préstamo',
@@ -235,7 +235,7 @@ class _LoansListScreenState extends State<LoansListScreen> {
                       NumberFormat("#,##0", "en_US").format(loan.amount),
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 30,
+                        fontSize: 22,
                         fontFamily: "Unbounded",
                       ),
                     ),

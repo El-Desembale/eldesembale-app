@@ -100,7 +100,7 @@ class _LoanBankAccountScreenState extends State<LoanBankAccountScreen> {
               style: TextStyle(
                 fontFamily: "Unbounded",
                 color: Colors.white,
-                fontSize: 20,
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -112,9 +112,8 @@ class _LoanBankAccountScreenState extends State<LoanBankAccountScreen> {
               title: 'Nombre (s)',
               hintText: 'Ingresa tu nombre',
               onChanged: (value) {
-                if (value.isNotEmpty) {
-                  name = value;
-                }
+                name = value;
+                setState(() {});
               },
             ),
             const SizedBox(height: 15),
@@ -123,17 +122,17 @@ class _LoanBankAccountScreenState extends State<LoanBankAccountScreen> {
               title: 'Apellido (s)',
               hintText: 'Ingresa tu apellido ',
               onChanged: (value) {
-                if (value.isNotEmpty) {
-                  lastName = value;
-                }
+                lastName = value;
+                setState(() {});
               },
             ),
             const SizedBox(height: 15),
             CustomDropDowndWidget(
               hintText: "Tipo de documento",
               onChanged: (value) {
-                if (value != null && value.isNotEmpty) {
+                if (value != null) {
                   documentType = value;
+                  setState(() {});
                 }
               },
               options: const [
@@ -148,17 +147,17 @@ class _LoanBankAccountScreenState extends State<LoanBankAccountScreen> {
               hintText: 'Ingresa tu número de documento',
               onlyNumber: true,
               onChanged: (value) {
-                if (value.isNotEmpty) {
-                  documentNumber = value;
-                }
+                documentNumber = value;
+                setState(() {});
               },
             ),
             const SizedBox(height: 15),
             CustomDropDowndWidget(
               hintText: "Selecciona tu banco",
               onChanged: (value) {
-                if (value != null && value.isNotEmpty) {
+                if (value != null) {
                   bank = value;
+                  setState(() {});
                 }
               },
               options: Utils.listOfBanks,
@@ -167,8 +166,9 @@ class _LoanBankAccountScreenState extends State<LoanBankAccountScreen> {
             CustomDropDowndWidget(
               hintText: "Tipo de cuenta",
               onChanged: (value) {
-                if (value != null && value.isNotEmpty) {
+                if (value != null) {
                   accountType = value;
+                  setState(() {});
                 }
               },
               options: const [
@@ -182,9 +182,8 @@ class _LoanBankAccountScreenState extends State<LoanBankAccountScreen> {
               title: 'Número de cuenta',
               hintText: 'Ingresa tu número de cuenta',
               onChanged: (value) {
-                if (value.isNotEmpty) {
-                  accountNumber = value;
-                }
+                accountNumber = value;
+                setState(() {});
               },
             ),
             SizedBox(
@@ -192,7 +191,6 @@ class _LoanBankAccountScreenState extends State<LoanBankAccountScreen> {
             ),
             GestureDetector(
               onTap: () {
-                setState(() {});
                 if (isFormValid) {
                   widget.homeCubit.setBankAccount(LoanBankAccountEntity(
                     bankName: bank,
@@ -219,35 +217,38 @@ class _LoanBankAccountScreenState extends State<LoanBankAccountScreen> {
                 decoration: BoxDecoration(
                   color: isFormValid
                       ? const Color.fromRGBO(47, 255, 0, 1)
-                      : const Color.fromRGBO(47, 255, 0, 0.5),
-                  borderRadius: BorderRadius.circular(48),
+                      : Colors.white.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.only(left: 25),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 25),
                       child: Text(
                         'Actualizar',
                         style: TextStyle(
-                          color: Colors.black,
+                          color: isFormValid ? Colors.black : Colors.white24,
                           fontSize: 15,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(right: 16),
                       child: Container(
-                        width: 62,
-                        height: 40,
+                        width: 46,
+                        height: 38,
                         decoration: BoxDecoration(
-                          color: const Color.fromRGBO(255, 255, 255, 0.5),
-                          borderRadius: BorderRadius.circular(32),
+                          color: isFormValid
+                              ? Colors.black.withOpacity(0.1)
+                              : Colors.white.withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(
-                          Icons.arrow_forward,
-                          color: Colors.black,
-                          size: 30,
+                        child: Icon(
+                          Icons.arrow_forward_rounded,
+                          color: isFormValid ? Colors.black : Colors.white24,
+                          size: 22,
                         ),
                       ),
                     ),

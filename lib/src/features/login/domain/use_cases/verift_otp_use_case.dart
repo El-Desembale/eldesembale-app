@@ -11,11 +11,11 @@ class VerifyOtpRecoveryPasswordUseCase {
   );
 
   Future<Either<ErrorModel, bool>> call({
-    required String verificationId,
+    required String email,
     required String otp,
   }) async {
-    return await _loginRepository.verifyOtp(
-      verificationId: verificationId,
+    return await _loginRepository.verifyEmailOtp(
+      email: email,
       otp: otp,
     );
   }

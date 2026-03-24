@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../config/auth/cubit/auth_cubit.dart';
+import '../../../../core/di/injection_dependency.dart';
 import '../../../../utils/colors.dart';
 import '../../cubit/home_cubit.dart';
 import '../../data/entities/loan_request_entity.dart';
@@ -21,21 +23,34 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _amountController = TextEditingController();
 
   @override
   initState() {
-    widget.homeCubit.getLimits();
-    widget.homeCubit.getLoans();
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _refreshData();
     _amountController.text = NumberFormat('#,##0', 'en_US')
         .format(widget.homeCubit.state.totalLoanAmount.toInt());
-    super.initState();
+  }
+
+  void _refreshData() {
+    widget.homeCubit.getLimits();
+    widget.homeCubit.getLoans();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _refreshData();
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _amountController.dispose();
     super.dispose();
   }
@@ -123,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                  SizedBox(height: MediaQuery.of(context).padding.top + 72),
+                  SizedBox(height: MediaQuery.of(context).padding.top + 90),
                   const Text(
                     '¿Cuánto necesitas?',
                     style: TextStyle(
@@ -153,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: TextStyle(
                             fontFamily: 'Unbounded',
                             color: Colors.white.withOpacity(0.35),
-                            fontSize: 20,
+                            fontSize: 15,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -414,7 +429,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ? Colors.white.withOpacity(0.6)
         : const Color.fromRGBO(47, 255, 0, 1);
     return GestureDetector(
-      onTap: () => context.go(AppRoutes.loansList),
+      onTap: () async {
+        await context.push(AppRoutes.loansList);
+        _refreshData();
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
@@ -483,14 +501,24 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _goToLoanOrSubscription(BuildContext context) async {
+    final isSubscribed = sl<AuthCubit>(instanceName: 'auth').state.user.isSubscribed;
+    if (isSubscribed) {
+      await context.push(AppRoutes.loanInformation);
+    } else {
+      await context.push(AppRoutes.subscrption);
+    }
+    _refreshData();
+  }
+
   Widget _buildNewRequestButton(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push(AppRoutes.loanInformation),
+      onTap: () => _goToLoanOrSubscription(context),
       child: Container(
         height: 62,
         decoration: BoxDecoration(
           color: const Color.fromRGBO(47, 255, 0, 1),
-          borderRadius: BorderRadius.circular(48),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -513,7 +541,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: 38,
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
                   Icons.arrow_forward_rounded,
@@ -559,7 +587,7 @@ class _HomeScreenState extends State<HomeScreen> {
           height: 62,
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.06),
-            borderRadius: BorderRadius.circular(48),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.white.withOpacity(0.08)),
           ),
           child: Row(
@@ -583,7 +611,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 38,
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
                     Icons.lock_outline_rounded,
@@ -661,7 +689,7 @@ class _HomeScreenState extends State<HomeScreen> {
             height: 62,
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.06),
-              borderRadius: BorderRadius.circular(48),
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.white.withOpacity(0.08)),
             ),
             child: Row(
@@ -685,7 +713,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     height: 38,
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
                       Icons.lock_outline_rounded,
@@ -714,12 +742,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Sin solicitudes activas: mostrar solo el botón
     return GestureDetector(
-      onTap: () => context.push(AppRoutes.loanInformation),
+      onTap: () => _goToLoanOrSubscription(context),
       child: Container(
         height: 62,
         decoration: BoxDecoration(
           color: const Color.fromRGBO(47, 255, 0, 1),
-          borderRadius: BorderRadius.circular(48),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -742,7 +770,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: 38,
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
                   Icons.arrow_forward_rounded,

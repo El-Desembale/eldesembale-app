@@ -90,7 +90,7 @@ class Utils {
           vertical: 20,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.0),
+          borderRadius: BorderRadius.circular(12.0),
         ),
       ),
       onPressed: onPressed,
@@ -117,7 +117,7 @@ class Utils {
             offset: Offset(0, 0),
           ),
         ],
-        borderRadius: BorderRadius.circular(25.0),
+        borderRadius: BorderRadius.circular(12.0),
       ),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
@@ -128,7 +128,7 @@ class Utils {
             vertical: 15,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25.0),
+            borderRadius: BorderRadius.circular(12.0),
           ),
         ),
         onPressed: onPressed,
@@ -136,7 +136,7 @@ class Utils {
           text,
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 20.0,
+            fontSize: 15.0,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -153,7 +153,7 @@ class Utils {
           vertical: 15,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(25.0),
+          borderRadius: BorderRadius.circular(12.0),
         ),
         shadowColor: Colors.white,
         elevation: 2,
@@ -163,7 +163,7 @@ class Utils {
         text,
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 20.0,
+          fontSize: 15.0,
         ),
       ),
     );
@@ -172,7 +172,7 @@ class Utils {
   static Decoration defaultContainerDecoration() {
     return BoxDecoration(
       color: UIColors.primaryBlack,
-      borderRadius: BorderRadius.circular(25.0),
+      borderRadius: BorderRadius.circular(12.0),
       border: Border.all(
         color: Colors.black,
         width: 2,

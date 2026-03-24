@@ -39,7 +39,7 @@ class ModalbottomsheetUtils {
                 style: TextStyle(
                   fontFamily: 'Unbounded',
                   color: Colors.white,
-                  fontSize: 20,
+                  fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -98,7 +98,7 @@ class ModalbottomsheetUtils {
                 style: const TextStyle(
                   fontFamily: 'Unbounded',
                   color: Colors.white,
-                  fontSize: 20,
+                  fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -160,7 +160,7 @@ class ModalbottomsheetUtils {
                 style: const TextStyle(
                   fontFamily: 'Unbounded',
                   color: Colors.white,
-                  fontSize: 20,
+                  fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -242,7 +242,7 @@ class ModalbottomsheetUtils {
                   height: 62,
                   decoration: BoxDecoration(
                     color: _green,
-                    borderRadius: BorderRadius.circular(48),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -265,7 +265,7 @@ class ModalbottomsheetUtils {
                           height: 46,
                           decoration: BoxDecoration(
                             color: const Color.fromRGBO(255, 255, 255, 0.4),
-                            borderRadius: BorderRadius.circular(32),
+                            borderRadius: BorderRadius.circular(10),
                           ),
                           child: const Icon(Icons.list_alt_outlined, color: Colors.black, size: 26),
                         ),
@@ -284,7 +284,7 @@ class ModalbottomsheetUtils {
                   height: 62,
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.07),
-                    borderRadius: BorderRadius.circular(48),
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.white.withOpacity(0.12)),
                   ),
                   child: Row(
@@ -307,7 +307,7 @@ class ModalbottomsheetUtils {
                           height: 46,
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(32),
+                            borderRadius: BorderRadius.circular(10),
                           ),
                           child: Icon(Icons.home_outlined, color: Colors.white.withOpacity(0.6), size: 26),
                         ),
@@ -336,7 +336,7 @@ class ModalbottomsheetUtils {
         height: 62,
         decoration: BoxDecoration(
           color: color,
-          borderRadius: BorderRadius.circular(48),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -355,7 +355,7 @@ class ModalbottomsheetUtils {
                 height: 46,
                 decoration: BoxDecoration(
                   color: textColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(32),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, color: textColor, size: 24),
               ),
