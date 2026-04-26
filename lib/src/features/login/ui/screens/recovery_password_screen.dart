@@ -6,9 +6,10 @@ import 'package:go_router/go_router.dart';
 import '../../../../utils/colors.dart';
 import '../../../../utils/images.dart';
 import '../../../../utils/modalbottomsheet.dart';
+import '../../../shared/widgets/floating_label_input.dart';
+import '../../../shared/widgets/primary_action_button.dart';
 import '../../cubit/login_cubit.dart';
 import '../widgets/otp_form.dart';
-import 'login_screen.dart';
 
 class RecoveryPasswordScreen extends StatefulWidget {
   const RecoveryPasswordScreen({
@@ -252,79 +253,26 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
           const SizedBox(height: 4),
           _buildPasswordCheck("Las contraseñas coinciden", passwordController.text.isNotEmpty && passwordController.text == passwordConfirmController.text),
           const Spacer(),
-          InkWell(
-            onTap: () async {
+          Builder(
+            builder: (context) {
               final pwd = passwordController.text;
               final valid = pwd.length >= 8 &&
                   pwd.contains(RegExp(r'[a-zA-Z]')) &&
                   pwd.contains(RegExp(r'[0-9]')) &&
                   pwd == passwordConfirmController.text;
-              if (!valid) return;
-              FocusScope.of(context).unfocus();
-              await widget.loginCubit.changePassword(
-                context: context,
-                password: pwd,
+              return PrimaryActionButton(
+                label: 'Continuar',
+                enabled: valid,
+                onTap: () async {
+                  if (!valid) return;
+                  FocusScope.of(context).unfocus();
+                  await widget.loginCubit.changePassword(
+                    context: context,
+                    password: pwd,
+                  );
+                },
               );
             },
-            child: Container(
-              height: 72,
-              margin: const EdgeInsets.symmetric(
-                horizontal: 10,
-              ),
-              decoration: BoxDecoration(
-                color: (passwordController.text.length >= 8 &&
-                        passwordController.text.contains(RegExp(r'[a-zA-Z]')) &&
-                        passwordController.text.contains(RegExp(r'[0-9]')) &&
-                        passwordController.text == passwordConfirmController.text)
-                    ? const Color.fromRGBO(47, 255, 0, 1)
-                    : Colors.white.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 25),
-                    child: Builder(
-                      builder: (context) {
-                        final valid = passwordController.text.length >= 8 &&
-                            passwordController.text.contains(RegExp(r'[a-zA-Z]')) &&
-                            passwordController.text.contains(RegExp(r'[0-9]')) &&
-                            passwordController.text == passwordConfirmController.text;
-                        return Text(
-                          'Continuar',
-                          style: TextStyle(
-                            color: valid ? Colors.black : Colors.white.withOpacity(0.16),
-                            fontSize: 16,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: Container(
-                      width: 72,
-                      height: 55,
-                      decoration: BoxDecoration(
-                        color: (passwordController.text.length >= 8 &&
-                                passwordController.text.contains(RegExp(r'[a-zA-Z]')) &&
-                                passwordController.text.contains(RegExp(r'[0-9]')) &&
-                                passwordController.text == passwordConfirmController.text)
-                            ? const Color.fromRGBO(255, 255, 255, 0.5)
-                            : Colors.white.withOpacity(0.16),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.arrow_forward,
-                        color: Colors.black,
-                        size: 30,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
         ],
       ),
@@ -380,7 +328,10 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
               ],
             ),
           const Spacer(),
-          InkWell(
+          PrimaryActionButton(
+            label: _otpSent ? 'Continuar' : 'Enviar código',
+            icon: _otpSent ? Icons.arrow_forward : Icons.send_outlined,
+            enabled: !_otpSent || state.otp.length == 6,
             onTap: () async {
               FocusScope.of(context).unfocus();
               if (!_otpSent) {
@@ -400,51 +351,6 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
               }
               setState(() {});
             },
-            child: Container(
-              height: 72,
-              margin: const EdgeInsets.symmetric(horizontal: 10),
-              decoration: BoxDecoration(
-                color: _otpSent && state.otp.length != 6
-                    ? Colors.white.withOpacity(0.08)
-                    : const Color.fromRGBO(47, 255, 0, 1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 25),
-                    child: Text(
-                      _otpSent ? 'Continuar' : 'Enviar código',
-                      style: TextStyle(
-                        color: _otpSent && state.otp.length != 6
-                            ? Colors.white.withOpacity(0.16)
-                            : Colors.black,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: Container(
-                      width: 72,
-                      height: 55,
-                      decoration: BoxDecoration(
-                        color: _otpSent && state.otp.length != 6
-                            ? Colors.white.withOpacity(0.16)
-                            : const Color.fromRGBO(255, 255, 255, 0.5),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        _otpSent ? Icons.arrow_forward : Icons.send_outlined,
-                        color: Colors.black,
-                        size: 26,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
           const Spacer(),
         ],
