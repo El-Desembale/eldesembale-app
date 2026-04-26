@@ -81,6 +81,17 @@ class DrawerWidget extends StatelessWidget {
                     context.go(AppRoutes.login);
                   },
                 ),
+                const Spacer(),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: Text(
+                    "Versión 1.0.1",
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.45),
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

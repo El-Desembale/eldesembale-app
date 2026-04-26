@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 
 import 'package:flutter/material.dart';
@@ -6,12 +7,64 @@ import 'package:go_router/go_router.dart';
 import '../../../../config/auth/cubit/auth_cubit.dart';
 import '../../../../config/auth/data/models/user_model.dart';
 import '../../../../core/di/injection_dependency.dart';
-import '../../../../utils/colors.dart';
+import '../../../../utils/design_tokens.dart';
 import '../../../../utils/modalbottomsheet.dart';
+import '../../../shared/widgets/back_circle_button.dart';
+import '../../../shared/widgets/primary_action_button.dart';
 import '../widgets/custon_uneditable_textfield_widget.dart';
 
-class AccountInformationScreen extends StatelessWidget {
+class AccountInformationScreen extends StatefulWidget {
   const AccountInformationScreen({super.key});
+
+  @override
+  State<AccountInformationScreen> createState() =>
+      _AccountInformationScreenState();
+}
+
+class _AccountInformationScreenState extends State<AccountInformationScreen> {
+  late UserModel _user;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _user = sl<AuthCubit>(instanceName: 'auth').state.user;
+    _refreshFromFirestore();
+  }
+
+  Future<void> _refreshFromFirestore() async {
+    final phone = _user.phone;
+    if (phone.isEmpty) {
+      setState(() => _loading = false);
+      return;
+    }
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('users')
+          .where('phone', isEqualTo: phone)
+          .limit(1)
+          .get();
+      if (snap.docs.isNotEmpty) {
+        final data = snap.docs.first.data();
+        final fresh = UserModel(
+          email: data['email'] ?? _user.email,
+          phone: phone,
+          name: data['name'] ?? _user.name,
+          lastName: data['lastName'] ?? _user.lastName,
+          isSubscribed: data['isSubscribed'] ?? false,
+        );
+        await sl<AuthCubit>(instanceName: 'auth').login(user: fresh);
+        if (mounted) {
+          setState(() {
+            _user = fresh;
+            _loading = false;
+          });
+        }
+        return;
+      }
+    } catch (_) {}
+    if (mounted) setState(() => _loading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,64 +73,96 @@ class AccountInformationScreen extends StatelessWidget {
       extendBodyBehindAppBar: true,
       resizeToAvoidBottomInset: false,
       floatingActionButtonLocation: FloatingActionButtonLocation.startTop,
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        child: FloatingActionButton(
-          shape: const CircleBorder(),
-          backgroundColor: UIColors.primeraGrey.withOpacity(0.15),
-          onPressed: () {
-            context.pop();
-          },
-          child: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-            size: 35,
-          ),
-        ),
+      floatingActionButton: BackCircleButton(
+        heroTag: 'account_back',
+        onPressed: () => context.pop(),
       ),
       body: _body(context),
     );
   }
 
+  Widget _subscriptionChip() {
+    final isSubscribed = _user.isSubscribed;
+    final color = isSubscribed ? kPrimaryGreen : Colors.white70;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: isSubscribed
+            ? kPrimaryGreen.withOpacity(0.15)
+            : kSurfaceSoft,
+        border: Border.all(color: color.withOpacity(0.6)),
+        borderRadius: BorderRadius.circular(kRadiusChip),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isSubscribed ? Icons.verified : Icons.cancel_outlined,
+            size: 16,
+            color: color,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            isSubscribed ? 'Suscrito' : 'No suscrito',
+            style: TextStyle(
+              color: color,
+              fontSize: kFontSmall,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _body(BuildContext context) {
-    UserModel user = sl<AuthCubit>(instanceName: 'auth').state.user;
     return Container(
       height: MediaQuery.of(context).size.height,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      color: const Color.fromARGB(255, 6, 16, 0),
+      padding: const EdgeInsets.symmetric(horizontal: kPadH),
+      color: kBgScreen,
       child: Column(
         children: [
           const Spacer(),
-          Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.only(left: 5),
-            child: const Text(
-              "Datos personales",
-              textAlign: TextAlign.start,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+          const Text(
+            "Datos personales",
+            style: TextStyle(
+              fontSize: kFontTitleMd,
+              fontWeight: FontWeight.bold,
+              color: kTextPrimary,
             ),
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 12),
+          if (_loading)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(kPrimaryGreen),
+                ),
+              ),
+            )
+          else
+            _subscriptionChip(),
+          const SizedBox(height: 24),
           CustomUneditableWidget(
             icon: Icons.person_outline,
             title: "Nombre (s)",
-            initialValue: user.name,
+            initialValue: _user.name,
           ),
           const SizedBox(height: 20),
           CustomUneditableWidget(
             icon: Icons.person_outline,
             title: "Apellido (s)",
-            initialValue: user.lastName,
+            initialValue: _user.lastName,
           ),
           const SizedBox(height: 20),
           CustomUneditableWidget(
             icon: Icons.email_outlined,
             title: "Correo electrónico",
-            initialValue: user.email,
+            initialValue: _user.email,
           ),
           const SizedBox(height: 20),
           Row(
@@ -100,14 +185,15 @@ class AccountInformationScreen extends StatelessWidget {
                 child: CustomUneditableWidget(
                   icon: Icons.phone_outlined,
                   title: "Número de teléfono",
-                  initialValue: user.phone,
+                  initialValue: _user.phone,
                 ),
               ),
             ],
           ),
           const Spacer(),
-          InkWell(
-            onTap: () async {
+          PrimaryActionButton(
+            label: '¿Deseas editar tus datos?',
+            onTap: () {
               ModalbottomsheetUtils.successBottomSheet(
                 context,
                 '¿Deseas editar tus datos?',
@@ -116,47 +202,6 @@ class AccountInformationScreen extends StatelessWidget {
                 null,
               );
             },
-            child: Container(
-              height: 72,
-              margin: const EdgeInsets.symmetric(
-                horizontal: 10,
-              ),
-              decoration: BoxDecoration(
-                color: const Color.fromRGBO(47, 255, 0, 1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(left: 25),
-                    child: Text(
-                      '¿Deseas editar tus datos?',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: Container(
-                      width: 72,
-                      height: 55,
-                      decoration: BoxDecoration(
-                        color: const Color.fromRGBO(255, 255, 255, 0.5),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.arrow_forward,
-                        color: Colors.black,
-                        size: 30,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
           const Spacer(),
         ],

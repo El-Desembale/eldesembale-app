@@ -5,9 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../config/routes/routes.dart';
-import '../../../../utils/colors.dart';
 import '../../../../utils/images.dart';
 import '../../../../utils/modalbottomsheet.dart';
+import '../../../shared/widgets/floating_label_input.dart';
 import '../../cubit/login_cubit.dart';
 import '../widgets/otp_form.dart';
 import 'terms_screen.dart';
@@ -733,79 +733,3 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// ═══════════════════════════════════════════
-// REUSABLE INPUT WIDGET
-// ═══════════════════════════════════════════
-class FloatingLabelInput extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final Function(String)? onChanged;
-  final TextInputType keyboardType;
-  final List<TextInputFormatter> inputFormatters;
-  final bool obscureText;
-  final TextEditingController? controller;
-  final VoidCallback? onToggleObscure;
-  final VoidCallback? onPressedHint;
-
-  const FloatingLabelInput({
-    super.key,
-    required this.label,
-    required this.icon,
-    required this.onChanged,
-    required this.inputFormatters,
-    this.controller,
-    this.keyboardType = TextInputType.text,
-    this.obscureText = false,
-    this.onToggleObscure,
-    this.onPressedHint,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 52,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
-      ),
-      child: Center(
-        child: TextFormField(
-          obscureText: obscureText,
-          controller: controller,
-          onChanged: onChanged,
-          inputFormatters: inputFormatters,
-          keyboardType: keyboardType,
-          textAlignVertical: TextAlignVertical.center,
-          style: const TextStyle(color: Colors.white, fontSize: 15),
-          decoration: InputDecoration(
-            isCollapsed: true,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            prefixIcon: Padding(
-              padding: const EdgeInsets.only(left: 16, right: 12),
-              child: Icon(icon, color: Colors.white38, size: 20),
-            ),
-            prefixIconConstraints: const BoxConstraints(minHeight: 0, minWidth: 0),
-            suffixIcon: (onToggleObscure ?? onPressedHint) != null
-                ? Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: IconButton(
-                      icon: Icon(
-                        obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                        color: Colors.white30,
-                        size: 20,
-                      ),
-                      onPressed: onToggleObscure ?? onPressedHint,
-                    ),
-                  )
-                : null,
-            suffixIconConstraints: const BoxConstraints(minHeight: 0, minWidth: 0),
-            hintText: label,
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.25), fontSize: 14),
-            border: InputBorder.none,
-          ),
-        ),
-      ),
-    );
-  }
-}
