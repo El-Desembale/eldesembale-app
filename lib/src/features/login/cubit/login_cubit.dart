@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -189,20 +190,56 @@ class LoginCubit extends Cubit<LoginState> {
     );
   }
 
+  Timer? _countdownTimer;
+
   void _startTimer() {
-    Timer.periodic(const Duration(seconds: 1), (timer) {
-      _updateTimerCount(timer.tick);
-      if (timer.tick == 20) {
-        timer.cancel();
-        _updateTimerCount(20);
+    _countdownTimer?.cancel();
+    emit(state.copyWith(timer: 60));
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      final remaining = 60 - t.tick;
+      if (remaining <= 0) {
+        t.cancel();
+        emit(state.copyWith(timer: 0));
+      } else {
+        emit(state.copyWith(timer: remaining));
       }
     });
   }
 
-  void _updateTimerCount(int value) {
-    emit(
-      state.copyWith(timer: value),
+  Future<bool> sendOtpSms({required BuildContext context}) async {
+    final phone = '${state.countryCode}${phoneController.text}';
+    final completer = Completer<bool>();
+    await FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: phone,
+      timeout: const Duration(seconds: 60),
+      verificationCompleted: (_) {},
+      verificationFailed: (_) {
+        if (!completer.isCompleted) completer.complete(false);
+      },
+      codeSent: (String verificationId, int? resendToken) {
+        emit(state.copyWith(smsVerificationId: verificationId));
+        if (!completer.isCompleted) completer.complete(true);
+      },
+      codeAutoRetrievalTimeout: (_) {
+        if (!completer.isCompleted) completer.complete(false);
+      },
     );
+    return completer.future;
+  }
+
+  Future<bool> verifySmsOtp() async {
+    if (state.smsVerificationId.isEmpty) return false;
+    try {
+      final credential = PhoneAuthProvider.credential(
+        verificationId: state.smsVerificationId,
+        smsCode: state.otp,
+      );
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      await FirebaseAuth.instance.signOut();
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> validatePhone({

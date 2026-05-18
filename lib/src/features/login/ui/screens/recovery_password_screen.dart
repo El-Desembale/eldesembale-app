@@ -45,7 +45,6 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
   }
 
   Future<void> _sendOtp() async {
-    // First get the email associated with this phone
     final email = await widget.loginCubit.getEmailByPhone(
       phone: widget.loginCubit.phoneController.text,
     );
@@ -60,14 +59,13 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
       return;
     }
     _userEmail = email;
-    final sent = await widget.loginCubit.sendOtpVerification(
-      email: email,
-      context: context,
-    );
+    // Envía correo y SMS en paralelo
+    final results = await Future.wait([
+      widget.loginCubit.sendOtpVerification(email: email, context: context),
+      widget.loginCubit.sendOtpSms(context: context),
+    ]);
     if (mounted) {
-      setState(() {
-        _otpSent = sent;
-      });
+      setState(() => _otpSent = results[0]);
     }
   }
 
@@ -305,8 +303,8 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
             padding: const EdgeInsets.only(left: 5),
             child: Text(
               _otpSent
-                  ? "Ingresa el código que enviamos a $_maskedEmail"
-                  : "Te enviaremos un código a tu correo electrónico registrado",
+                  ? "Enviamos un código a tu celular y correo registrado"
+                  : "Te enviaremos un código a tu celular y correo registrado",
               textAlign: TextAlign.start,
               style: const TextStyle(
                 fontSize: 14,
@@ -316,17 +314,25 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
             ),
           ),
           const Spacer(),
-          if (_otpSent)
+          if (_otpSent) ...[
             Row(
               children: [
                 Expanded(
-                  flex: 1,
                   child: OtpInputWidget(
                     onChanged: widget.loginCubit.updateOtp,
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 16),
+            OtpResendButton(
+              timerSeconds: state.timer,
+              onResend: () async {
+                FocusScope.of(context).unfocus();
+                await _sendOtp();
+              },
+            ),
+          ],
           const Spacer(),
           PrimaryActionButton(
             label: _otpSent ? 'Continuar' : 'Enviar código',
@@ -337,9 +343,12 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
               if (!_otpSent) {
                 await _sendOtp();
               } else if (state.otp.length == 6) {
-                bool validated = await widget.loginCubit.validateOtp(
-                  context: context,
-                );
+                // Intenta SMS primero, luego correo como fallback
+                bool validated = await widget.loginCubit.verifySmsOtp();
+                if (!validated) {
+                  validated = await widget.loginCubit.validateOtp(context: context);
+                }
+                if (!mounted) return;
                 if (validated) {
                   _pageController.nextPage(
                     duration: const Duration(milliseconds: 500),

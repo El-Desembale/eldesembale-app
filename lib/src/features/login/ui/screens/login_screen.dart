@@ -333,7 +333,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _header("Regístrate", "Ingresa el código que enviamos a tu correo"),
+            _header("Regístrate", "Enviamos un código a tu celular y correo registrado"),
             const Spacer(),
             Row(
               children: [
@@ -344,15 +344,34 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 16),
+            OtpResendButton(
+              timerSeconds: state.timer,
+              onResend: () async {
+                FocusScope.of(context).unfocus();
+                // Reenvía SMS y correo en paralelo
+                await Future.wait([
+                  widget.loginCubit.sendOtpSms(context: context),
+                  widget.loginCubit.sendOtpVerification(
+                    email: email,
+                    context: context,
+                  ),
+                ]);
+              },
+            ),
             const Spacer(),
             _actionButton(
               enabled: state.otp.length == 6,
               onTap: () async {
                 FocusScope.of(context).unfocus();
                 if (state.otp.length == 6) {
-                  bool validated = await widget.loginCubit.validateOtp(
-                    context: context,
-                  );
+                  // Intenta verificar por SMS primero, luego por correo
+                  bool validated = await widget.loginCubit.verifySmsOtp();
+                  if (!validated) {
+                    validated = await widget.loginCubit.validateOtp(
+                      context: context,
+                    );
+                  }
                   if (validated) {
                     _pageController.jumpToPage(4);
                   } else {
@@ -549,11 +568,15 @@ class _LoginScreenState extends State<LoginScreen> {
               onTap: () async {
                 FocusScope.of(context).unfocus();
                 if (_isFormValid) {
-                  final sent = await widget.loginCubit.sendOtpVerification(
-                    email: email,
-                    context: context,
-                  );
-                  if (sent) {
+                  // Envía OTP por correo y SMS en paralelo
+                  final results = await Future.wait([
+                    widget.loginCubit.sendOtpVerification(
+                      email: email,
+                      context: context,
+                    ),
+                    widget.loginCubit.sendOtpSms(context: context),
+                  ]);
+                  if (results[0]) {
                     _pageController.jumpToPage(2);
                   }
                 }
