@@ -1,11 +1,51 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
+const twilio = require("twilio");
 
 admin.initializeApp();
 
 const smtpEmail = process.env.SMTP_EMAIL || "";
 const smtpPassword = process.env.SMTP_PASSWORD || "";
+const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID || "";
+const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN || "";
+const twilioVerifyServiceSid = process.env.TWILIO_VERIFY_SERVICE_SID || "";
+
+exports.sendOtpSms = functions.runWith({
+  secrets: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_VERIFY_SERVICE_SID"],
+}).https.onCall(async (data, context) => {
+  const { phone } = data;
+  if (!phone) {
+    throw new functions.https.HttpsError("invalid-argument", "El teléfono es requerido.");
+  }
+  try {
+    const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+    await client.verify.v2.services(process.env.TWILIO_VERIFY_SERVICE_SID)
+      .verifications.create({ to: phone, channel: "sms" });
+    return { success: true };
+  } catch (error) {
+    console.error("Error enviando SMS:", error);
+    throw new functions.https.HttpsError("internal", "No se pudo enviar el SMS.");
+  }
+});
+
+exports.verifyOtpSms = functions.runWith({
+  secrets: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_VERIFY_SERVICE_SID"],
+}).https.onCall(async (data, context) => {
+  const { phone, code } = data;
+  if (!phone || !code) {
+    throw new functions.https.HttpsError("invalid-argument", "Teléfono y código son requeridos.");
+  }
+  try {
+    const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+    const check = await client.verify.v2.services(process.env.TWILIO_VERIFY_SERVICE_SID)
+      .verificationChecks.create({ to: phone, code });
+    return { success: check.status === "approved" };
+  } catch (error) {
+    console.error("Error verificando SMS:", error);
+    throw new functions.https.HttpsError("internal", "No se pudo verificar el código.");
+  }
+});
 
 exports.sendOtpEmail = functions.https.onCall(async (data, context) => {
   const { email } = data;

@@ -2,7 +2,7 @@
 
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -208,36 +208,24 @@ class LoginCubit extends Cubit<LoginState> {
 
   Future<bool> sendOtpSms({required BuildContext context}) async {
     final phone = '${state.countryCode}${phoneController.text}';
-    final completer = Completer<bool>();
-    await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: phone,
-      timeout: const Duration(seconds: 60),
-      verificationCompleted: (_) {},
-      verificationFailed: (_) {
-        if (!completer.isCompleted) completer.complete(false);
-      },
-      codeSent: (String verificationId, int? resendToken) {
-        emit(state.copyWith(smsVerificationId: verificationId));
-        if (!completer.isCompleted) completer.complete(true);
-      },
-      codeAutoRetrievalTimeout: (_) {
-        if (!completer.isCompleted) completer.complete(false);
-      },
-    );
-    return completer.future;
+    try {
+      final callable = FirebaseFunctions.instance.httpsCallable('sendOtpSms');
+      final result = await callable.call({'phone': phone});
+      return result.data['success'] == true;
+    } catch (e) {
+      debugPrint('Error enviando SMS: $e');
+      return false;
+    }
   }
 
   Future<bool> verifySmsOtp() async {
-    if (state.smsVerificationId.isEmpty) return false;
+    final phone = '${state.countryCode}${phoneController.text}';
     try {
-      final credential = PhoneAuthProvider.credential(
-        verificationId: state.smsVerificationId,
-        smsCode: state.otp,
-      );
-      await FirebaseAuth.instance.signInWithCredential(credential);
-      await FirebaseAuth.instance.signOut();
-      return true;
-    } catch (_) {
+      final callable = FirebaseFunctions.instance.httpsCallable('verifyOtpSms');
+      final result = await callable.call({'phone': phone, 'code': state.otp});
+      return result.data['success'] == true;
+    } catch (e) {
+      debugPrint('Error verificando SMS: $e');
       return false;
     }
   }
