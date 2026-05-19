@@ -158,6 +158,8 @@ class HomeServiceImpl implements HomeService {
             'phone': phone,
             'installments': selectedInstallments,
             'paymentPeriod': paymentPeriod,
+            'interest': interest,
+            'createdAt': DateTime.now().toIso8601String(),
             if (clientName != null && clientName.isNotEmpty)
               'clientName': clientName,
           },
