@@ -179,6 +179,7 @@ class HomeServiceImpl implements HomeService {
     QuerySnapshot querySnapshot = await _database
         .collection('loan_request')
         .where('phone', isEqualTo: phone)
+        .orderBy('created_at', descending: true)
         .get();
 
     if (querySnapshot.docs.isNotEmpty) {
