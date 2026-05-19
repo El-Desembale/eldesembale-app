@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -50,6 +51,25 @@ class LoginServiceImpl implements LoginService {
   LoginServiceImpl(
     this._database,
   );
+
+  Future<void> _saveFcmToken(String phone) async {
+    try {
+      final messaging = FirebaseMessaging.instance;
+      await messaging.requestPermission(alert: true, badge: true, sound: true);
+      final token = await messaging.getToken();
+      if (token == null) return;
+      final snap = await _database
+          .collection('users')
+          .where('phone', isEqualTo: phone)
+          .limit(1)
+          .get();
+      if (snap.docs.isNotEmpty) {
+        await snap.docs.first.reference.update({'fcmToken': token});
+      }
+    } catch (e) {
+      debugPrint('FCM token save error: $e');
+    }
+  }
 
   @override
   Future<bool> validatePhone({
@@ -109,13 +129,15 @@ class LoginServiceImpl implements LoginService {
         // Anonymous auth may not be enabled, don't block registration
       }
 
-      return UserModel(
+      final model = UserModel(
         email: email,
         phone: user,
         lastName: lastName,
         name: name,
         isSubscribed: false,
       );
+      _saveFcmToken(user);
+      return model;
     } catch (e) {
       debugPrint('Register service error: $e');
       throw Exception("Ha ocurrido un error inesperado: $e");
@@ -143,13 +165,15 @@ class LoginServiceImpl implements LoginService {
             await auth.signInAnonymously();
           }
         } catch (_) {}
-        return UserModel(
+        final model = UserModel(
           email: doc['email'] ?? "",
           phone: user,
           lastName: doc['lastName'] ?? "",
           name: doc['name'] ?? "",
           isSubscribed: doc['isSubscribed'] ?? false,
         );
+        _saveFcmToken(user);
+        return model;
       } else {
         throw Exception("Usuario o contraseña incorrecta.");
       }

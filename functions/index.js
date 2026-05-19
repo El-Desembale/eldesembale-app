@@ -47,6 +47,36 @@ exports.verifyOtpSms = functions.runWith({
   }
 });
 
+exports.sendPushNotification = functions.https.onCall(async (data, context) => {
+  const { phone, title, body } = data;
+  if (!phone || !title || !body) {
+    throw new functions.https.HttpsError("invalid-argument", "phone, title y body son requeridos.");
+  }
+  try {
+    const snap = await admin.firestore()
+      .collection('users')
+      .where('phone', '==', phone)
+      .limit(1)
+      .get();
+
+    if (snap.empty) return { success: false, reason: 'user_not_found' };
+
+    const token = snap.docs[0].data().fcmToken;
+    if (!token) return { success: false, reason: 'no_token' };
+
+    await admin.messaging().send({
+      token,
+      notification: { title, body },
+      android: { priority: 'high' },
+      apns: { payload: { aps: { sound: 'default' } } },
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Error enviando push:", error);
+    throw new functions.https.HttpsError("internal", "No se pudo enviar la notificación.");
+  }
+});
+
 exports.sendOtpEmail = functions.https.onCall(async (data, context) => {
   const { email } = data;
 
