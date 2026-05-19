@@ -179,7 +179,6 @@ class HomeServiceImpl implements HomeService {
     QuerySnapshot querySnapshot = await _database
         .collection('loan_request')
         .where('phone', isEqualTo: phone)
-        .orderBy('created_at', descending: true)
         .get();
 
     if (querySnapshot.docs.isNotEmpty) {
@@ -188,6 +187,7 @@ class HomeServiceImpl implements HomeService {
         final data = querySnapshot.docs[i].data() as Map<String, dynamic>;
         loans.add(LoanRequestEntity.fromMap(data));
       }
+      loans.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return loans;
     } else {
       return [];
