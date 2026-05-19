@@ -174,6 +174,7 @@ class LoanInfoDetailScreen extends StatelessWidget {
                                   installmentIndex: index,
                                   paymentPeriod:
                                       state.loans[loanIndex].paymentPeriod,
+                                  baseDate: state.loans[loanIndex].createdAt.toDate(),
                                 )),
                                 style: const TextStyle(
                                   color: Colors.white,

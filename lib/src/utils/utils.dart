@@ -20,11 +20,13 @@ class Utils {
   static DateTime calculateInstallmentDate({
     required int installmentIndex,
     required String paymentPeriod,
+    DateTime? baseDate,
   }) {
+    final base = baseDate ?? DateTime.now();
     DateTime firstPaymentDate = DateTime(
-      DateTime.now().year,
-      DateTime.now().month + 2,
-      DateTime.now().day,
+      base.year,
+      base.month + 1,
+      base.day,
     );
 
     if (paymentPeriod == 'Mensual') {

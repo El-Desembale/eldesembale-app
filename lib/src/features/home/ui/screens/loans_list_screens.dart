@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../utils/colors.dart';
 import '../../../../utils/images.dart';
+import '../../../../utils/utils.dart';
 import '../../cubit/home_cubit.dart';
 import 'loan_info_detail_screen.dart';
 
@@ -241,38 +242,110 @@ class _LoansListScreenState extends State<LoansListScreen> {
                     ),
                   ],
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      loan.status == "pending" || loan.status == "rejected"
-                          ? "Solicitado ${DateFormat('d/M/y').format(loan.createdAt.toDate())}"
-                          : loan.status == "in_disbursement_process"
-                              ? DateFormat('d/M/y')
-                                  .format(loan.createdAt.toDate())
-                              : "Desembolso: ${DateFormat('d/M/y').format(loan.createdAt.toDate())}",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
+                Builder(builder: (context) {
+                  final bool isApproved = loan.status == "approved";
+                  final bool hasPending = isApproved && loan.canPay;
+                  String? nextDateStr;
+                  String? nextAmountStr;
+                  if (hasPending) {
+                    final nextDate = Utils.calculateInstallmentDate(
+                      installmentIndex: loan.installmentsPaid,
+                      paymentPeriod: loan.paymentPeriod,
+                      baseDate: loan.createdAt.toDate(),
+                    );
+                    final totalAmount = Utils.getTotalAmount(
+                      loan.amount,
+                      loan.installments,
+                      loan.interest,
+                      loan.paymentPeriod,
+                    );
+                    nextDateStr = DateFormat('d/M/y').format(nextDate);
+                    nextAmountStr = NumberFormat("#,##0", "en_US").format(totalAmount);
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        loan.status == "pending" || loan.status == "rejected"
+                            ? "Solicitado ${DateFormat('d/M/y').format(loan.createdAt.toDate())}"
+                            : loan.status == "in_disbursement_process"
+                                ? DateFormat('d/M/y').format(loan.createdAt.toDate())
+                                : "Desembolso: ${DateFormat('d/M/y').format(loan.createdAt.toDate())}",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 30),
-                    Text(
-                      "Pago ${loan.paymentPeriod}",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
+                      const SizedBox(height: 8),
+                      Text(
+                        "Pago ${loan.paymentPeriod}",
+                        style: const TextStyle(color: Colors.white, fontSize: 12),
                       ),
-                    ),
-                    Text(
-                      "${loan.installments} cuotas",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
+                      Text(
+                        "${loan.installmentsPaid}/${loan.installments} cuotas",
+                        style: const TextStyle(color: Colors.white, fontSize: 12),
                       ),
-                    )
-                  ],
-                ),
+                      if (hasPending && nextDateStr != null) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color.fromRGBO(47, 255, 0, 0.12),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: const Color.fromRGBO(47, 255, 0, 0.4),
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              const Text(
+                                'Próxima cuota',
+                                style: TextStyle(
+                                  color: Color.fromRGBO(47, 255, 0, 0.8),
+                                  fontSize: 10,
+                                ),
+                              ),
+                              Text(
+                                nextDateStr,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                '\$$nextAmountStr',
+                                style: const TextStyle(
+                                  color: Color.fromRGBO(47, 255, 0, 1),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ] else if (isApproved && !loan.canPay) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            'Pagado ✓',
+                            style: TextStyle(
+                              color: Color.fromRGBO(47, 255, 0, 1),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  );
+                }),
               ],
             ),
           ),
