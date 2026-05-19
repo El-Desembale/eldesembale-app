@@ -101,11 +101,13 @@ class HomeRepositoryImpl implements HomeRepository {
   @override
   Future<Either<ErrorModel, bool>> updateLoan({
     required LoanRequestEntity loan,
+    int installmentsToPay = 1,
   }) async {
     try {
       return Right(
         await _homeService.updateLoan(
           loan: loan,
+          installmentsToPay: installmentsToPay,
         ),
       );
     } catch (e) {

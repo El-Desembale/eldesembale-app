@@ -21,6 +21,7 @@ abstract class HomeRepository {
   });
   Future<Either<ErrorModel, bool>> updateLoan({
     required LoanRequestEntity loan,
+    int installmentsToPay = 1,
   });
 
   Future<Either<ErrorModel, bool>> updateUserSubscription({

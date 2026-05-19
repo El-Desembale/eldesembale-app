@@ -8,7 +8,7 @@ import '../../../../utils/utils.dart';
 import '../../cubit/home_cubit.dart';
 import '../widgets/web_payment_view.dart';
 
-class LoanInfoDetailScreen extends StatelessWidget {
+class LoanInfoDetailScreen extends StatefulWidget {
   final int loanIndex;
   final HomeCubit homeCubit;
   const LoanInfoDetailScreen({
@@ -18,9 +18,18 @@ class LoanInfoDetailScreen extends StatelessWidget {
   });
 
   @override
+  State<LoanInfoDetailScreen> createState() => _LoanInfoDetailScreenState();
+}
+
+class _LoanInfoDetailScreenState extends State<LoanInfoDetailScreen> {
+  // Index of the last selected installment to pay (inclusive).
+  // null = none selected. 0 = pay cuota installmentsPaid+1 only, etc.
+  int? _selectedUpTo; // number of installments selected (1-based from next unpaid)
+
+  @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeCubit, HomeState>(
-        bloc: homeCubit,
+        bloc: widget.homeCubit,
         builder: (BuildContext context, HomeState state) {
           return Scaffold(
             drawerEnableOpenDragGesture: false,
@@ -48,238 +57,296 @@ class LoanInfoDetailScreen extends StatelessWidget {
   }
 
   Widget _body(BuildContext context, HomeState state) {
-    final totalAmount = Utils.getTotalAmount(
-      state.loans[loanIndex].amount,
-      state.loans[loanIndex].installments,
-      state.loans[loanIndex].interest,
-      state.loans[loanIndex].paymentPeriod,
+    final loan = state.loans[widget.loanIndex];
+    final installmentAmount = Utils.getTotalAmount(
+      loan.amount,
+      loan.installments,
+      loan.interest,
+      loan.paymentPeriod,
     );
+    final pendingCount = loan.installments - loan.installmentsPaid;
+    final selected = _selectedUpTo ?? 0;
+    final totalToPay = installmentAmount * selected;
+
     return Container(
       decoration: const BoxDecoration(
         color: Color.fromARGB(255, 6, 16, 0),
       ),
-      child: Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 30,
-          right: 30,
-        ),
-        height: MediaQuery.sizeOf(context).height,
-        width: MediaQuery.sizeOf(context).width,
+      child: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Spacer(),
-            const Text(
-              'Total Prestado',
-              style: TextStyle(
-                color: Color.fromARGB(255, 243, 248, 241),
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
+            const SizedBox(height: 60),
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 30),
+              child: Column(
+                children: [
+                  const Text(
+                    'Total Prestado',
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 243, 248, 241),
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    NumberFormat("#,##0", "en_US").format(loan.amount),
+                    style: const TextStyle(
+                      fontFamily: "Unbounded",
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Spacer(),
+                      Column(children: [
+                        const Text("Periodo Pago",
+                            style: TextStyle(color: Color.fromARGB(255, 243, 248, 241), fontSize: 12)),
+                        Text(loan.paymentPeriod,
+                            style: const TextStyle(color: Colors.white, fontSize: 18)),
+                      ]),
+                      const Spacer(),
+                      Container(width: 2, height: 50, color: Colors.white.withOpacity(0.5)),
+                      const Spacer(),
+                      Column(children: [
+                        const Text("Cuotas",
+                            style: TextStyle(color: Color.fromARGB(255, 243, 248, 241), fontSize: 12)),
+                        Text("${loan.installmentsPaid}/${loan.installments}",
+                            style: const TextStyle(color: Colors.white, fontSize: 18)),
+                      ]),
+                      const Spacer(),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Fechas de Pago',
+                    style: TextStyle(
+                      fontFamily: "Unbounded",
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
               ),
             ),
-            const SizedBox(height: 0),
-            Text(
-              NumberFormat("#,##0", "en_US")
-                  .format(state.loans[loanIndex].amount),
-              style: const TextStyle(
-                fontFamily: "Unbounded",
-                color: Colors.white,
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 30),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Spacer(),
-                Column(
-                  children: [
-                    const Text(
-                      "Periodo Pago",
-                      style: TextStyle(
-                        color: Color.fromARGB(255, 243, 248, 241),
-                        fontSize: 12,
-                      ),
-                    ),
-                    Text(
-                      state.loans[loanIndex].paymentPeriod,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                Container(
-                  width: 2,
-                  height: 60,
-                  color: Colors.white.withOpacity(0.5),
-                ),
-                const Spacer(),
-                Column(
-                  children: [
-                    const Text(
-                      "Número Cuotas",
-                      style: TextStyle(
-                        color: Color.fromARGB(255, 243, 248, 241),
-                        fontSize: 12,
-                      ),
-                    ),
-                    Text(
-                      "${state.loans[loanIndex].installments} Coutas",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-              ],
-            ),
-            const SizedBox(height: 30),
-            const Text(
-              'Fechas de Pago',
-              style: TextStyle(
-                fontFamily: "Unbounded",
-                color: Colors.white,
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 30),
-            SizedBox(
-              height: MediaQuery.sizeOf(context).height * 0.45,
-              child: SingleChildScrollView(
-                child: Column(
-                  children: List.generate(state.loans[loanIndex].installments,
-                      (index) {
-                    return Column(
-                      children: [
-                        if (index != 0)
-                          Container(
-                            height: 1,
-                            color: Colors.white.withOpacity(0.15),
-                          ),
-                        SizedBox(
+
+            // Installment list
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 30),
+                itemCount: loan.installments,
+                itemBuilder: (context, index) {
+                  final dueDate = Utils.calculateInstallmentDate(
+                    installmentIndex: index,
+                    paymentPeriod: loan.paymentPeriod,
+                    baseDate: loan.createdAt.toDate(),
+                  );
+                  final isPaid = index < loan.installmentsPaid;
+                  final isPending = !isPaid;
+                  // Which pending index is this? (0 = first unpaid)
+                  final pendingIndex = index - loan.installmentsPaid;
+                  // Selected = pendingIndex < selected (i.e. 1..selected)
+                  final isSelected = isPending && pendingIndex < selected;
+
+                  return Column(
+                    children: [
+                      if (index != 0)
+                        Container(height: 1, color: Colors.white.withOpacity(0.1)),
+                      GestureDetector(
+                        onTap: isPending && loan.canPay
+                            ? () {
+                                setState(() {
+                                  // Toggle: tap same last selected = deselect, else extend to here
+                                  final newSelected = pendingIndex + 1;
+                                  _selectedUpTo = _selectedUpTo == newSelected ? 0 : newSelected;
+                                });
+                              }
+                            : null,
+                        child: Container(
                           height: 60,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? const Color.fromRGBO(47, 255, 0, 0.08)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                           child: Row(
                             children: [
-                              Text(
-                                DateFormat('d MMMM, yyyy', 'es')
-                                    .format(Utils.calculateInstallmentDate(
-                                  installmentIndex: index,
-                                  paymentPeriod:
-                                      state.loans[loanIndex].paymentPeriod,
-                                  baseDate: state.loans[loanIndex].createdAt.toDate(),
-                                )),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const Spacer(),
-                              Text(
-                                NumberFormat("#,##0", "en_US").format(
-                                  totalAmount,
-                                ),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
+                              // Check/select indicator
                               Icon(
-                                Icons.check_circle_outline,
-                                color: state.loans[loanIndex].installmentsPaid >
-                                        index
+                                isPaid
+                                    ? Icons.check_circle
+                                    : isSelected
+                                        ? Icons.radio_button_checked
+                                        : Icons.radio_button_unchecked,
+                                color: isPaid
                                     ? const Color.fromRGBO(47, 255, 0, 1)
-                                    : Colors.white.withOpacity(0.5),
-                                size: 30,
+                                    : isSelected
+                                        ? const Color.fromRGBO(47, 255, 0, 0.8)
+                                        : Colors.white.withOpacity(0.3),
+                                size: 22,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Cuota ${index + 1}',
+                                      style: TextStyle(
+                                        color: isPaid
+                                            ? Colors.white.withOpacity(0.4)
+                                            : Colors.white,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    Text(
+                                      DateFormat('d MMMM, yyyy', 'es').format(dueDate),
+                                      style: TextStyle(
+                                        color: isPaid
+                                            ? Colors.white.withOpacity(0.3)
+                                            : Colors.white.withOpacity(0.6),
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Text(
+                                NumberFormat("#,##0", "en_US").format(installmentAmount),
+                                style: TextStyle(
+                                  color: isPaid
+                                      ? Colors.white.withOpacity(0.3)
+                                      : isSelected
+                                          ? const Color.fromRGBO(47, 255, 0, 1)
+                                          : Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
                         ),
-                      ],
-                    );
-                  }),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            if (state.loans[loanIndex].canPay)
-              GestureDetector(
-                onTap: () async {
-                  final payment = await homeCubit.generatePayment(
-                      context, totalAmount.truncate());
-
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => WebPaymentView(
-                        paymentUrl: payment.url,
-                        homeCubit: homeCubit,
-                        reference: payment.reference,
-                        amountInCents: payment.amountInCents,
-                        loanId: state.loans[loanIndex].id,
-                        installmentNumber: state.loans[loanIndex].installmentsPaid + 1,
-                        onSuccessfulPayment: () async {
-                          final status = await homeCubit.updateLoanInstallments(
-                            state.loans[loanIndex],
-                          );
-                          if (status) {
-                            homeCubit.updateLoan(loanIndex);
-                          }
-                          context.pop();
-                          context.pop();
-                        },
-                      ),
-                    ),
-                  );
-                },
-                child: Container(
-                  height: 62,
-                  decoration: BoxDecoration(
-                    color: const Color.fromRGBO(47, 255, 0, 1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(left: 25),
-                        child: Text(
-                          'Pagar Couta',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 16),
-                        child: Container(
-                          width: 62,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: const Color.fromRGBO(255, 255, 255, 0.5),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.check_circle_outline_sharp,
-                            color: Colors.black,
-                            size: 30,
-                          ),
-                        ),
                       ),
                     ],
-                  ),
+                  );
+                },
+              ),
+            ),
+
+            // Pay button
+            if (loan.canPay)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(30, 12, 30, 20),
+                child: Column(
+                  children: [
+                    if (selected == 0)
+                      Text(
+                        'Selecciona las cuotas que deseas pagar',
+                        style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13),
+                        textAlign: TextAlign.center,
+                      )
+                    else
+                      Text(
+                        '$selected cuota${selected > 1 ? 's' : ''} seleccionada${selected > 1 ? 's' : ''} · ${NumberFormat("#,##0", "en_US").format(totalToPay)}',
+                        style: const TextStyle(color: Colors.white, fontSize: 13),
+                        textAlign: TextAlign.center,
+                      ),
+                    const SizedBox(height: 10),
+                    GestureDetector(
+                      onTap: selected == 0
+                          ? null
+                          : () async {
+                              final payment = await widget.homeCubit.generatePayment(
+                                context,
+                                totalToPay.truncate(),
+                              );
+                              if (!context.mounted) return;
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => WebPaymentView(
+                                    paymentUrl: payment.url,
+                                    homeCubit: widget.homeCubit,
+                                    reference: payment.reference,
+                                    amountInCents: payment.amountInCents,
+                                    loanId: loan.id,
+                                    installmentNumber: loan.installmentsPaid + selected,
+                                    onSuccessfulPayment: () async {
+                                      final status = await widget.homeCubit.updateLoanInstallments(
+                                        loan,
+                                        installmentsToPay: selected,
+                                      );
+                                      if (status) {
+                                        widget.homeCubit.updateLoan(widget.loanIndex, installmentsToPay: selected);
+                                      }
+                                      setState(() => _selectedUpTo = 0);
+                                      if (context.mounted) {
+                                        context.pop();
+                                        context.pop();
+                                      }
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        height: 62,
+                        decoration: BoxDecoration(
+                          color: selected == 0
+                              ? Colors.white.withOpacity(0.1)
+                              : const Color.fromRGBO(47, 255, 0, 1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 25),
+                              child: Text(
+                                selected == 0
+                                    ? 'Pagar cuota'
+                                    : 'Pagar $selected cuota${selected > 1 ? 's' : ''}',
+                                style: TextStyle(
+                                  color: selected == 0 ? Colors.white.withOpacity(0.3) : Colors.black,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 16),
+                              child: Container(
+                                width: 62,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: selected == 0
+                                      ? Colors.white.withOpacity(0.05)
+                                      : Colors.white.withOpacity(0.5),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(
+                                  Icons.check_circle_outline_sharp,
+                                  color: selected == 0 ? Colors.white.withOpacity(0.2) : Colors.black,
+                                  size: 30,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            const SizedBox(height: 20),
           ],
         ),
       ),

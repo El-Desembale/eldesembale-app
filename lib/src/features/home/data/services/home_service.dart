@@ -29,6 +29,7 @@ abstract class HomeService {
   });
   Future<bool> updateLoan({
     required LoanRequestEntity loan,
+    int installmentsToPay = 1,
   });
   Future<bool> savePaymentRecord({
     required String transactionId,
@@ -220,6 +221,7 @@ class HomeServiceImpl implements HomeService {
   @override
   Future<bool> updateLoan({
     required LoanRequestEntity loan,
+    int installmentsToPay = 1,
   }) async {
     QuerySnapshot querySnapshot = await _database
         .collection('loan_request')
@@ -229,7 +231,7 @@ class HomeServiceImpl implements HomeService {
     if (querySnapshot.docs.isNotEmpty) {
       for (var doc in querySnapshot.docs) {
         await doc.reference.update(
-          {'installments_paid': loan.installmentsPaid + 1},
+          {'installments_paid': loan.installmentsPaid + installmentsToPay},
         );
       }
     } else {

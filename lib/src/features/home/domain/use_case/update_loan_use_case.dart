@@ -13,9 +13,11 @@ class UpdateLoanUseCase {
 
   Future<Either<ErrorModel, bool>> call({
     required LoanRequestEntity loan,
+    int installmentsToPay = 1,
   }) async {
     return await _homeRepository.updateLoan(
       loan: loan,
+      installmentsToPay: installmentsToPay,
     );
   }
 }

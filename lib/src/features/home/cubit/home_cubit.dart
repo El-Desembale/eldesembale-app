@@ -403,9 +403,10 @@ class HomeCubit extends Cubit<HomeState> {
     isLoading(false);
   }
 
-  Future<bool> updateLoanInstallments(LoanRequestEntity loan) async {
+  Future<bool> updateLoanInstallments(LoanRequestEntity loan, {int installmentsToPay = 1}) async {
     final response = await _updateLoanUseCase.call(
       loan: loan,
+      installmentsToPay: installmentsToPay,
     );
     return response.fold(
       (error) {
@@ -449,9 +450,9 @@ class HomeCubit extends Cubit<HomeState> {
     isLoading(false);
   }
 
-  void updateLoan(int loanIndex) {
+  void updateLoan(int loanIndex, {int installmentsToPay = 1}) {
     final loan = state.loans[loanIndex].copyWith(
-      installmentsPaid: state.loans[loanIndex].installmentsPaid + 1,
+      installmentsPaid: state.loans[loanIndex].installmentsPaid + installmentsToPay,
     );
 
     if (loanIndex != -1) {
