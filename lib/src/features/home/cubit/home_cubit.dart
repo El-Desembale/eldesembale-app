@@ -3,10 +3,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../config/auth/cubit/auth_cubit.dart';
@@ -79,12 +79,31 @@ class HomeCubit extends Cubit<HomeState> {
     updateSelectedSegment(newSegment);
   }
 
+  Future<Map<String, String>> _getWompiConfig() async {
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('config')
+          .doc('wompi')
+          .get();
+      if (snap.exists) {
+        final data = snap.data()!;
+        return {
+          'publicKey': data['publicKey'] ?? '',
+          'integrityKey': data['integrityKey'] ?? '',
+          'subscriptionAmount': (data['subscriptionAmount'] ?? 22000).toString(),
+        };
+      }
+    } catch (_) {}
+    return {'publicKey': '', 'integrityKey': '', 'subscriptionAmount': '22000'};
+  }
+
   Future<PaymentData> generateSubscriptionPayment(BuildContext context) async {
     final user = sl<AuthCubit>(instanceName: 'auth').state.user;
-    final priv_key = dotenv.env['PRIVATE_INTEGRITY_KEY_TEST'];
-    final public_key = dotenv.env['PUBLIC_TEST_KEY'];
-
-    const amountInCents = 2200000;
+    final wompi = await _getWompiConfig();
+    final priv_key = wompi['integrityKey']!;
+    final public_key = wompi['publicKey']!;
+    final subAmount = int.parse(wompi['subscriptionAmount']!);
+    final amountInCents = subAmount * 100;
 
     final reference =
         'subscription${user.phone}${DateTime.now().millisecondsSinceEpoch}';
@@ -92,10 +111,10 @@ class HomeCubit extends Cubit<HomeState> {
     final integrity = _generateIntegrityHash(
       reference,
       amountInCents.toString(),
-      priv_key ?? "",
+      priv_key,
     );
     final url = generateUrl(
-      public_key ?? "",
+      public_key,
       amountInCents,
       reference,
       integrity,
@@ -112,8 +131,9 @@ class HomeCubit extends Cubit<HomeState> {
     int amountInCents,
   ) async {
     final user = sl<AuthCubit>(instanceName: 'auth').state.user;
-    final priv_key = dotenv.env['PRIVATE_INTEGRITY_KEY_TEST'];
-    final public_key = dotenv.env['PUBLIC_TEST_KEY'];
+    final wompi = await _getWompiConfig();
+    final priv_key = wompi['integrityKey']!;
+    final public_key = wompi['publicKey']!;
 
     amountInCents = amountInCents * 100;
 
@@ -123,10 +143,10 @@ class HomeCubit extends Cubit<HomeState> {
     final integrity = _generateIntegrityHash(
       reference,
       amountInCents.toString(),
-      priv_key ?? "",
+      priv_key,
     );
     final url = generateUrl(
-      public_key ?? "",
+      public_key,
       amountInCents,
       reference,
       integrity,

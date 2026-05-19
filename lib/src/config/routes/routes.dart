@@ -22,7 +22,6 @@ import '../../features/login/cubit/login_cubit.dart';
 import '../../features/login/ui/screens/login_screen.dart';
 import '../../features/login/ui/screens/recovery_password_screen.dart';
 import '../../features/onboarding/ui/screens/onboarding_screen.dart';
-import '../../features/splash/splash.dart';
 
 class AppRoutes {
   static const onboarding = '/onboarding';
@@ -47,17 +46,11 @@ class AppRoutes {
     instanceName: 'prefs',
   );
 
-  static String get initialRoute => splash;
+  static String _initialRoute = home;
+  static String get initialRoute => _initialRoute;
+  static void overrideInitialRoute(String route) => _initialRoute = route;
 
   static final List<RouteBase> routes = [
-    GoRoute(
-      path: splash,
-      pageBuilder: (context, state) => NoTransitionPage(
-        child: SplashScreen(
-          prefs: _prefs,
-        ),
-      ),
-    ),
     GoRoute(
       path: onboarding,
       pageBuilder: (context, state) => NoTransitionPage(

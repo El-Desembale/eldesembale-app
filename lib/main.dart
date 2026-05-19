@@ -8,23 +8,20 @@ import 'package:path_provider/path_provider.dart';
 
 import 'app.dart';
 import 'firebase_options.dart';
+import 'src/config/routes/routes.dart';
 import 'src/core/di/injection_dependency.dart';
 import 'src/core/preferences/shared_preference.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   await dotenv.load(fileName: ".env");
-
-  FlutterNativeSplash.preserve(
-    widgetsBinding: WidgetsFlutterBinding.ensureInitialized(),
-  );
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Forzar orientación vertical
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
@@ -37,11 +34,17 @@ Future<void> main() async {
 
   await Dependencies().setup();
 
-  // Añadir un delay de 1 segundo antes de iniciar la app
-  await Future.delayed(const Duration(seconds: 2));
+  // Determinar ruta inicial antes de mostrar la app
+  final prefs = sl<LocalSharedPreferences>(instanceName: 'prefs');
+  if (prefs.isFirstTime) {
+    AppRoutes.overrideInitialRoute(AppRoutes.onboarding);
+  } else if (prefs.isLogged) {
+    AppRoutes.overrideInitialRoute(AppRoutes.home);
+  } else {
+    AppRoutes.overrideInitialRoute(AppRoutes.login);
+  }
 
-  // Quitar el splash screen
   FlutterNativeSplash.remove();
 
-  runApp(const MyApp()); // Iniciar la aplicación
+  runApp(const MyApp());
 }
