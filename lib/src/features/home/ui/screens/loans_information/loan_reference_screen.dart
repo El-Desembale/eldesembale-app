@@ -1,3 +1,4 @@
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -231,12 +232,15 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.phone_outlined,
-                        color: Colors.white,
-                        size: 30,
+                      CountryCodePicker(
+                        enabled: false,
+                        initialSelection: 'CO',
+                        showCountryOnly: false,
+                        showOnlyCountryWhenClosed: false,
+                        alignLeft: false,
+                        textStyle: const TextStyle(color: Colors.white, fontSize: 14),
+                        boxDecoration: const BoxDecoration(color: Colors.transparent),
                       ),
-                      const SizedBox(width: 15.0),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -245,12 +249,12 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                               'Teléfono de $firstReferenceRelationship',
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 18.0,
+                                fontSize: 14.0,
                               ),
                             ),
                             TextField(
                               decoration: InputDecoration(
-                                hintText: 'Ingrese el teléfono',
+                                hintText: '3001234567',
                                 hintStyle: TextStyle(
                                     color: Colors.white.withOpacity(0.6)),
                                 enabledBorder: InputBorder.none,
@@ -260,6 +264,7 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                               keyboardType: TextInputType.phone,
                               inputFormatters: [
                                 FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(10),
                               ],
                               onChanged: (value) {
                                 if (value.isEmpty) {
@@ -481,12 +486,15 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.phone_outlined,
-                        color: Colors.white,
-                        size: 30,
+                      CountryCodePicker(
+                        enabled: false,
+                        initialSelection: 'CO',
+                        showCountryOnly: false,
+                        showOnlyCountryWhenClosed: false,
+                        alignLeft: false,
+                        textStyle: const TextStyle(color: Colors.white, fontSize: 14),
+                        boxDecoration: const BoxDecoration(color: Colors.transparent),
                       ),
-                      const SizedBox(width: 15.0),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -495,12 +503,12 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                               'Teléfono de $secondReferenceRelationship',
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 18.0,
+                                fontSize: 14.0,
                               ),
                             ),
                             TextField(
                               decoration: InputDecoration(
-                                hintText: 'Ingrese el teléfono',
+                                hintText: '3001234567',
                                 hintStyle: TextStyle(
                                     color: Colors.white.withOpacity(0.6)),
                                 enabledBorder: InputBorder.none,
@@ -510,6 +518,7 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                               keyboardType: TextInputType.phone,
                               inputFormatters: [
                                 FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(10),
                               ],
                               onChanged: (value) {
                                 if (value.isEmpty) {

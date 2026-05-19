@@ -132,64 +132,64 @@ class _AccountInformationScreenState extends State<AccountInformationScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          if (_loading)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(kPrimaryGreen),
-                ),
+          if (_loading) ...[
+            const SizedBox(height: 40),
+            const SizedBox(
+              width: 32,
+              height: 32,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(kPrimaryGreen),
               ),
-            )
-          else
+            ),
+            const SizedBox(height: 40),
+          ] else ...[
             _subscriptionChip(),
-          const SizedBox(height: 24),
-          CustomUneditableWidget(
-            icon: Icons.person_outline,
-            title: "Nombre (s)",
-            initialValue: _user.name,
-          ),
-          const SizedBox(height: 20),
-          CustomUneditableWidget(
-            icon: Icons.person_outline,
-            title: "Apellido (s)",
-            initialValue: _user.lastName,
-          ),
-          const SizedBox(height: 20),
-          CustomUneditableWidget(
-            icon: Icons.email_outlined,
-            title: "Correo electrónico",
-            initialValue: _user.email,
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: CountryCodePicker(
-                  enabled: false,
-                  boxDecoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(22),
+            const SizedBox(height: 24),
+            CustomUneditableWidget(
+              icon: Icons.person_outline,
+              title: "Nombre (s)",
+              initialValue: _user.name,
+            ),
+            const SizedBox(height: 20),
+            CustomUneditableWidget(
+              icon: Icons.person_outline,
+              title: "Apellido (s)",
+              initialValue: _user.lastName,
+            ),
+            const SizedBox(height: 20),
+            CustomUneditableWidget(
+              icon: Icons.email_outlined,
+              title: "Correo electrónico",
+              initialValue: _user.email,
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: CountryCodePicker(
+                    enabled: false,
+                    boxDecoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.16),
+                      borderRadius: BorderRadius.circular(22),
+                    ),
+                    backgroundColor: Colors.white.withOpacity(0.16),
+                    initialSelection: 'CO',
+                    alignLeft: true,
                   ),
-                  backgroundColor: Colors.white.withOpacity(0.16),
-                  initialSelection: 'CO',
-                  alignLeft: true,
                 ),
-              ),
-              Expanded(
-                flex: 5,
-                child: CustomUneditableWidget(
-                  icon: Icons.phone_outlined,
-                  title: "Número de teléfono",
-                  initialValue: _user.phone,
+                Expanded(
+                  flex: 5,
+                  child: CustomUneditableWidget(
+                    icon: Icons.phone_outlined,
+                    title: "Número de teléfono",
+                    initialValue: _user.phone,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
           const Spacer(),
           PrimaryActionButton(
             label: '¿Deseas editar tus datos?',

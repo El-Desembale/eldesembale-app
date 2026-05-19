@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:desembale/src/config/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -141,10 +142,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   SizedBox(height: MediaQuery.of(context).padding.top + 90),
                   const Text(
                     '¿Cuánto necesitas?',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontFamily: "Unbounded",
                       color: Colors.white,
-                      fontSize: 24,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -502,7 +505,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _goToLoanOrSubscription(BuildContext context) async {
-    final isSubscribed = sl<AuthCubit>(instanceName: 'auth').state.user.isSubscribed;
+    // Refresca isSubscribed desde Firestore antes de decidir
+    final user = sl<AuthCubit>(instanceName: 'auth').state.user;
+    bool isSubscribed = user.isSubscribed;
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('users')
+          .where('phone', isEqualTo: user.phone)
+          .limit(1)
+          .get();
+      if (snap.docs.isNotEmpty) {
+        isSubscribed = snap.docs.first.data()['isSubscribed'] == true;
+        if (isSubscribed != user.isSubscribed) {
+          await sl<AuthCubit>(instanceName: 'auth').login(
+            user: user.copyWith(isSubscribed: isSubscribed),
+          );
+        }
+      }
+    } catch (_) {}
+    if (!context.mounted) return;
     if (isSubscribed) {
       await context.push(AppRoutes.loanInformation);
     } else {

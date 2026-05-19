@@ -30,11 +30,12 @@ Future<void> main() async {
   ]);
 
   await LocalSharedPreferences.init();
-  await Dependencies().setup();
 
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory: await getApplicationDocumentsDirectory(),
   );
+
+  await Dependencies().setup();
 
   // Añadir un delay de 1 segundo antes de iniciar la app
   await Future.delayed(const Duration(seconds: 2));
