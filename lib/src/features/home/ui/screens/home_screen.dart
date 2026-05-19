@@ -427,7 +427,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   Widget _buildLoanCard(BuildContext context, LoanRequestEntity loan) {
     final isPending = loan.status == 'pending';
-    final statusLabel = isPending ? 'En revisión' : 'Aprobado';
+    final statusLabel = isPending ? 'Pendiente' : loan.status == 'in_process' ? 'En revisión' : loan.status == 'in_disbursement_process' ? 'En desembolso' : loan.status == 'approved' ? 'Activo' : 'Rechazado';
     final statusColor = isPending
         ? Colors.white.withOpacity(0.6)
         : const Color.fromRGBO(47, 255, 0, 1);

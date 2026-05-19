@@ -357,10 +357,10 @@ class _LoansListScreenState extends State<LoansListScreen> {
   Widget status(String status) {
     Map<String, String> statusMap = {
       "pending": "Pendiente",
-      "approved": "Aprobado",
+      "approved": "Activo",
       "rejected": "Rechazado",
-      "in_process": "En proceso",
-      "in_disbursement_process": "En proceso de desembolso",
+      "in_process": "En revisión",
+      "in_disbursement_process": "En desembolso",
     };
     Map<String, Color> statusColorMap = {
       "pending": const Color.fromARGB(255, 130, 101, 0),
