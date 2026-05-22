@@ -254,7 +254,7 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                             ),
                             TextField(
                               decoration: InputDecoration(
-                                hintText: '3001234567',
+                                hintText: 'Número de teléfono',
                                 hintStyle: TextStyle(
                                     color: Colors.white.withOpacity(0.6)),
                                 enabledBorder: InputBorder.none,
@@ -508,7 +508,7 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                             ),
                             TextField(
                               decoration: InputDecoration(
-                                hintText: '3001234567',
+                                hintText: 'Número de teléfono',
                                 hintStyle: TextStyle(
                                     color: Colors.white.withOpacity(0.6)),
                                 enabledBorder: InputBorder.none,

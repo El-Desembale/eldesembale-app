@@ -138,46 +138,82 @@ class _WebPaymentViewState extends State<WebPaymentView> {
               WebViewWidget(
                 controller: _controller,
               ),
-              _procesingPayment
-                  ? Container(
-                      height: MediaQuery.sizeOf(context).height,
-                      width: MediaQuery.sizeOf(context).width,
-                      color: Colors.white.withOpacity(0.8),
-                      child: const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Estamos validando tu pago",
-                              style: TextStyle(
-                                color: UIColors.primaryBlack,
-                                fontSize: 25,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 50),
-                            Text(
-                              "Este proceso puede tardar unos minutos\npor favor no cierres la aplicación",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: UIColors.primaryBlack,
-                                fontSize: 18,
-                              ),
-                            ),
-                            SizedBox(height: 50),
-                            SizedBox(
-                              height: 50,
-                              width: 50,
-                              child: CircularProgressIndicator(
-                                color: UIColors.primaryBlack,
-                                backgroundColor: Colors.white,
-                              ),
-                            ),
-                          ],
+              if (_procesingPayment)
+                Container(
+                  height: MediaQuery.sizeOf(context).height,
+                  width: MediaQuery.sizeOf(context).width,
+                  decoration: const BoxDecoration(
+                    color: Color.fromARGB(255, 6, 16, 0),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Spacer(),
+                      // Animated logo / icon
+                      Container(
+                        width: 90,
+                        height: 90,
+                        decoration: BoxDecoration(
+                          color: const Color.fromRGBO(47, 255, 0, 0.1),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color.fromRGBO(47, 255, 0, 0.4),
+                            width: 2,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.lock_outline_rounded,
+                          color: Color.fromRGBO(47, 255, 0, 1),
+                          size: 42,
                         ),
                       ),
-                    )
-                  : const SizedBox(),
+                      const SizedBox(height: 32),
+                      const Text(
+                        'Validando tu pago',
+                        style: TextStyle(
+                          fontFamily: 'Unbounded',
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 48),
+                        child: Text(
+                          'Este proceso puede tardar unos segundos.\nPor favor no cierres la aplicación.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.6),
+                            fontSize: 14,
+                            height: 1.6,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 48),
+                      const SizedBox(
+                        height: 36,
+                        width: 36,
+                        child: CircularProgressIndicator(
+                          color: Color.fromRGBO(47, 255, 0, 1),
+                          backgroundColor: Colors.transparent,
+                          strokeWidth: 2.5,
+                        ),
+                      ),
+                      const Spacer(),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 40),
+                        child: Text(
+                          'Pagos seguros por Wompi',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.25),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               Padding(
                 padding:
                     const EdgeInsets.symmetric(vertical: 50, horizontal: 20),
@@ -230,9 +266,7 @@ class _WebPaymentViewState extends State<WebPaymentView> {
 
   Future<void> getTransaccionStatus(String transaccionId) async {
     final dio = Dio();
-    // https://production.wompi.co/v1/transactions
-    // https://sandbox.wompi.co/v1/transactions
-    const url = "https://sandbox.wompi.co/v1/transactions";
+    const url = "https://production.wompi.co/v1/transactions";
     var response = await dio.get(
       "$url/$transaccionId",
     );
