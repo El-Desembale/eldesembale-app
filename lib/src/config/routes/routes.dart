@@ -184,9 +184,13 @@ class AppRoutes {
     GoRoute(
       path: subscrption,
       pageBuilder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
         return NoTransitionPage(
           child: SubscriptionScreen(
             homeCubit: _homeCubit,
+            afterSuccessRoute: extra?['afterSuccessRoute'] as String?,
+            returnSuccessResult:
+                extra?['returnSuccessResult'] as bool? ?? false,
           ),
         );
       },

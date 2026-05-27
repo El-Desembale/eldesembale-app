@@ -23,11 +23,11 @@ class LoanRequestEntity {
   factory LoanRequestEntity.fromMap(Map<String, dynamic> map) {
     return LoanRequestEntity(
       id: map['id'] ?? "",
-      amount: map['amount'],
-      installmentsPaid: map['installments_paid'],
+      amount: (map['amount'] as num?)?.toDouble() ?? 0,
+      installmentsPaid: (map['installments_paid'] as num?)?.toInt() ?? 0,
       createdAt: map['created_at'],
-      installments: map['installments'],
-      interest: map['interest'],
+      installments: (map['installments'] as num?)?.toInt() ?? 0,
+      interest: (map['interest'] as num?)?.toDouble() ?? 0,
       paymentPeriod: map['payment_period'],
       status: map['status'],
     );

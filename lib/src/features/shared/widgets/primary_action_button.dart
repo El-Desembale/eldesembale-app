@@ -29,35 +29,51 @@ class PrimaryActionButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: enabled ? kPrimaryGreen : kSurfaceSoft,
           borderRadius: BorderRadius.circular(kRadiusButton),
+          boxShadow: enabled
+              ? const [
+                  BoxShadow(
+                    color: Color(0x26173A25),
+                    blurRadius: 22,
+                    offset: Offset(0, 12),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 25),
-              child: Text(
-                label,
-                style: TextStyle(
-                  color: enabled ? Colors.black : Colors.white.withOpacity(0.4),
-                  fontSize: kFontBody,
-                  fontWeight: FontWeight.w600,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 22, right: 12),
+                child: Text(
+                  label,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: enabled
+                        ? kPrimaryGreenDeep
+                        : Colors.white.withValues(alpha: 0.4),
+                    fontSize: kFontBody,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.2,
+                  ),
                 ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(right: 16),
+              padding: const EdgeInsets.only(right: 8),
               child: Container(
                 width: kBtnInnerWidth,
                 height: kBtnInnerHeight,
                 decoration: BoxDecoration(
                   color: enabled
-                      ? Colors.white.withOpacity(0.5)
-                      : Colors.white.withOpacity(0.16),
+                      ? Colors.white.withValues(alpha: 0.28)
+                      : Colors.white.withValues(alpha: 0.16),
                   borderRadius: BorderRadius.circular(kRadiusButton - 2),
                 ),
                 child: Icon(
                   icon,
-                  color: Colors.black,
+                  color: enabled ? kPrimaryGreenDeep : Colors.white38,
                   size: 28,
                 ),
               ),

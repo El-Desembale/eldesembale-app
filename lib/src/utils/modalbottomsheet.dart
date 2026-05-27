@@ -1,13 +1,12 @@
 import 'package:desembale/src/config/routes/routes.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
-import 'images.dart';
+import 'design_tokens.dart';
 
 class ModalbottomsheetUtils {
-  static const _bg = Color.fromARGB(255, 6, 16, 0);
-  static const _green = Color.fromRGBO(47, 255, 0, 1);
+  static const _bg = kBgScreen;
+  static const _green = kPrimaryGreen;
 
   static Future<void> invalidOtp(BuildContext context) {
     return showModalBottomSheet(
@@ -30,24 +29,26 @@ class ModalbottomsheetUtils {
                   color: Colors.red.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Icon(Icons.error_outline, color: Colors.red, size: 36),
+                child: const Icon(Icons.error_outline,
+                    color: Colors.red, size: 36),
               ),
               const SizedBox(height: 20),
               const Text(
                 'Código incorrecto',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontFamily: 'Unbounded',
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
+                  fontFamily: kDisplayFont,
+                  color: kTextPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'El código ingresado no es válido. Inténtalo de nuevo.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 14),
+                style: const TextStyle(
+                    color: kTextSecondary, fontSize: 14, height: 1.4),
               ),
               const SizedBox(height: 28),
               _primaryButton(
@@ -89,24 +90,26 @@ class ModalbottomsheetUtils {
                   color: Colors.red.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 36),
+                child: const Icon(Icons.warning_amber_rounded,
+                    color: Colors.red, size: 36),
               ),
               const SizedBox(height: 20),
               Text(
                 title,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontFamily: 'Unbounded',
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
+                  fontFamily: kDisplayFont,
+                  color: kTextPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 message,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 14),
+                style: const TextStyle(
+                    color: kTextSecondary, fontSize: 14, height: 1.4),
               ),
               const SizedBox(height: 28),
               _primaryButton(
@@ -151,24 +154,26 @@ class ModalbottomsheetUtils {
                     color: _green.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Icon(Icons.check_circle_outline, color: _green, size: 36),
+                  child: const Icon(Icons.check_circle_outline,
+                      color: _green, size: 36),
                 ),
               const SizedBox(height: 20),
               Text(
                 title,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontFamily: 'Unbounded',
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
+                  fontFamily: kDisplayFont,
+                  color: kTextPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 message,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 14),
+                style: const TextStyle(
+                    color: kTextSecondary, fontSize: 14, height: 1.4),
               ),
               const SizedBox(height: 28),
               _primaryButton(
@@ -217,20 +222,18 @@ class ModalbottomsheetUtils {
                 '¡Solicitud enviada!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontFamily: 'Unbounded',
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+                  fontFamily: kDisplayFont,
+                  color: kTextPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 10),
               Text(
                 'Revisaremos tu solicitud y te notificaremos pronto.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.55),
-                  fontSize: 14,
-                ),
+                style: const TextStyle(
+                    color: kTextSecondary, fontSize: 14, height: 1.4),
               ),
               const SizedBox(height: 28),
               GestureDetector(
@@ -267,7 +270,8 @@ class ModalbottomsheetUtils {
                             color: const Color.fromRGBO(255, 255, 255, 0.4),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Icon(Icons.list_alt_outlined, color: Colors.black, size: 26),
+                          child: const Icon(Icons.list_alt_outlined,
+                              color: Colors.black, size: 26),
                         ),
                       ),
                     ],
@@ -309,7 +313,8 @@ class ModalbottomsheetUtils {
                             color: Colors.white.withOpacity(0.08),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Icon(Icons.home_outlined, color: Colors.white.withOpacity(0.6), size: 26),
+                          child: Icon(Icons.home_outlined,
+                              color: Colors.white.withOpacity(0.6), size: 26),
                         ),
                       ),
                     ],
@@ -345,7 +350,10 @@ class ModalbottomsheetUtils {
               padding: const EdgeInsets.only(left: 25),
               child: Text(
                 label,
-                style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    color: textColor,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600),
               ),
             ),
             Padding(

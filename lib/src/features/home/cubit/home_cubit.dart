@@ -7,10 +7,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../config/auth/cubit/auth_cubit.dart';
-import '../../../config/routes/routes.dart';
 import '../../../core/di/injection_dependency.dart';
 import '../../../utils/modalbottomsheet.dart';
 import '../data/entities/loan_information_entity.dart';
@@ -29,7 +27,11 @@ class PaymentData {
   final String url;
   final String reference;
   final int amountInCents;
-  PaymentData({required this.url, required this.reference, required this.amountInCents});
+  PaymentData({
+    required this.url,
+    required this.reference,
+    required this.amountInCents,
+  });
 }
 
 class HomeCubit extends Cubit<HomeState> {
@@ -61,6 +63,8 @@ class HomeCubit extends Cubit<HomeState> {
             selectedInstallments: 4,
             totalLoanAmount: 250000,
             paymentPeriod: 'Quincenal',
+            subscriptionAmount: 22000,
+            reusableLoanInformation: null,
           ),
         );
 
@@ -73,13 +77,20 @@ class HomeCubit extends Cubit<HomeState> {
   void updateSegmentFromPosition(BuildContext context, double dx) {
     final box = context.findRenderObject() as RenderBox;
     final width = box.size.width;
-    print('dx: $dx, width: $width');
     final newSegment = (dx / width * 55).clamp(0, 49).toInt();
-    print('newSegment: $newSegment');
     updateSelectedSegment(newSegment);
   }
 
-  Future<Map<String, String>> _getWompiConfig() async {
+  int _parseSubscriptionAmount(dynamic value) {
+    if (value is int) return value;
+    if (value is double) return value.round();
+    if (value is String) {
+      return int.tryParse(value.replaceAll(RegExp(r'[^0-9]'), '')) ?? 22000;
+    }
+    return 22000;
+  }
+
+  Future<Map<String, dynamic>> _getWompiConfig() async {
     try {
       final snap = await FirebaseFirestore.instance
           .collection('config')
@@ -90,11 +101,75 @@ class HomeCubit extends Cubit<HomeState> {
         return {
           'publicKey': data['publicKey'] ?? '',
           'integrityKey': data['integrityKey'] ?? '',
-          'subscriptionAmount': (data['subscriptionAmount'] ?? 22000).toString(),
+          'subscriptionAmount': _parseSubscriptionAmount(
+            data['subscriptionAmount'],
+          ),
         };
       }
     } catch (_) {}
-    return {'publicKey': '', 'integrityKey': '', 'subscriptionAmount': '22000'};
+    return {
+      'publicKey': '',
+      'integrityKey': '',
+      'subscriptionAmount': 22000,
+    };
+  }
+
+  Future<void> loadWompiConfig() async {
+    final wompi = await _getWompiConfig();
+    emit(
+      state.copyWith(
+        subscriptionAmount: wompi['subscriptionAmount'] as int,
+      ),
+    );
+  }
+
+  Future<void> loadReusableLoanInformation() async {
+    final user = sl<AuthCubit>(instanceName: 'auth').state.user;
+    if (user.phone.isEmpty) return;
+
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('loan_request')
+          .where('phone', isEqualTo: user.phone)
+          .get();
+
+      if (snap.docs.isEmpty) {
+        emit(state.copyWith(reusableLoanInformation: null));
+        return;
+      }
+
+      final docs = [...snap.docs]..sort((a, b) {
+          final aDate = (a.data()['created_at'] as Timestamp?)?.toDate() ??
+              DateTime.fromMillisecondsSinceEpoch(0);
+          final bDate = (b.data()['created_at'] as Timestamp?)?.toDate() ??
+              DateTime.fromMillisecondsSinceEpoch(0);
+          return bDate.compareTo(aDate);
+        });
+
+      final rawLoanInformation =
+          (docs.first.data()['loan_information'] as Map<String, dynamic>?) ??
+              {};
+      final reusable = LoanInformationEntity.fromStoredMap(rawLoanInformation);
+
+      emit(
+        state.copyWith(
+          reusableLoanInformation:
+              reusable.hasReusableProfile ? reusable : null,
+        ),
+      );
+    } catch (_) {
+      emit(state.copyWith(reusableLoanInformation: null));
+    }
+  }
+
+  void useReusableLoanInformation() {
+    final reusable = state.reusableLoanInformation;
+    if (reusable == null) return;
+    emit(state.copyWith(loanInformation: reusable));
+  }
+
+  void resetLoanInformation() {
+    emit(state.copyWith(loanInformation: LoanInformationEntity.initial()));
   }
 
   Future<PaymentData> generateSubscriptionPayment(BuildContext context) async {
@@ -102,8 +177,9 @@ class HomeCubit extends Cubit<HomeState> {
     final wompi = await _getWompiConfig();
     final priv_key = wompi['integrityKey']!;
     final public_key = wompi['publicKey']!;
-    final subAmount = int.parse(wompi['subscriptionAmount']!);
+    final subAmount = wompi['subscriptionAmount'] as int;
     final amountInCents = subAmount * 100;
+    emit(state.copyWith(subscriptionAmount: subAmount));
 
     final reference =
         'subscription${user.phone}${DateTime.now().millisecondsSinceEpoch}';
@@ -123,7 +199,11 @@ class HomeCubit extends Cubit<HomeState> {
       user.phone,
     );
 
-    return PaymentData(url: url, reference: reference, amountInCents: amountInCents);
+    return PaymentData(
+      url: url,
+      reference: reference,
+      amountInCents: amountInCents,
+    );
   }
 
   Future<PaymentData> generatePayment(
@@ -155,7 +235,11 @@ class HomeCubit extends Cubit<HomeState> {
       user.phone,
     );
 
-    return PaymentData(url: url, reference: reference, amountInCents: amountInCents);
+    return PaymentData(
+      url: url,
+      reference: reference,
+      amountInCents: amountInCents,
+    );
   }
 
   String _generateIntegrityHash(
@@ -176,8 +260,7 @@ class HomeCubit extends Cubit<HomeState> {
     final min = state.limits.minAmmount.toDouble();
     final max = state.limits.maxAmmount.toDouble();
     final clamped = amount.clamp(min, max);
-    final segment =
-        ((clamped - min) / (max - min) * 49).round().clamp(0, 49);
+    final segment = ((clamped - min) / (max - min) * 49).round().clamp(0, 49);
     emit(state.copyWith(
       limits: state.limits.copyWith(selectedSegment: segment),
       totalLoanAmount: clamped,
@@ -255,7 +338,8 @@ class HomeCubit extends Cubit<HomeState> {
     required String additionalInfo,
     required String city,
   }) {
-    final combined = "$wayType $wayNumber # $wayNumber2 - $wayNumber3 $interior, $additionalInfo, $city";
+    final combined =
+        "$wayType $wayNumber # $wayNumber2 - $wayNumber3 $interior, $additionalInfo, $city";
     emit(
       state.copyWith(
         loanInformation: state.loanInformation.copyWith(
@@ -403,7 +487,8 @@ class HomeCubit extends Cubit<HomeState> {
     isLoading(false);
   }
 
-  Future<bool> updateLoanInstallments(LoanRequestEntity loan, {int installmentsToPay = 1}) async {
+  Future<bool> updateLoanInstallments(LoanRequestEntity loan,
+      {int installmentsToPay = 1}) async {
     final response = await _updateLoanUseCase.call(
       loan: loan,
       installmentsToPay: installmentsToPay,
@@ -444,6 +529,7 @@ class HomeCubit extends Cubit<HomeState> {
           ),
         );
         getLoans();
+        loadReusableLoanInformation();
         ModalbottomsheetUtils.loanSubmittedSheet(context);
       },
     );
@@ -452,7 +538,8 @@ class HomeCubit extends Cubit<HomeState> {
 
   void updateLoan(int loanIndex, {int installmentsToPay = 1}) {
     final loan = state.loans[loanIndex].copyWith(
-      installmentsPaid: state.loans[loanIndex].installmentsPaid + installmentsToPay,
+      installmentsPaid:
+          state.loans[loanIndex].installmentsPaid + installmentsToPay,
     );
 
     if (loanIndex != -1) {
@@ -478,7 +565,8 @@ class HomeCubit extends Cubit<HomeState> {
     int? installmentNumber,
   }) async {
     final user = sl<AuthCubit>(instanceName: 'auth').state.user;
-    final type = reference.startsWith('subscription') ? 'subscription' : 'installment';
+    final type =
+        reference.startsWith('subscription') ? 'subscription' : 'installment';
     await _savePaymentRecordUseCase.call(
       transactionId: transactionId,
       reference: reference,
@@ -509,6 +597,8 @@ class HomeCubit extends Cubit<HomeState> {
         totalLoanAmount: 30000,
         selectedInstallments: 4,
         paymentPeriod: 'Quincenal',
+        subscriptionAmount: 22000,
+        reusableLoanInformation: null,
       ),
     );
   }

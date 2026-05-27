@@ -13,6 +13,10 @@ class LoanInformationEntity {
   final File ccFrontalPicture;
   final File ccBackPicture;
   final File selfiePicture;
+  final String existingEmpInvoiceUrl;
+  final String existingCcFrontalPictureUrl;
+  final String existingCcBackPictureUrl;
+  final String existingSelfiePictureUrl;
   final LoanReferenceEntity firstReference;
   final LoanReferenceEntity secondReference;
   final LoanBankAccountEntity bankInformation;
@@ -29,10 +33,59 @@ class LoanInformationEntity {
     required this.ccFrontalPicture,
     required this.ccBackPicture,
     required this.selfiePicture,
+    this.existingEmpInvoiceUrl = '',
+    this.existingCcFrontalPictureUrl = '',
+    this.existingCcBackPictureUrl = '',
+    this.existingSelfiePictureUrl = '',
     required this.firstReference,
     required this.secondReference,
     required this.bankInformation,
   });
+
+  factory LoanInformationEntity.fromStoredMap(Map<String, dynamic> map) {
+    final firstReferenceMap =
+        (map['first_reference'] as Map<String, dynamic>?) ?? {};
+    final secondReferenceMap =
+        (map['second_reference'] as Map<String, dynamic>?) ?? {};
+    final bankInformationMap =
+        (map['bank_information'] as Map<String, dynamic>?) ?? {};
+
+    return LoanInformationEntity(
+      direction: (map['direction'] as String?) ?? '',
+      directionWayType: 'Avenida',
+      empInvoiceFile: File(''),
+      ccFrontalPicture: File(''),
+      ccBackPicture: File(''),
+      selfiePicture: File(''),
+      existingEmpInvoiceUrl: (map['emp_invoice_file'] as String?) ?? '',
+      existingCcFrontalPictureUrl: (map['cc_frontal_picture'] as String?) ?? '',
+      existingCcBackPictureUrl: (map['cc_back_picture'] as String?) ?? '',
+      existingSelfiePictureUrl: (map['selfie_picture'] as String?) ?? '',
+      firstReference: LoanReferenceEntity(
+        phone: ((firstReferenceMap['phone'] as num?) ?? 0).toInt(),
+        relationship: (firstReferenceMap['relationship'] as String?) ?? '',
+      ),
+      secondReference: LoanReferenceEntity(
+        phone: ((secondReferenceMap['phone'] as num?) ?? 0).toInt(),
+        relationship: (secondReferenceMap['relationship'] as String?) ?? '',
+      ),
+      bankInformation: LoanBankAccountEntity(
+        bankName: (bankInformationMap['bank_name'] as String?) ?? '',
+        accountType: (bankInformationMap['account_type'] as String?) ?? '',
+        bankAccountNumber:
+            (bankInformationMap['bank_account_number'] as String?) ?? '',
+        bankAccountName:
+            (bankInformationMap['bank_account_name'] as String?) ?? '',
+        bankAccountLastName:
+            (bankInformationMap['bank_account_last_name'] as String?) ?? '',
+        bankDocumentType:
+            (bankInformationMap['bank_document_type'] as String?) ?? '',
+        bankDocumentNumber:
+            (bankInformationMap['bank_document_number'] as String?) ?? '',
+      ),
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'direction': direction,
@@ -69,6 +122,10 @@ class LoanInformationEntity {
     File? ccFrontalPicture,
     File? ccBackPicture,
     File? selfiePicture,
+    String? existingEmpInvoiceUrl,
+    String? existingCcFrontalPictureUrl,
+    String? existingCcBackPictureUrl,
+    String? existingSelfiePictureUrl,
     LoanReferenceEntity? firstReference,
     LoanReferenceEntity? secondReference,
     LoanBankAccountEntity? bankInformation,
@@ -80,12 +137,21 @@ class LoanInformationEntity {
       directionWayNumber2: directionWayNumber2 ?? this.directionWayNumber2,
       directionWayNumber3: directionWayNumber3 ?? this.directionWayNumber3,
       directionInterior: directionInterior ?? this.directionInterior,
-      directionAdditionalInfo: directionAdditionalInfo ?? this.directionAdditionalInfo,
+      directionAdditionalInfo:
+          directionAdditionalInfo ?? this.directionAdditionalInfo,
       directionCity: directionCity ?? this.directionCity,
       empInvoiceFile: empInvoiceFile ?? this.empInvoiceFile,
       ccFrontalPicture: ccFrontalPicture ?? this.ccFrontalPicture,
       ccBackPicture: ccBackPicture ?? this.ccBackPicture,
       selfiePicture: selfiePicture ?? this.selfiePicture,
+      existingEmpInvoiceUrl:
+          existingEmpInvoiceUrl ?? this.existingEmpInvoiceUrl,
+      existingCcFrontalPictureUrl:
+          existingCcFrontalPictureUrl ?? this.existingCcFrontalPictureUrl,
+      existingCcBackPictureUrl:
+          existingCcBackPictureUrl ?? this.existingCcBackPictureUrl,
+      existingSelfiePictureUrl:
+          existingSelfiePictureUrl ?? this.existingSelfiePictureUrl,
       firstReference: firstReference ?? this.firstReference,
       secondReference: secondReference ?? this.secondReference,
       bankInformation: bankInformation ?? this.bankInformation,
@@ -116,12 +182,33 @@ class LoanInformationEntity {
           bankDocumentNumber: '',
         ),
       );
-  bool get isLoanInformationCompleted =>
-      direction.isNotEmpty &&
+
+  bool get hasStoredDocuments =>
+      existingEmpInvoiceUrl.isNotEmpty &&
+      existingCcFrontalPictureUrl.isNotEmpty &&
+      existingCcBackPictureUrl.isNotEmpty &&
+      existingSelfiePictureUrl.isNotEmpty;
+
+  bool get hasCapturedDocuments =>
       empInvoiceFile.path.isNotEmpty &&
       ccFrontalPicture.path.isNotEmpty &&
       ccBackPicture.path.isNotEmpty &&
-      selfiePicture.path.isNotEmpty &&
+      selfiePicture.path.isNotEmpty;
+
+  bool get hasReusableProfile =>
+      direction.isNotEmpty &&
+      firstReference.relationship.isNotEmpty &&
+      secondReference.relationship.isNotEmpty &&
+      bankInformation.isCompleted &&
+      (hasCapturedDocuments || hasStoredDocuments);
+
+  bool get isLoanInformationCompleted =>
+      direction.isNotEmpty &&
+      (empInvoiceFile.path.isNotEmpty || existingEmpInvoiceUrl.isNotEmpty) &&
+      (ccFrontalPicture.path.isNotEmpty ||
+          existingCcFrontalPictureUrl.isNotEmpty) &&
+      (ccBackPicture.path.isNotEmpty || existingCcBackPictureUrl.isNotEmpty) &&
+      (selfiePicture.path.isNotEmpty || existingSelfiePictureUrl.isNotEmpty) &&
       firstReference.relationship.isNotEmpty &&
       secondReference.relationship.isNotEmpty &&
       bankInformation.isCompleted;

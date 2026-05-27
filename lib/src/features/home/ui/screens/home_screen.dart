@@ -8,9 +8,10 @@ import 'package:intl/intl.dart';
 
 import '../../../../config/auth/cubit/auth_cubit.dart';
 import '../../../../core/di/injection_dependency.dart';
-import '../../../../utils/colors.dart';
+import '../../../../utils/design_tokens.dart';
 import '../../cubit/home_cubit.dart';
 import '../../data/entities/loan_request_entity.dart';
+import '../../../shared/widgets/primary_action_button.dart';
 import '../widgets/drawer.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -40,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void _refreshData() {
     widget.homeCubit.getLimits();
     widget.homeCubit.getLoans();
+    widget.homeCubit.loadReusableLoanInformation();
   }
 
   @override
@@ -78,15 +80,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: FloatingActionButton(
               heroTag: 'home_fab',
+              elevation: 0,
               shape: const CircleBorder(),
-              backgroundColor: UIColors.primeraGrey.withOpacity(0.15),
+              backgroundColor: kSurfaceSoft,
               onPressed: () {
                 _scaffoldKey.currentState?.openDrawer();
               },
               child: const Icon(
                 Icons.menu,
-                color: Colors.white,
-                size: 35,
+                color: kTextPrimary,
+                size: 30,
               ),
             ),
           ),
@@ -106,13 +109,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final maxInstallments = state.limits.maxInstallments;
     return Container(
       decoration: const BoxDecoration(
-        color: Color.fromARGB(255, 6, 16, 0),
+        color: kBgScreen,
       ),
       child: Container(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 30,
-          right: 30,
+          left: 24,
+          right: 24,
         ),
         height: MediaQuery.sizeOf(context).height,
         width: MediaQuery.sizeOf(context).width,
@@ -125,8 +128,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     height: 50,
                     width: 50,
                     child: CircularProgressIndicator(
-                      color: Colors.grey,
-                      backgroundColor: Colors.white,
+                      color: kPrimaryGreen,
+                      backgroundColor: kSurfaceSoft,
                     ),
                   ),
                 ),
@@ -139,280 +142,225 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                  SizedBox(height: MediaQuery.of(context).padding.top + 90),
-                  const Text(
-                    '¿Cuánto necesitas?',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: "Unbounded",
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Input manual de monto
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.06),
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.1),
-                      ),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          '\$',
-                          style: TextStyle(
-                            fontFamily: 'Unbounded',
-                            color: Colors.white.withOpacity(0.35),
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            controller: _amountController,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              _AmountInputFormatter(
-                                  max: state.limits.maxAmmount),
-                            ],
-                            style: const TextStyle(
-                              fontFamily: 'Unbounded',
-                              color: Colors.white,
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold,
+                          SizedBox(
+                              height: MediaQuery.of(context).padding.top + 90),
+                          const Text(
+                            '¿Cuánto necesitas?',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: kDisplayFont,
+                              color: kTextPrimary,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w600,
                             ),
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              isDense: true,
-                              contentPadding: EdgeInsets.zero,
-                            ),
-                            onChanged: (value) {
-                              final raw = value.replaceAll(',', '');
-                              final amount = double.tryParse(raw) ??
-                                  state.limits.minAmmount.toDouble();
-                              widget.homeCubit.updateAmountDirectly(amount);
-                            },
                           ),
-                        ),
-                        Text(
-                          'COP',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.3),
-                            fontSize: 11,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  // Slider de monto
-                  SliderTheme(
-                    data: SliderThemeData(
-                      activeTrackColor: const Color.fromRGBO(47, 255, 0, 1),
-                      inactiveTrackColor: Colors.white.withOpacity(0.1),
-                      thumbColor: Colors.white,
-                      overlayColor:
-                          const Color.fromRGBO(47, 255, 0, 0.15),
-                      trackHeight: 4,
-                      thumbShape: const RoundSliderThumbShape(
-                          enabledThumbRadius: 10),
-                    ),
-                    child: Slider(
-                      value: state.totalLoanAmount.clamp(
-                        state.limits.minAmmount.toDouble(),
-                        state.limits.maxAmmount.toDouble(),
-                      ),
-                      min: state.limits.minAmmount.toDouble(),
-                      max: state.limits.maxAmmount.toDouble(),
-                      divisions: ((state.limits.maxAmmount -
-                                  state.limits.minAmmount) /
-                              10000)
-                          .toInt(),
-                      onChanged: (value) {
-                        final snapped =
-                            ((value / 10000).round() * 10000).toDouble();
-                        widget.homeCubit.updateAmountDirectly(snapped);
-                        _syncController(snapped);
-                      },
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          NumberFormat('#,##0', 'en_US')
-                              .format(state.limits.minAmmount),
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.35),
-                            fontSize: 11,
-                          ),
-                        ),
-                        Text(
-                          NumberFormat('#,##0', 'en_US')
-                              .format(state.limits.maxAmmount),
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.35),
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Periodo de Pago',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  GestureDetector(
-                    onTap: () {
-                      widget.homeCubit.updatePaymentPeriod('Quincenal');
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 40,
-                        vertical: 25,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 21, 28, 16),
-                        borderRadius: BorderRadius.circular(22),
-                        border: Border.all(
-                          color: state.paymentPeriod == 'Quincenal'
-                              ? Colors.white
-                              : Colors.transparent,
-                        ),
-                      ),
-                      child: Center(
-                        child: Row(
-                          children: [
-                            const Text(
-                              'Quincenal',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                          const SizedBox(height: 20),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: kSurfaceSoft,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: kBorderFaint,
                               ),
                             ),
-                            const Spacer(),
-                            state.paymentPeriod == 'Quincenal'
-                                ? const Icon(
-                                    Icons.check_circle_outline_rounded,
-                                    color: Colors.white,
-                                    size: 30,
-                                  )
-                                : const SizedBox(),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  GestureDetector(
-                    onTap: () {
-                      widget.homeCubit.updatePaymentPeriod('Mensual');
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 40,
-                        vertical: 25,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 21, 28, 16),
-                        borderRadius: BorderRadius.circular(22),
-                        border: Border.all(
-                          color: state.paymentPeriod == 'Mensual'
-                              ? Colors.white
-                              : Colors.transparent,
-                        ),
-                      ),
-                      child: Center(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'Mensual',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 12,
                             ),
-                            const Spacer(),
-                            state.paymentPeriod == 'Mensual'
-                                ? const Icon(
-                                    Icons.check_circle_outline_rounded,
-                                    color: Colors.white,
-                                    size: 30,
-                                  )
-                                : const SizedBox(),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  const Text(
-                    'Número de Cuotas',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(
-                        maxInstallments - minInstallments + 1,
-                        (index) {
-                          int number = minInstallments + index;
-                          return GestureDetector(
-                            onTap: () {
-                              widget.homeCubit.updateInstallments(number);
-                            },
-                            child: Container(
-                              height: 70,
-                              width: 40,
-                              margin: const EdgeInsets.symmetric(horizontal: 5),
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: state.selectedInstallments == number
-                                    ? Colors.white
-                                    : const Color.fromARGB(255, 21, 28, 16),
-                                borderRadius: BorderRadius.circular(22),
-                              ),
-                              child: Text(
-                                '$number',
-                                style: TextStyle(
-                                  color: state.selectedInstallments == number
-                                      ? const Color.fromARGB(255, 21, 28, 16)
-                                      : Colors.white,
-                                  fontWeight: FontWeight.bold,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  '\$',
+                                  style: TextStyle(
+                                    fontFamily: kDisplayFont,
+                                    color: kTextSecondary,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: TextField(
+                                    controller: _amountController,
+                                    keyboardType: TextInputType.number,
+                                    inputFormatters: [
+                                      _AmountInputFormatter(
+                                          max: state.limits.maxAmmount),
+                                    ],
+                                    style: const TextStyle(
+                                      fontFamily: kDisplayFont,
+                                      color: kTextPrimary,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      isDense: true,
+                                      contentPadding: EdgeInsets.zero,
+                                    ),
+                                    onChanged: (value) {
+                                      final raw = value.replaceAll(',', '');
+                                      final amount = double.tryParse(raw) ??
+                                          state.limits.minAmmount.toDouble();
+                                      widget.homeCubit
+                                          .updateAmountDirectly(amount);
+                                    },
+                                  ),
+                                ),
+                                const Text(
+                                  'COP',
+                                  style: TextStyle(
+                                    color: kTextSecondary,
+                                    fontSize: 11,
+                                    letterSpacing: 1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          SliderTheme(
+                            data: SliderThemeData(
+                              activeTrackColor: kPrimaryGreen,
+                              inactiveTrackColor: kSurfaceSoft,
+                              thumbColor: kPrimaryGreen,
+                              overlayColor: kPrimaryGreenSoft,
+                              trackHeight: 5,
+                              thumbShape: const RoundSliderThumbShape(
+                                  enabledThumbRadius: 10),
+                            ),
+                            child: Slider(
+                              value: state.totalLoanAmount.clamp(
+                                state.limits.minAmmount.toDouble(),
+                                state.limits.maxAmmount.toDouble(),
+                              ),
+                              min: state.limits.minAmmount.toDouble(),
+                              max: state.limits.maxAmmount.toDouble(),
+                              divisions: ((state.limits.maxAmmount -
+                                          state.limits.minAmmount) /
+                                      10000)
+                                  .toInt(),
+                              onChanged: (value) {
+                                final snapped =
+                                    ((value / 10000).round() * 10000)
+                                        .toDouble();
+                                widget.homeCubit.updateAmountDirectly(snapped);
+                                _syncController(snapped);
+                              },
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  NumberFormat('#,##0', 'en_US')
+                                      .format(state.limits.minAmmount),
+                                  style: const TextStyle(
+                                    color: kTextSecondary,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                                Text(
+                                  NumberFormat('#,##0', 'en_US')
+                                      .format(state.limits.maxAmmount),
+                                  style: const TextStyle(
+                                    color: kTextSecondary,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          const Text(
+                            'Periodo de Pago',
+                            style: TextStyle(
+                              fontFamily: kDisplayFont,
+                              color: kTextPrimary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          _buildPaymentOption(
+                            label: 'Quincenal',
+                            isSelected: state.paymentPeriod == 'Quincenal',
+                            onTap: () {
+                              widget.homeCubit.updatePaymentPeriod('Quincenal');
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                          _buildPaymentOption(
+                            label: 'Mensual',
+                            isSelected: state.paymentPeriod == 'Mensual',
+                            onTap: () {
+                              widget.homeCubit.updatePaymentPeriod('Mensual');
+                            },
+                          ),
+                          const SizedBox(height: 30),
+                          const Text(
+                            'Número de Cuotas',
+                            style: TextStyle(
+                              fontFamily: kDisplayFont,
+                              color: kTextPrimary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: List.generate(
+                                maxInstallments - minInstallments + 1,
+                                (index) {
+                                  int number = minInstallments + index;
+                                  return GestureDetector(
+                                    onTap: () {
+                                      widget.homeCubit
+                                          .updateInstallments(number);
+                                    },
+                                    child: Container(
+                                      height: 62,
+                                      width: 46,
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 5),
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color:
+                                            state.selectedInstallments == number
+                                                ? kPrimaryGreen
+                                                : kSurfaceSoft,
+                                        borderRadius: BorderRadius.circular(18),
+                                        border: Border.all(
+                                          color: state.selectedInstallments ==
+                                                  number
+                                              ? Colors.transparent
+                                              : kBorderFaint,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        '$number',
+                                        style: TextStyle(
+                                          color: state.selectedInstallments ==
+                                                  number
+                                              ? kPrimaryGreenDeep
+                                              : kTextPrimary,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
+                          ),
+                          const SizedBox(height: 20),
                         ],
                       ),
                     ),
@@ -425,12 +373,62 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 
+  Widget _buildPaymentOption({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+        decoration: BoxDecoration(
+          color: isSelected ? kPrimaryGreenSoft : kSurfaceSoft,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: isSelected ? kPrimaryGreen : kBorderFaint,
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: kTextPrimary,
+                  fontSize: 15,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                ),
+              ),
+            ),
+            Icon(
+              isSelected
+                  ? Icons.check_circle_rounded
+                  : Icons.radio_button_unchecked_rounded,
+              color: isSelected ? kPrimaryGreen : kTextSecondary,
+              size: 24,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildLoanCard(BuildContext context, LoanRequestEntity loan) {
     final isPending = loan.status == 'pending';
-    final statusLabel = isPending ? 'Pendiente' : loan.status == 'in_process' ? 'En revisión' : loan.status == 'in_disbursement_process' ? 'En desembolso' : loan.status == 'approved' ? 'Activo' : 'Rechazado';
-    final statusColor = isPending
-        ? Colors.white.withOpacity(0.6)
-        : const Color.fromRGBO(47, 255, 0, 1);
+    final statusLabel = isPending
+        ? 'Pendiente'
+        : loan.status == 'in_process'
+            ? 'En revisión'
+            : loan.status == 'in_disbursement_process'
+                ? 'En desembolso'
+                : loan.status == 'approved'
+                    ? 'Activo'
+                    : 'Rechazado';
+    final statusColor = isPending ? kTextSecondary : kPrimaryGreen;
     return GestureDetector(
       onTap: () async {
         await context.push(AppRoutes.loansList);
@@ -439,9 +437,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.06),
+          color: kSurfaceSoft,
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: Colors.white.withOpacity(0.12)),
+          border: Border.all(color: kBorderFaint),
         ),
         child: Row(
           children: [
@@ -450,25 +448,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    NumberFormat('\$#,##0', 'en_US').format(loan.amount.toInt()),
+                    NumberFormat('\$#,##0', 'en_US')
+                        .format(loan.amount.toInt()),
                     style: const TextStyle(
-                      fontFamily: 'Unbounded',
-                      color: Colors.white,
+                      fontFamily: kDisplayFont,
+                      color: kTextPrimary,
                       fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${loan.installments} cuotas · ${loan.paymentPeriod}',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.5),
+                    'Pagadas ${loan.installmentsPaid}/${loan.installments} · ${loan.paymentPeriod}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: kTextSecondary,
                       fontSize: 12,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                     decoration: BoxDecoration(
                       color: statusColor.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(20),
@@ -489,12 +491,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.08),
+                color: kBgScreenAlt,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: Colors.white.withOpacity(0.5),
+                color: kTextSecondary,
                 size: 16,
               ),
             ),
@@ -527,53 +529,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (isSubscribed) {
       await context.push(AppRoutes.loanInformation);
     } else {
-      await context.push(AppRoutes.subscrption);
+      await context.push(
+        AppRoutes.subscrption,
+        extra: {
+          'afterSuccessRoute': AppRoutes.loanInformation,
+        },
+      );
     }
     _refreshData();
   }
 
   Widget _buildNewRequestButton(BuildContext context) {
-    return GestureDetector(
+    return PrimaryActionButton(
+      label: 'Continuar con solicitud',
+      margin: EdgeInsets.zero,
       onTap: () => _goToLoanOrSubscription(context),
-      child: Container(
-        height: 62,
-        decoration: BoxDecoration(
-          color: const Color.fromRGBO(47, 255, 0, 1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Padding(
-              padding: EdgeInsets.only(left: 25),
-              child: Text(
-                'Continuar con solicitud',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Container(
-                width: 46,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.arrow_forward_rounded,
-                  color: Colors.black,
-                  size: 22,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -589,13 +559,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           ),
           child: Row(
             children: [
-              Icon(Icons.info_outline, color: Colors.orange.withOpacity(0.8), size: 18),
+              Icon(Icons.info_outline,
+                  color: Colors.orange.withOpacity(0.8), size: 18),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Tienes una solicitud en revisión. Espera la respuesta antes de hacer una nueva.',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                  style: const TextStyle(
+                    color: kTextSecondary,
                     fontSize: 12,
                   ),
                 ),
@@ -607,9 +578,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         Container(
           height: 62,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.06),
+            color: kSurfaceSoft,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withOpacity(0.08)),
+            border: Border.all(color: kBorderFaint),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -619,7 +590,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 child: Text(
                   'Nueva solicitud',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
@@ -631,12 +602,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   width: 46,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
+                    color: kBgScreenAlt,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
                     Icons.lock_outline_rounded,
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     size: 20,
                   ),
                 ),
@@ -659,13 +630,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       ),
       child: Row(
         children: [
-          Icon(Icons.money_off_rounded, color: Colors.red.withOpacity(0.8), size: 20),
+          Icon(Icons.money_off_rounded,
+              color: Colors.red.withOpacity(0.8), size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               'No hay presupuesto disponible en este momento. Intenta más tarde.',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+              style: const TextStyle(
+                color: kTextSecondary,
                 fontSize: 12,
               ),
             ),
@@ -679,12 +651,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final budgetAvailable = state.limits.budgetAvailable;
     final budgetExhausted = budgetAvailable != null && budgetAvailable <= 0;
 
-    final pendingLoan = state.loans
-        .where((l) => l.status == 'pending')
-        .firstOrNull;
-    final approvedLoan = state.loans
-        .where((l) => l.status == 'approved')
-        .firstOrNull;
+    final pendingLoan =
+        state.loans.where((l) => l.status == 'pending').firstOrNull;
+    final approvedLoan =
+        state.loans.where((l) => l.status == 'approved').firstOrNull;
 
     // Si hay una solicitud en revisión: mostrar tarjeta + bloquear botón
     if (pendingLoan != null) {
@@ -709,9 +679,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           Container(
             height: 62,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.06),
+              color: kSurfaceSoft,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withOpacity(0.08)),
+              border: Border.all(color: kBorderFaint),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -721,7 +691,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   child: Text(
                     'Presupuesto agotado',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.3),
+                      color: Colors.white.withValues(alpha: 0.3),
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
@@ -733,12 +703,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     width: 46,
                     height: 38,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
+                      color: kBgScreenAlt,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
                       Icons.lock_outline_rounded,
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       size: 20,
                     ),
                   ),
@@ -761,48 +731,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     }
 
-    // Sin solicitudes activas: mostrar solo el botón
-    return GestureDetector(
+    return PrimaryActionButton(
+      label: 'Continuar con solicitud',
+      margin: EdgeInsets.zero,
       onTap: () => _goToLoanOrSubscription(context),
-      child: Container(
-        height: 62,
-        decoration: BoxDecoration(
-          color: const Color.fromRGBO(47, 255, 0, 1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Padding(
-              padding: EdgeInsets.only(left: 25),
-              child: Text(
-                'Continuar con solicitud',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Container(
-                width: 46,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.arrow_forward_rounded,
-                  color: Colors.black,
-                  size: 22,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

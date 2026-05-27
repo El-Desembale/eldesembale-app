@@ -59,12 +59,15 @@ class HomeServiceImpl implements HomeService {
     // Calculate available budget
     double? budgetAvailable;
     try {
-      final budgetDoc = await _database.collection('settings').doc('budget').get();
+      final budgetDoc =
+          await _database.collection('settings').doc('budget').get();
       if (budgetDoc.exists) {
         final budgetData = budgetDoc.data() as Map<String, dynamic>;
-        final totalCapital = (budgetData['total_capital'] as num?)?.toDouble() ?? 0;
+        final totalCapital =
+            (budgetData['total_capital'] as num?)?.toDouble() ?? 0;
         if (totalCapital > 0) {
-          final loansSnap = await _database.collection('loan_request')
+          final loansSnap = await _database
+              .collection('loan_request')
               .where('status', isEqualTo: 'approved')
               .get();
           double capitalLent = 0;
@@ -73,7 +76,8 @@ class HomeServiceImpl implements HomeService {
             final d = doc.data();
             final amount = (d['amount'] as num?)?.toDouble() ?? 0;
             final installments = (d['installments'] as num?)?.toInt() ?? 0;
-            final installmentsPaid = (d['installments_paid'] as num?)?.toInt() ?? 0;
+            final installmentsPaid =
+                (d['installments_paid'] as num?)?.toInt() ?? 0;
             capitalLent += amount;
             if (installments > 0) {
               capitalRecovered += installmentsPaid * (amount / installments);
@@ -119,14 +123,18 @@ class HomeServiceImpl implements HomeService {
     String? clientName,
   }) async {
     try {
-      final ccFrontalPicture =
-          await uploadImage(loan.ccFrontalPicture, 'cc_frontal_picture');
-      final ccBackPicture =
-          await uploadImage(loan.ccBackPicture, 'cc_back_picture');
-      final selfiePicture =
-          await uploadImage(loan.selfiePicture, 'selfie_picture');
-      final empInvoiceFile =
-          await uploadPDF(loan.empInvoiceFile, 'emp_invoice_file');
+      final ccFrontalPicture = loan.ccFrontalPicture.path.isNotEmpty
+          ? await uploadImage(loan.ccFrontalPicture, 'cc_frontal_picture')
+          : loan.existingCcFrontalPictureUrl;
+      final ccBackPicture = loan.ccBackPicture.path.isNotEmpty
+          ? await uploadImage(loan.ccBackPicture, 'cc_back_picture')
+          : loan.existingCcBackPictureUrl;
+      final selfiePicture = loan.selfiePicture.path.isNotEmpty
+          ? await uploadImage(loan.selfiePicture, 'selfie_picture')
+          : loan.existingSelfiePictureUrl;
+      final empInvoiceFile = loan.empInvoiceFile.path.isNotEmpty
+          ? await uploadPDF(loan.empInvoiceFile, 'emp_invoice_file')
+          : loan.existingEmpInvoiceUrl;
 
       Map<String, dynamic> loanInformation = loan.toJson();
       loanInformation['emp_invoice_file'] = empInvoiceFile;
@@ -239,6 +247,7 @@ class HomeServiceImpl implements HomeService {
     }
     return true;
   }
+
   @override
   Future<bool> savePaymentRecord({
     required String transactionId,

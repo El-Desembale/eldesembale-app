@@ -1,6 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:country_code_picker/country_code_picker.dart';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -83,14 +81,12 @@ class _AccountInformationScreenState extends State<AccountInformationScreen> {
 
   Widget _subscriptionChip() {
     final isSubscribed = _user.isSubscribed;
-    final color = isSubscribed ? kPrimaryGreen : Colors.white70;
+    final color = isSubscribed ? kPrimaryGreen : kTextSecondary;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: isSubscribed
-            ? kPrimaryGreen.withOpacity(0.15)
-            : kSurfaceSoft,
-        border: Border.all(color: color.withOpacity(0.6)),
+        color: isSubscribed ? kPrimaryGreenSoft : kSurfaceSoft,
+        border: Border.all(color: color.withValues(alpha: 0.5)),
         borderRadius: BorderRadius.circular(kRadiusChip),
       ),
       child: Row(
@@ -107,7 +103,7 @@ class _AccountInformationScreenState extends State<AccountInformationScreen> {
             style: TextStyle(
               color: color,
               fontSize: kFontSmall,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -115,96 +111,106 @@ class _AccountInformationScreenState extends State<AccountInformationScreen> {
     );
   }
 
+  Widget _phonePrefix() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: kPrimaryGreenSoft,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Text(
+        '🇨🇴 +57',
+        style: TextStyle(
+          color: kTextPrimary,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
   Widget _body(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height,
-      padding: const EdgeInsets.symmetric(horizontal: kPadH),
       color: kBgScreen,
-      child: Column(
-        children: [
-          const Spacer(),
-          const Text(
-            "Datos personales",
-            style: TextStyle(
-              fontSize: kFontTitleMd,
-              fontWeight: FontWeight.bold,
-              color: kTextPrimary,
-            ),
-          ),
-          const SizedBox(height: 12),
-          if (_loading) ...[
-            const SizedBox(height: 40),
-            const SizedBox(
-              width: 32,
-              height: 32,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(kPrimaryGreen),
+      child: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(kPadH, 92, kPadH, 28),
+          children: [
+            const Text(
+              "Datos personales",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: kDisplayFont,
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                color: kTextPrimary,
+                letterSpacing: -0.4,
               ),
             ),
-            const SizedBox(height: 40),
-          ] else ...[
-            _subscriptionChip(),
-            const SizedBox(height: 24),
-            CustomUneditableWidget(
-              icon: Icons.person_outline,
-              title: "Nombre (s)",
-              initialValue: _user.name,
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.center,
+              child: _subscriptionChip(),
             ),
-            const SizedBox(height: 20),
-            CustomUneditableWidget(
-              icon: Icons.person_outline,
-              title: "Apellido (s)",
-              initialValue: _user.lastName,
-            ),
-            const SizedBox(height: 20),
-            CustomUneditableWidget(
-              icon: Icons.email_outlined,
-              title: "Correo electrónico",
-              initialValue: _user.email,
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: CountryCodePicker(
-                    enabled: false,
-                    boxDecoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.16),
-                      borderRadius: BorderRadius.circular(22),
+            const SizedBox(height: 28),
+            if (_loading) ...[
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 48),
+                child: Center(
+                  child: SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.2,
+                      valueColor: AlwaysStoppedAnimation<Color>(kPrimaryGreen),
                     ),
-                    backgroundColor: Colors.white.withOpacity(0.16),
-                    initialSelection: 'CO',
-                    alignLeft: true,
                   ),
                 ),
-                Expanded(
-                  flex: 5,
-                  child: CustomUneditableWidget(
-                    icon: Icons.phone_outlined,
-                    title: "Número de teléfono",
-                    initialValue: _user.phone,
-                  ),
-                ),
-              ],
+              ),
+            ] else ...[
+              CustomUneditableWidget(
+                icon: Icons.person_outline,
+                title: "Nombre (s)",
+                initialValue: _user.name,
+              ),
+              const SizedBox(height: 14),
+              CustomUneditableWidget(
+                icon: Icons.badge_outlined,
+                title: "Apellido (s)",
+                initialValue: _user.lastName,
+              ),
+              const SizedBox(height: 14),
+              CustomUneditableWidget(
+                icon: Icons.mail_outline_rounded,
+                title: "Correo electrónico",
+                initialValue: _user.email,
+                singleLineValue: true,
+              ),
+              const SizedBox(height: 14),
+              CustomUneditableWidget(
+                icon: Icons.phone_outlined,
+                title: "Número de teléfono",
+                initialValue: _user.phone,
+                leading: _phonePrefix(),
+                singleLineValue: true,
+              ),
+            ],
+            const SizedBox(height: 28),
+            PrimaryActionButton(
+              margin: EdgeInsets.zero,
+              label: 'Solicitar cambio de datos',
+              onTap: () {
+                ModalbottomsheetUtils.successBottomSheet(
+                  context,
+                  '¿Deseas editar tus datos?',
+                  "Para modifar tus datos envía un correo a soporte@eldesembaleapp.com",
+                  "Entendido",
+                  null,
+                );
+              },
             ),
           ],
-          const Spacer(),
-          PrimaryActionButton(
-            label: '¿Deseas editar tus datos?',
-            onTap: () {
-              ModalbottomsheetUtils.successBottomSheet(
-                context,
-                '¿Deseas editar tus datos?',
-                "Para modifar tus datos envía un correo a soporte@eldesembaleapp.com",
-                "Entendido",
-                null,
-              );
-            },
-          ),
-          const Spacer(),
-        ],
+        ),
       ),
     );
   }

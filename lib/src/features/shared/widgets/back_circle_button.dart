@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../utils/colors.dart';
+import '../../../utils/design_tokens.dart';
 
 class BackCircleButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -15,16 +15,21 @@ class BackCircleButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: FloatingActionButton(
-        heroTag: heroTag,
-        shape: const CircleBorder(),
-        backgroundColor: UIColors.primeraGrey.withOpacity(0.15),
-        onPressed: onPressed,
-        child: const Icon(
-          Icons.arrow_back,
-          color: Colors.white,
-          size: 32,
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: SizedBox(
+        width: 48,
+        height: 48,
+        child: FloatingActionButton(
+          heroTag: heroTag,
+          elevation: 0,
+          shape: const CircleBorder(),
+          backgroundColor: kSurfaceSoft,
+          onPressed: onPressed,
+          child: const Icon(
+            Icons.arrow_back_rounded,
+            color: kTextPrimary,
+            size: 24,
+          ),
         ),
       ),
     );

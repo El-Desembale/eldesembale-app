@@ -34,11 +34,11 @@ class FloatingLabelInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 52,
+      constraints: const BoxConstraints(minHeight: 56),
       decoration: BoxDecoration(
-        color: kSurfaceSoft,
+        color: kInputSurface,
         borderRadius: BorderRadius.circular(kRadiusInput),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: kBorderFaint),
       ),
       child: Center(
         child: TextFormField(
@@ -50,14 +50,22 @@ class FloatingLabelInput extends StatelessWidget {
           inputFormatters: inputFormatters,
           keyboardType: keyboardType,
           textAlignVertical: TextAlignVertical.center,
-          style: const TextStyle(color: kTextPrimary, fontSize: 15),
+          maxLines: 1,
+          minLines: 1,
+          scrollPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          style: const TextStyle(
+            color: kTextPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
           decoration: InputDecoration(
             isCollapsed: true,
             contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             prefixIcon: Padding(
               padding: const EdgeInsets.only(left: 16, right: 12),
-              child: Icon(icon, color: Colors.white38, size: 20),
+              child: Icon(icon, color: kTextSecondary, size: 20),
             ),
             prefixIconConstraints:
                 const BoxConstraints(minHeight: 0, minWidth: 0),
@@ -69,7 +77,7 @@ class FloatingLabelInput extends StatelessWidget {
                         obscureText
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
-                        color: Colors.white30,
+                        color: kTextSecondary,
                         size: 20,
                       ),
                       onPressed: onToggleObscure ?? onPressedHint,
@@ -79,8 +87,11 @@ class FloatingLabelInput extends StatelessWidget {
             suffixIconConstraints:
                 const BoxConstraints(minHeight: 0, minWidth: 0),
             hintText: label,
-            hintStyle:
-                TextStyle(color: Colors.white.withOpacity(0.25), fontSize: 14),
+            hintStyle: const TextStyle(
+              color: kTextSecondary,
+              fontSize: 13,
+              overflow: TextOverflow.ellipsis,
+            ),
             border: InputBorder.none,
           ),
         ),

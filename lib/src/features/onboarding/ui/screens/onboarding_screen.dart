@@ -5,6 +5,7 @@ import '../../../../../generated/l10n.dart';
 
 import '../../../../config/routes/routes.dart';
 import '../../../../core/preferences/shared_preference.dart';
+import '../../../../utils/design_tokens.dart';
 import '../../../../utils/images.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -35,7 +36,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget _body(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.black,
+        color: kBgScreen,
       ),
       child: Column(
         children: [
@@ -87,14 +88,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               setState(() {});
             },
             child: Container(
-              height: 72,
+              height: 64,
               margin: const EdgeInsets.symmetric(
                 horizontal: 20,
                 vertical: 10,
               ),
               decoration: BoxDecoration(
-                color: const Color.fromRGBO(47, 255, 0, 1),
-                borderRadius: BorderRadius.circular(12),
+                color: kPrimaryGreen,
+                borderRadius: BorderRadius.circular(kRadiusButton),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -106,24 +107,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ? 'Empezar'
                           : 'Continuar',
                       style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
+                        color: kPrimaryGreenDeep,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 16),
+                    padding: const EdgeInsets.only(right: 10),
                     child: Container(
-                      width: 72,
-                      height: 55,
+                      width: 56,
+                      height: 46,
                       decoration: BoxDecoration(
-                        color: const Color.fromRGBO(255, 255, 255, 0.5),
+                        color: Colors.white.withValues(alpha: 0.28),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
                         Icons.arrow_forward,
-                        color: Colors.black,
-                        size: 30,
+                        color: kPrimaryGreenDeep,
+                        size: 24,
                       ),
                     ),
                   ),
@@ -156,27 +158,33 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ),
         Container(
           alignment: Alignment.centerLeft,
-          padding: const EdgeInsets.only(left: 5),
+          padding: const EdgeInsets.only(left: 8, right: 8),
           child: Text(
             title,
             textAlign: TextAlign.start,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontFamily: "Unbounded",
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+              fontFamily: kDisplayFont,
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+              color: kTextPrimary,
+              height: 1.15,
             ),
           ),
         ),
         Container(
           alignment: Alignment.centerLeft,
-          padding: const EdgeInsets.symmetric(horizontal: 5),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Text(
             description,
             textAlign: TextAlign.start,
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 15,
-              color: Colors.white,
+              fontSize: 14,
+              color: kTextSecondary,
+              height: 1.45,
             ),
           ),
         ),

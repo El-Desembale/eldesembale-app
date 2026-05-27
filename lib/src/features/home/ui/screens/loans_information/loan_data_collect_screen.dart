@@ -149,7 +149,8 @@ class LoanDataCollectScreen extends StatelessWidget {
           CustomListTile(
             leadingIcon: AssetImages.references,
             title: 'Referencias',
-            subTitle: '${state.loanInformation.firstReference.relationship}  ·  ${state.loanInformation.secondReference.relationship}',
+            subTitle:
+                '${state.loanInformation.firstReference.relationship}  ·  ${state.loanInformation.secondReference.relationship}',
             trailingIcon: Icons.arrow_forward,
             isCompleted: state
                     .loanInformation.firstReference.relationship.isNotEmpty &&
@@ -180,8 +181,13 @@ class LoanDataCollectScreen extends StatelessWidget {
                     .isSubscribed) {
                   await homeCubit.submitLoan(context);
                 } else {
-                  final response =
-                      await context.push<bool>(AppRoutes.subscrption);
+                  final response = await context.push<bool>(
+                    AppRoutes.subscrption,
+                    extra: {
+                      'returnSuccessResult': true,
+                    },
+                  );
+                  if (!context.mounted) return;
                   if (response ?? false) {
                     await homeCubit.submitLoan(context);
                   }
@@ -310,7 +316,8 @@ class LoanDataCollectScreen extends StatelessWidget {
                   description: 'Selecciona una foto desde tu galería',
                   onTap: () async {
                     Navigator.of(ctx).pop();
-                    FilePickerResult? result = await FilePicker.platform.pickFiles(
+                    FilePickerResult? result =
+                        await FilePicker.platform.pickFiles(
                       type: FileType.custom,
                       allowedExtensions: ['jpg', 'jpeg', 'png'],
                     );
@@ -396,7 +403,8 @@ class LoanDataCollectScreen extends StatelessWidget {
                   description: 'Selecciona una foto desde tu galería',
                   onTap: () async {
                     Navigator.of(ctx).pop();
-                    FilePickerResult? result = await FilePicker.platform.pickFiles(
+                    FilePickerResult? result =
+                        await FilePicker.platform.pickFiles(
                       type: FileType.custom,
                       allowedExtensions: ['jpg', 'jpeg', 'png'],
                     );
@@ -477,15 +485,18 @@ class LoanDataCollectScreen extends StatelessWidget {
                 _OptionButton(
                   icon: Icons.upload_file_outlined,
                   label: 'Subir archivo',
-                  description: 'Selecciona un PDF o imagen desde tu dispositivo',
+                  description:
+                      'Selecciona un PDF o imagen desde tu dispositivo',
                   onTap: () async {
                     Navigator.of(ctx).pop();
-                    FilePickerResult? result = await FilePicker.platform.pickFiles(
+                    FilePickerResult? result =
+                        await FilePicker.platform.pickFiles(
                       type: FileType.custom,
                       allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
                     );
                     if (result != null) {
-                      homeCubit.addEmpInvoiceFile(File(result.files.first.path!));
+                      homeCubit
+                          .addEmpInvoiceFile(File(result.files.first.path!));
                     }
                   },
                 ),
@@ -531,7 +542,8 @@ class _OptionButton extends StatelessWidget {
                 color: const Color.fromRGBO(47, 255, 0, 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: const Color.fromRGBO(47, 255, 0, 1), size: 24),
+              child: Icon(icon,
+                  color: const Color.fromRGBO(47, 255, 0, 1), size: 24),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -557,7 +569,8 @@ class _OptionButton extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios, color: Colors.white.withOpacity(0.3), size: 16),
+            Icon(Icons.arrow_forward_ios,
+                color: Colors.white.withOpacity(0.3), size: 16),
           ],
         ),
       ),

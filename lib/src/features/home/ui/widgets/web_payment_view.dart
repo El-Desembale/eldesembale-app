@@ -5,13 +5,14 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
-import '../../../../utils/colors.dart';
+import '../../../../utils/design_tokens.dart';
 import '../../../../utils/modalbottomsheet.dart';
 import '../../cubit/home_cubit.dart';
+import '../../../shared/widgets/back_circle_button.dart';
+import '../../../shared/widgets/primary_action_button.dart';
 
 class WebPaymentView extends StatefulWidget {
   final String paymentUrl;
@@ -40,6 +41,8 @@ class WebPaymentView extends StatefulWidget {
 class _WebPaymentViewState extends State<WebPaymentView> {
   late final WebViewController _controller;
   bool _procesingPayment = false;
+  bool _showApprovedState = false;
+  bool _hasExitedCheckout = false;
   bool _isLocked = false;
   Timer? _timer;
   String currentUrl = '';
@@ -94,6 +97,7 @@ class _WebPaymentViewState extends State<WebPaymentView> {
                     change.url!.contains('https://eldesembale.com.co/?') ||
                 change.url!
                     .contains("https://transaction-redirect.wompi.co/")) {
+              _hasExitedCheckout = true;
               _procesingPayment = true;
               setState(() {});
               final transaccionId = _extractIdFromUrl(change.url!);
@@ -138,91 +142,41 @@ class _WebPaymentViewState extends State<WebPaymentView> {
               WebViewWidget(
                 controller: _controller,
               ),
-              if (_procesingPayment)
+              if (_hasExitedCheckout)
                 Container(
-                  height: MediaQuery.sizeOf(context).height,
-                  width: MediaQuery.sizeOf(context).width,
-                  decoration: const BoxDecoration(
-                    color: Color.fromARGB(255, 6, 16, 0),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Spacer(),
-                      // Animated logo / icon
-                      Container(
-                        width: 90,
-                        height: 90,
-                        decoration: BoxDecoration(
-                          color: const Color.fromRGBO(47, 255, 0, 0.1),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color.fromRGBO(47, 255, 0, 0.4),
-                            width: 2,
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.lock_outline_rounded,
-                          color: Color.fromRGBO(47, 255, 0, 1),
-                          size: 42,
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      const Text(
-                        'Validando tu pago',
-                        style: TextStyle(
-                          fontFamily: 'Unbounded',
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 48),
-                        child: Text(
-                          'Este proceso puede tardar unos segundos.\nPor favor no cierres la aplicación.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.6),
-                            fontSize: 14,
-                            height: 1.6,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 48),
-                      const SizedBox(
-                        height: 36,
-                        width: 36,
-                        child: CircularProgressIndicator(
-                          color: Color.fromRGBO(47, 255, 0, 1),
-                          backgroundColor: Colors.transparent,
-                          strokeWidth: 2.5,
-                        ),
-                      ),
-                      const Spacer(),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 40),
-                        child: Text(
-                          'Pagos seguros por Wompi',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.25),
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ],
+                  color: const Color(0xFF0D1712),
+                ),
+              if (_procesingPayment)
+                _statusOverlay(
+                  icon: Icons.lock_outline_rounded,
+                  title: 'Validando tu pago',
+                  message:
+                      'Este proceso puede tardar unos segundos. Por favor no cierres la aplicación.',
+                  footer: 'Pago protegido con Wompi',
+                  showLoader: true,
+                ),
+              if (_showApprovedState)
+                _statusOverlay(
+                  icon: Icons.check_rounded,
+                  title: 'Tu pago ha sido aprobado',
+                  message: 'Vamos a continuar con el proceso de tu solicitud.',
+                  footer: 'Confirmación recibida correctamente',
+                  showLoader: false,
+                  action: PrimaryActionButton(
+                    label: 'Entendido',
+                    icon: Icons.check_rounded,
+                    margin: EdgeInsets.zero,
+                    onTap: () async {
+                      setState(() => _showApprovedState = false);
+                      await widget.onSuccessfulPayment();
+                    },
                   ),
                 ),
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 50, horizontal: 20),
-                child: FloatingActionButton(
-                  backgroundColor: UIColors.primaryBlack,
-                  child: const Icon(
-                    Icons.arrow_back,
-                    color: Colors.white,
-                  ),
+                padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).padding.top + 8, left: 16),
+                child: BackCircleButton(
+                  heroTag: 'wompi_back',
                   onPressed: () {
                     if (currentUrl
                         .contains("https://checkout.wompi.co/method")) {
@@ -231,6 +185,107 @@ class _WebPaymentViewState extends State<WebPaymentView> {
                       _controller.goBack();
                     }
                   },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _statusOverlay({
+    required IconData icon,
+    required String title,
+    required String message,
+    required String footer,
+    required bool showLoader,
+    Widget? action,
+  }) {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF102013),
+            Color(0xFF0D1712),
+            Color(0xFF0B140F),
+          ],
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 88, 24, 28),
+          child: Column(
+            children: [
+              const Spacer(),
+              Container(
+                width: 104,
+                height: 104,
+                decoration: BoxDecoration(
+                  color: kPrimaryGreenSoft,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: kPrimaryGreenMuted,
+                    width: 1.5,
+                  ),
+                ),
+                child: Icon(
+                  icon,
+                  color: kPrimaryGreen,
+                  size: 46,
+                ),
+              ),
+              const SizedBox(height: 28),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: kDisplayFont,
+                  color: kTextPrimary,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 320),
+                child: Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: kTextSecondary,
+                    fontSize: 15,
+                    height: 1.55,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 40),
+              if (showLoader)
+                const SizedBox(
+                  height: 38,
+                  width: 38,
+                  child: CircularProgressIndicator(
+                    color: kPrimaryGreen,
+                    backgroundColor: Colors.transparent,
+                    strokeWidth: 2.6,
+                  ),
+                ),
+              if (action != null) ...[
+                const SizedBox(height: 12),
+                action,
+              ],
+              const Spacer(),
+              Text(
+                footer,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: kTextSecondary,
+                  fontSize: 12,
                 ),
               ),
             ],
@@ -275,18 +330,11 @@ class _WebPaymentViewState extends State<WebPaymentView> {
     if (status == "APPROVED") {
       _timer?.cancel();
       _isLocked = false;
-      _procesingPayment = false;
-      setState(() {});
+      setState(() {
+        _procesingPayment = false;
+        _showApprovedState = true;
+      });
       await _savePayment(transaccionId, status);
-      ModalbottomsheetUtils.successBottomSheet(
-        context,
-        'Tu pago ha sido aprobado',
-        "vamos a continuar con el proceso",
-        "Entendido",
-        () async {
-          await widget.onSuccessfulPayment();
-        },
-      );
     } else if (status == "DECLINED") {
       _timer?.cancel();
       _isLocked = false;

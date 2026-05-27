@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../config/routes/routes.dart';
+import '../../../../utils/design_tokens.dart';
 import '../../../../utils/images.dart';
 import '../../../../utils/modalbottomsheet.dart';
 import '../../../shared/widgets/floating_label_input.dart';
@@ -12,8 +13,8 @@ import '../../cubit/login_cubit.dart';
 import '../widgets/otp_form.dart';
 import 'terms_screen.dart';
 
-const _green = Color.fromRGBO(47, 255, 0, 1);
-const _bg = Color.fromARGB(255, 6, 16, 0);
+const _green = kPrimaryGreen;
+const _bg = kBgScreen;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({
@@ -85,10 +86,10 @@ class _LoginScreenState extends State<LoginScreen> {
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
+          color: kSurfaceSoft,
           borderRadius: BorderRadius.circular(14),
         ),
-        child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+        child: const Icon(Icons.arrow_back, color: kTextPrimary, size: 20),
       ),
     );
   }
@@ -97,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: Colors.black.withOpacity(0.6),
+      color: Colors.black.withValues(alpha: 0.6),
       child: const Center(
         child: SizedBox(
           width: 48,
@@ -135,7 +136,8 @@ class _LoginScreenState extends State<LoginScreen> {
         padding: EdgeInsets.zero,
         children: [
           if (!isFullPage) _buildImage(),
-          if (isFullPage) SizedBox(height: MediaQuery.of(context).padding.top + 56),
+          if (isFullPage)
+            SizedBox(height: MediaQuery.of(context).padding.top + 56),
           SizedBox(
             height: isFullPage
                 ? MediaQuery.sizeOf(context).height * 0.85
@@ -164,20 +166,24 @@ class _LoginScreenState extends State<LoginScreen> {
       children: [
         Text(
           title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(
-            fontFamily: "Unbounded",
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+            fontFamily: kDisplayFont,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: kTextPrimary,
             height: 1.15,
           ),
         ),
         const SizedBox(height: 6),
         Text(
           subtitle,
-          style: TextStyle(
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
             fontSize: 13,
-            color: Colors.white.withOpacity(0.5),
+            color: kTextSecondary,
             height: 1.4,
           ),
         ),
@@ -203,15 +209,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: 110,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white.withOpacity(0.06)),
+                  color: kInputSurface,
+                  borderRadius: BorderRadius.circular(kRadiusInput),
+                  border: Border.all(color: kBorderFaint),
                 ),
                 child: CountryCodePicker(
                   padding: EdgeInsets.zero,
                   boxDecoration: const BoxDecoration(color: Colors.transparent),
                   backgroundColor: Colors.transparent,
-                  textStyle: const TextStyle(color: Colors.white, fontSize: 15),
+                  textStyle: const TextStyle(color: kTextPrimary, fontSize: 14),
                   onChanged: (country) {
                     if (country.dialCode != null) {
                       widget.loginCubit.updateCountryCode(country.dialCode!);
@@ -287,16 +293,17 @@ class _LoginScreenState extends State<LoginScreen> {
             alignment: Alignment.centerRight,
             child: TextButton(
               style: TextButton.styleFrom(
-                backgroundColor: Colors.white.withOpacity(0.06),
+                backgroundColor: kSurfaceSoft,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
               onPressed: () => context.push(AppRoutes.recoveryPassword),
               child: const Text(
                 'Olvidé mi contraseña',
-                style: TextStyle(color: Colors.white70, fontSize: 13),
+                style: TextStyle(color: kTextSecondary, fontSize: 13),
               ),
             ),
           ),
@@ -333,7 +340,8 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _header("Regístrate", "Enviamos un código a tu celular y correo registrado"),
+            _header("Regístrate",
+                "Enviamos un código a tu celular y correo registrado"),
             const Spacer(),
             Row(
               children: [
@@ -420,7 +428,10 @@ class _LoginScreenState extends State<LoginScreen> {
               label: "Nombre(s)",
               icon: Icons.person_outline,
               inputFormatters: const [],
-              onChanged: (v) { name = v; setState(() {}); },
+              onChanged: (v) {
+                name = v;
+                setState(() {});
+              },
               keyboardType: TextInputType.name,
             ),
             const SizedBox(height: 12),
@@ -428,7 +439,10 @@ class _LoginScreenState extends State<LoginScreen> {
               label: "Apellido(s)",
               icon: Icons.person_outline,
               inputFormatters: const [],
-              onChanged: (v) { lastName = v; setState(() {}); },
+              onChanged: (v) {
+                lastName = v;
+                setState(() {});
+              },
               keyboardType: TextInputType.name,
             ),
             const SizedBox(height: 12),
@@ -438,7 +452,10 @@ class _LoginScreenState extends State<LoginScreen> {
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp('[a-zA-Z0-9@._+-]')),
               ],
-              onChanged: (v) { email = v; setState(() {}); },
+              onChanged: (v) {
+                email = v;
+                setState(() {});
+              },
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 12),
@@ -446,24 +463,27 @@ class _LoginScreenState extends State<LoginScreen> {
             Container(
               height: 52,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.white.withOpacity(0.06)),
+                color: kInputSurface,
+                borderRadius: BorderRadius.circular(kRadiusInput),
+                border: Border.all(color: kBorderFaint),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  const Icon(Icons.phone_outlined, color: Colors.white38, size: 20),
+                  const Icon(Icons.phone_outlined,
+                      color: kTextSecondary, size: 20),
                   const SizedBox(width: 12),
                   Text(
                     "${state.countryCode} ",
-                    style: const TextStyle(color: Colors.white38, fontSize: 15),
+                    style: const TextStyle(color: kTextSecondary, fontSize: 14),
                   ),
-                  Text(
-                    widget.loginCubit.phoneController.text,
-                    style: const TextStyle(color: Colors.white54, fontSize: 15),
+                  Expanded(
+                    child: Text(
+                      widget.loginCubit.phoneController.text,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: kTextPrimary, fontSize: 14),
+                    ),
                   ),
-                  const Spacer(),
                   const Icon(Icons.check_circle, color: _green, size: 18),
                 ],
               ),
@@ -476,18 +496,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: 90,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.white.withOpacity(0.06)),
+                    color: kInputSurface,
+                    borderRadius: BorderRadius.circular(kRadiusInput),
+                    border: Border.all(color: kBorderFaint),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       value: documentType,
                       isExpanded: true,
-                      dropdownColor: const Color(0xFF0d1f0d),
-                      icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white30, size: 18),
-                      style: const TextStyle(color: Colors.white, fontSize: 15),
+                      dropdownColor: kBgScreenAlt,
+                      icon: const Icon(Icons.keyboard_arrow_down,
+                          color: kTextSecondary, size: 18),
+                      style: const TextStyle(color: kTextPrimary, fontSize: 14),
                       items: ["CC", "TI", "PP"].map((v) {
                         return DropdownMenuItem(value: v, child: Text(v));
                       }).toList(),
@@ -506,7 +527,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       LengthLimitingTextInputFormatter(10),
                       FilteringTextInputFormatter.digitsOnly,
                     ],
-                    onChanged: (v) { documentNumber = v; setState(() {}); },
+                    onChanged: (v) {
+                      documentNumber = v;
+                      setState(() {});
+                    },
                     keyboardType: TextInputType.number,
                   ),
                 ),
@@ -532,13 +556,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: checkboxValue ? _green : Colors.transparent,
                         ),
                         child: checkboxValue
-                            ? const Icon(Icons.check, size: 14, color: Colors.black)
+                            ? const Icon(Icons.check,
+                                size: 14, color: Colors.black)
                             : null,
                       ),
                       const SizedBox(width: 10),
                       const Text(
                         "Acepto los ",
-                        style: TextStyle(color: Colors.white60, fontSize: 13),
+                        style: TextStyle(color: kTextSecondary, fontSize: 13),
                       ),
                     ],
                   ),
@@ -600,8 +625,8 @@ class _LoginScreenState extends State<LoginScreen> {
     final hasMinLength = pwd.length >= 8;
     final hasLetter = pwd.contains(RegExp(r'[a-zA-Z]'));
     final hasNumber = pwd.contains(RegExp(r'[0-9]'));
-    final passwordsMatch = pwd.isNotEmpty &&
-        pwd == passwordConfirmController.text;
+    final passwordsMatch =
+        pwd.isNotEmpty && pwd == passwordConfirmController.text;
     final allValid = hasMinLength && hasLetter && hasNumber && passwordsMatch;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -676,7 +701,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-
   // ═══════════════════════════════════════════
   // PASSWORD CHECK ITEM
   // ═══════════════════════════════════════════
@@ -692,7 +716,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Text(
           label,
           style: TextStyle(
-            color: passed ? Colors.white70 : Colors.white30,
+            color: passed ? kTextSecondary : Colors.white30,
             fontSize: 12,
           ),
         ),
@@ -714,8 +738,8 @@ class _LoginScreenState extends State<LoginScreen> {
         duration: const Duration(milliseconds: 200),
         height: 58,
         decoration: BoxDecoration(
-          color: enabled ? _green : Colors.white.withOpacity(0.06),
-          borderRadius: BorderRadius.circular(12),
+          color: enabled ? _green : kSurfaceSoft,
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -725,9 +749,9 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Text(
                 label,
                 style: TextStyle(
-                  color: enabled ? Colors.black : Colors.white24,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                  color: enabled ? kPrimaryGreenDeep : Colors.white24,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -738,13 +762,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 42,
                 decoration: BoxDecoration(
                   color: enabled
-                      ? Colors.black.withOpacity(0.15)
-                      : Colors.white.withOpacity(0.06),
+                      ? Colors.white.withValues(alpha: 0.28)
+                      : Colors.white.withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
                   Icons.arrow_forward_rounded,
-                  color: enabled ? Colors.black : Colors.white24,
+                  color: enabled ? kPrimaryGreenDeep : Colors.white24,
                   size: 20,
                 ),
               ),
@@ -755,4 +779,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-

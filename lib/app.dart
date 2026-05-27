@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'generated/l10n.dart';
 import 'src/config/routes/routes.dart';
+import 'src/config/themes/themes.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -12,9 +13,9 @@ class MyApp extends StatelessWidget {
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: MaterialApp.router(
-        theme: ThemeData(
-          fontFamily: 'Lexend_Deca',
-        ),
+        theme: darkTheme,
+        darkTheme: darkTheme,
+        themeMode: ThemeMode.dark,
         routerConfig: AppRoutes.routerConfig,
         debugShowCheckedModeBanner: false,
         title: 'El Desembale',

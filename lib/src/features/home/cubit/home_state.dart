@@ -1,5 +1,7 @@
 part of 'home_cubit.dart';
 
+const _homeStateNoChange = Object();
+
 class HomeState {
   String? error;
   final bool isLoading;
@@ -8,6 +10,8 @@ class HomeState {
   final int selectedInstallments;
   final double totalLoanAmount;
   final LoanInformationEntity loanInformation;
+  final int subscriptionAmount;
+  final LoanInformationEntity? reusableLoanInformation;
   List<LoanRequestEntity> loans;
   HomeState({
     required this.limits,
@@ -16,6 +20,8 @@ class HomeState {
     required this.totalLoanAmount,
     required this.loanInformation,
     required this.loans,
+    this.subscriptionAmount = 22000,
+    this.reusableLoanInformation,
     this.isLoading = false,
     this.error,
   });
@@ -29,6 +35,8 @@ class HomeState {
     double? totalLoanAmount,
     LoanInformationEntity? loanInformation,
     List<LoanRequestEntity>? loans,
+    int? subscriptionAmount,
+    Object? reusableLoanInformation = _homeStateNoChange,
   }) {
     return HomeState(
       error: error ?? this.error,
@@ -39,6 +47,10 @@ class HomeState {
       totalLoanAmount: totalLoanAmount ?? this.totalLoanAmount,
       loanInformation: loanInformation ?? this.loanInformation,
       loans: loans ?? this.loans,
+      subscriptionAmount: subscriptionAmount ?? this.subscriptionAmount,
+      reusableLoanInformation: reusableLoanInformation == _homeStateNoChange
+          ? this.reusableLoanInformation
+          : reusableLoanInformation as LoanInformationEntity?,
     );
   }
 }

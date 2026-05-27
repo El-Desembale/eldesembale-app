@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../utils/design_tokens.dart';
+
 class OtpInputWidget extends StatefulWidget {
   const OtpInputWidget({super.key, required this.onChanged});
   final void Function(String) onChanged;
@@ -16,8 +18,12 @@ class _OtpInputWidgetState extends State<OtpInputWidget> {
 
   @override
   void dispose() {
-    for (final c in _controllers) c.dispose();
-    for (final f in _focusNodes) f.dispose();
+    for (final c in _controllers) {
+      c.dispose();
+    }
+    for (final f in _focusNodes) {
+      f.dispose();
+    }
     super.dispose();
   }
 
@@ -37,13 +43,19 @@ class _OtpInputWidgetState extends State<OtpInputWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final itemWidth = width < 370 ? 42.0 : 47.0;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: List.generate(6, (i) {
         return SizedBox(
-          width: 47,
+          width: itemWidth,
           child: TextFormField(
-            style: const TextStyle(color: Colors.white, fontSize: 24),
+            style: const TextStyle(
+              color: kTextPrimary,
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+            ),
             controller: _controllers[i],
             focusNode: _focusNodes[i],
             autofocus: i == 0,
@@ -55,16 +67,15 @@ class _OtpInputWidgetState extends State<OtpInputWidget> {
               counterText: '',
               filled: true,
               contentPadding:
-                  const EdgeInsets.symmetric(vertical: 20, horizontal: 5),
-              fillColor: Colors.white.withOpacity(0.12),
+                  const EdgeInsets.symmetric(vertical: 18, horizontal: 5),
+              fillColor: kInputSurface,
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                borderSide: const BorderSide(color: kBorderFaint),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide:
-                    const BorderSide(color: Color.fromRGBO(47, 255, 0, 1)),
+                borderSide: const BorderSide(color: kPrimaryGreen),
               ),
             ),
             onChanged: (v) => _onChanged(v, i),
@@ -93,10 +104,7 @@ class OtpResendButton extends StatelessWidget {
         child: Text(
           'Reenviar código en ${timerSeconds}s',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.45),
-            fontSize: 13,
-          ),
+          style: const TextStyle(color: kTextSecondary, fontSize: 13),
         ),
       );
     }
@@ -105,19 +113,19 @@ class OtpResendButton extends StatelessWidget {
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: onResend,
-        icon: const Icon(Icons.refresh_outlined,
-            size: 18, color: Color.fromRGBO(47, 255, 0, 1)),
+        icon:
+            const Icon(Icons.refresh_outlined, size: 18, color: kPrimaryGreen),
         label: const Text(
           'Reenviar código',
           style: TextStyle(
-            color: Color.fromRGBO(47, 255, 0, 1),
+            color: kPrimaryGreen,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
         ),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 14),
-          side: const BorderSide(color: Color.fromRGBO(47, 255, 0, 1)),
+          side: const BorderSide(color: kPrimaryGreen),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),

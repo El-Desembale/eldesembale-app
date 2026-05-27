@@ -6,8 +6,9 @@ import '../../../../config/auth/cubit/auth_cubit.dart';
 import '../../../../config/routes/routes.dart';
 import '../../../../core/di/injection_dependency.dart';
 import '../../../../core/preferences/shared_preference.dart';
-import '../../../../utils/colors.dart';
+import '../../../../utils/design_tokens.dart';
 import '../../../../utils/images.dart';
+import '../../../shared/widgets/back_circle_button.dart';
 
 class DrawerWidget extends StatelessWidget {
   const DrawerWidget({super.key});
@@ -15,7 +16,7 @@ class DrawerWidget extends StatelessWidget {
   @override
   Drawer build(BuildContext context) {
     return Drawer(
-      backgroundColor: const Color.fromARGB(255, 6, 16, 0),
+      backgroundColor: kBgScreen,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       child: Row(
         children: [
@@ -29,18 +30,11 @@ class DrawerWidget extends StatelessWidget {
                 Row(
                   children: [
                     const SizedBox(width: 25),
-                    FloatingActionButton(
+                    BackCircleButton(
                       heroTag: 'drawer_fab',
-                      shape: const CircleBorder(),
-                      backgroundColor: UIColors.primeraGrey.withOpacity(0.15),
                       onPressed: () {
                         context.pop();
                       },
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                        size: 30,
-                      ),
                     ),
                   ],
                 ),
@@ -87,7 +81,7 @@ class DrawerWidget extends StatelessWidget {
                   child: Text(
                     "Versión 1.0.1",
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.45),
+                      color: kTextSecondary,
                       fontSize: 12,
                     ),
                   ),
@@ -97,7 +91,7 @@ class DrawerWidget extends StatelessWidget {
           ),
           Container(
             width: 3,
-            color: Colors.white.withOpacity(0.35),
+            color: kBorderFaint,
           )
         ],
       ),
@@ -113,23 +107,29 @@ class DrawerWidget extends StatelessWidget {
       leading: Container(
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: kSurfaceSoft,
           shape: BoxShape.circle,
         ),
         child: SvgPicture.asset(
           icon,
           height: 28,
           width: 28,
+          colorFilter: const ColorFilter.mode(
+            kPrimaryGreenMuted,
+            BlendMode.srcIn,
+          ),
         ),
       ),
       title: Text(
         title,
         textAlign: TextAlign.start,
         style: const TextStyle(
-          fontFamily: "Unbounded",
-          color: Colors.white,
-          fontSize: 18,
+          color: kTextPrimary,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
         ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
       onTap: onTap,
     );

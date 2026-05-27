@@ -5,9 +5,11 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../utils/colors.dart';
+import '../../data/entities/loan_request_entity.dart';
+import '../../../../utils/design_tokens.dart';
 import '../../../../utils/images.dart';
 import '../../../../utils/utils.dart';
+import '../../../shared/widgets/back_circle_button.dart';
 import '../../cubit/home_cubit.dart';
 import 'loan_info_detail_screen.dart';
 
@@ -23,6 +25,8 @@ class LoansListScreen extends StatefulWidget {
 }
 
 class _LoansListScreenState extends State<LoansListScreen> {
+  DateTime? _selectedDate;
+
   @override
   void initState() {
     widget.homeCubit.getLoans();
@@ -39,25 +43,15 @@ class _LoansListScreenState extends State<LoansListScreen> {
           extendBodyBehindAppBar: true,
           resizeToAvoidBottomInset: false,
           floatingActionButtonLocation: FloatingActionButtonLocation.startTop,
-          floatingActionButton: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: FloatingActionButton(
-              heroTag: 'loans_list_fab',
-              shape: const CircleBorder(),
-              backgroundColor: UIColors.primeraGrey.withOpacity(0.15),
-              onPressed: () {
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go(AppRoutes.home);
-                }
-              },
-              child: const Icon(
-                Icons.arrow_back,
-                color: Colors.white,
-                size: 35,
-              ),
-            ),
+          floatingActionButton: BackCircleButton(
+            heroTag: 'loans_list_fab',
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go(AppRoutes.home);
+              }
+            },
           ),
           body: Stack(
             children: [
@@ -69,62 +63,158 @@ class _LoansListScreenState extends State<LoansListScreen> {
     );
   }
 
+  List<LoanRequestEntity> get _filteredLoans {
+    final loans = widget.homeCubit.state.loans;
+    if (_selectedDate == null) return loans;
+    return loans.where((loan) {
+      final createdAt = loan.createdAt.toDate();
+      return createdAt.year == _selectedDate!.year &&
+          createdAt.month == _selectedDate!.month &&
+          createdAt.day == _selectedDate!.day;
+    }).toList();
+  }
+
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? now,
+      firstDate: DateTime(now.year - 2),
+      lastDate: DateTime(now.year + 1),
+      locale: const Locale('es', 'CO'),
+    );
+
+    if (pickedDate != null) {
+      setState(() => _selectedDate = pickedDate);
+    }
+  }
+
   Widget _body(BuildContext context, HomeState state) {
+    final filteredLoans = _filteredLoans;
+
     return Container(
-      decoration: const BoxDecoration(
-        color: Color.fromARGB(255, 6, 16, 0),
-      ),
-      child: Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 30,
-          right: 30,
-        ),
-        height: MediaQuery.sizeOf(context).height,
-        width: MediaQuery.sizeOf(context).width,
-        child: state.isLoading
-            ? SizedBox(
-                height: MediaQuery.sizeOf(context).height,
-                width: MediaQuery.sizeOf(context).width,
-                child: const Center(
+      color: kBgScreen,
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 92, 24, 24),
+          child: state.isLoading
+              ? const Center(
                   child: SizedBox(
-                    height: 50,
-                    width: 50,
+                    height: 40,
+                    width: 40,
                     child: CircularProgressIndicator(
-                      color: Colors.grey,
-                      backgroundColor: Colors.white,
+                      color: kPrimaryGreen,
+                      strokeWidth: 2.4,
                     ),
                   ),
-                ),
-              )
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 50),
-                  const Padding(
-                    padding: EdgeInsets.only(left: 25),
-                    child: Text(
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
                       'Solicitudes',
                       style: TextStyle(
-                        fontFamily: "Unbounded",
-                        color: Colors.white,
-                        fontSize: 15,
+                        fontFamily: kDisplayFont,
+                        color: kTextPrimary,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.4,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    flex: 5,
-                    child: _loansList(context, state),
-                  ),
-                  const SizedBox(height: 30),
-                ],
-              ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Consulta tu historial y filtra por fecha cuando necesites revisar una solicitud específica.',
+                      style: TextStyle(
+                        color: kTextSecondary,
+                        fontSize: 13,
+                        height: 1.45,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        InkWell(
+                          onTap: _pickDate,
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: kSurfaceSoft,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: kBorderFaint),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.calendar_today_rounded,
+                                  color: kPrimaryGreen,
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  _selectedDate == null
+                                      ? 'Buscar por fecha'
+                                      : DateFormat('d MMM y', 'es_CO')
+                                          .format(_selectedDate!),
+                                  style: const TextStyle(
+                                    color: kTextPrimary,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        if (_selectedDate != null)
+                          InkWell(
+                            onTap: () => setState(() => _selectedDate = null),
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: kSurfaceFaint,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: kBorderFaint),
+                              ),
+                              child: const Text(
+                                'Limpiar filtro',
+                                style: TextStyle(
+                                  color: kTextSecondary,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    Expanded(
+                      child: _loansList(context, state, filteredLoans),
+                    ),
+                  ],
+                ),
+        ),
       ),
     );
   }
 
-  Widget _loansList(BuildContext context, HomeState state) {
+  Widget _loansList(
+    BuildContext context,
+    HomeState state,
+    List<LoanRequestEntity> filteredLoans,
+  ) {
     if (state.loans.isEmpty) {
       return Center(
         child: Column(
@@ -135,13 +225,13 @@ class _LoansListScreenState extends State<LoansListScreen> {
               width: 100,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.06),
-                borderRadius: BorderRadius.circular(10),
+                color: kSurfaceSoft,
+                borderRadius: BorderRadius.circular(18),
               ),
               child: SvgPicture.asset(
                 AssetImages.request,
                 colorFilter: const ColorFilter.mode(
-                  Color.fromRGBO(47, 255, 0, 0.6),
+                  kPrimaryGreen,
                   BlendMode.srcIn,
                 ),
               ),
@@ -150,10 +240,9 @@ class _LoansListScreenState extends State<LoansListScreen> {
             const Text(
               'Sin solicitudes aún',
               style: TextStyle(
-                fontFamily: 'Unbounded',
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+                color: kTextPrimary,
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 12),
@@ -161,7 +250,7 @@ class _LoansListScreenState extends State<LoansListScreen> {
               'Aquí verás el historial\nde tus préstamos.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white54,
+                color: kTextSecondary,
                 fontSize: 14,
                 height: 1.6,
               ),
@@ -177,16 +266,17 @@ class _LoansListScreenState extends State<LoansListScreen> {
               },
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
                 decoration: BoxDecoration(
-                  color: const Color.fromRGBO(47, 255, 0, 1),
-                  borderRadius: BorderRadius.circular(12),
+                  color: kPrimaryGreen,
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Text(
                   'Solicitar préstamo',
                   style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
+                    color: kPrimaryGreenDeep,
+                    fontWeight: FontWeight.w700,
                     fontSize: 15,
                   ),
                 ),
@@ -197,47 +287,89 @@ class _LoansListScreenState extends State<LoansListScreen> {
       );
     }
 
+    if (filteredLoans.isEmpty) {
+      return Center(
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: kSurfaceSoft,
+            borderRadius: BorderRadius.circular(kRadiusCard),
+            border: Border.all(color: kBorderFaint),
+          ),
+          child: const Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.event_busy_outlined,
+                color: kTextSecondary,
+                size: 34,
+              ),
+              SizedBox(height: 12),
+              Text(
+                'No hay solicitudes para esa fecha',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: kTextPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Prueba con otro día o limpia el filtro.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: kTextSecondary,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return ListView.builder(
-      itemCount: state.loans.length,
+      itemCount: filteredLoans.length,
       itemBuilder: (BuildContext context, int index) {
-        final loan = state.loans[index];
+        final loan = filteredLoans[index];
+        final actualIndex = state.loans.indexOf(loan);
         return InkWell(
           onTap: () {
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => LoanInfoDetailScreen(
-                  loanIndex: index,
+                  loanIndex: actualIndex,
                   homeCubit: widget.homeCubit,
                 ),
               ),
             );
           },
           child: Container(
-            padding: const EdgeInsets.all(10),
-            margin: const EdgeInsets.symmetric(vertical: 10),
+            padding: const EdgeInsets.all(18),
+            margin: const EdgeInsets.only(bottom: 14),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: Colors.white.withOpacity(0.16),
-              border: Border(
-                bottom: BorderSide(
-                  color: Colors.white.withOpacity(0.16),
-                ),
-              ),
+              borderRadius: BorderRadius.circular(kRadiusCard),
+              color: kInputSurface,
+              border: Border.all(color: kBorderFaint),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     status(loan.status),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 16),
                     Text(
-                      NumberFormat("#,##0", "en_US").format(loan.amount),
+                      '\$${NumberFormat("#,##0", "es_CO").format(loan.amount)}',
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontFamily: "Unbounded",
+                        color: kTextPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.6,
                       ),
                     ),
                   ],
@@ -260,7 +392,8 @@ class _LoansListScreenState extends State<LoansListScreen> {
                       loan.paymentPeriod,
                     );
                     nextDateStr = DateFormat('d/M/y').format(nextDate);
-                    nextAmountStr = NumberFormat("#,##0", "en_US").format(totalAmount);
+                    nextAmountStr =
+                        NumberFormat("#,##0", "en_US").format(totalAmount);
                   }
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -269,31 +402,40 @@ class _LoansListScreenState extends State<LoansListScreen> {
                         loan.status == "pending" || loan.status == "rejected"
                             ? "Solicitado ${DateFormat('d/M/y').format(loan.createdAt.toDate())}"
                             : loan.status == "in_disbursement_process"
-                                ? DateFormat('d/M/y').format(loan.createdAt.toDate())
+                                ? DateFormat('d/M/y')
+                                    .format(loan.createdAt.toDate())
                                 : "Desembolso: ${DateFormat('d/M/y').format(loan.createdAt.toDate())}",
                         style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
+                          color: kTextPrimary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         "Pago ${loan.paymentPeriod}",
-                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                        style: const TextStyle(
+                          color: kTextSecondary,
+                          fontSize: 11,
+                        ),
                       ),
                       Text(
-                        "${loan.installmentsPaid}/${loan.installments} cuotas",
-                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                        "Pagadas ${loan.installmentsPaid}/${loan.installments}",
+                        style: const TextStyle(
+                          color: kTextSecondary,
+                          fontSize: 11,
+                        ),
                       ),
                       if (hasPending && nextDateStr != null) ...[
                         const SizedBox(height: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color.fromRGBO(47, 255, 0, 0.12),
+                            color: kPrimaryGreenSoft,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: const Color.fromRGBO(47, 255, 0, 0.4),
+                              color: kPrimaryGreen.withValues(alpha: 0.35),
                             ),
                           ),
                           child: Column(
@@ -302,24 +444,24 @@ class _LoansListScreenState extends State<LoansListScreen> {
                               const Text(
                                 'Próxima cuota',
                                 style: TextStyle(
-                                  color: Color.fromRGBO(47, 255, 0, 0.8),
-                                  fontSize: 10,
+                                  color: kPrimaryGreen,
+                                  fontSize: 9,
                                 ),
                               ),
                               Text(
                                 nextDateStr,
                                 style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                                  color: kTextPrimary,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                               Text(
                                 '\$$nextAmountStr',
                                 style: const TextStyle(
-                                  color: Color.fromRGBO(47, 255, 0, 1),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
+                                  color: kPrimaryGreen,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ],
@@ -328,17 +470,18 @@ class _LoansListScreenState extends State<LoansListScreen> {
                       ] else if (isApproved && !loan.canPay) ...[
                         const SizedBox(height: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.08),
+                            color: kSurfaceSoft,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Text(
                             'Pagado ✓',
                             style: TextStyle(
-                              color: Color.fromRGBO(47, 255, 0, 1),
+                              color: kPrimaryGreen,
                               fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -363,11 +506,11 @@ class _LoansListScreenState extends State<LoansListScreen> {
       "in_disbursement_process": "En desembolso",
     };
     Map<String, Color> statusColorMap = {
-      "pending": const Color.fromARGB(255, 130, 101, 0),
-      "approved": const Color.fromARGB(255, 3, 130, 0),
-      "rejected": Colors.red,
-      "in_process": Colors.white,
-      "in_disbursement_process": Colors.transparent,
+      "pending": kWarningSoft,
+      "approved": kPrimaryGreen,
+      "rejected": kDangerSoft,
+      "in_process": const Color(0xFFD8E7DD),
+      "in_disbursement_process": const Color(0xFF8CC5FF),
     };
 
     Map<String, String> statusIconMap = {
@@ -379,14 +522,11 @@ class _LoansListScreenState extends State<LoansListScreen> {
     };
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: const Color.fromARGB(255, 243, 248, 241).withOpacity(0.2),
-        border: Border.all(
-          color: statusColorMap[status] ?? Colors.white,
-          width: 3,
-        ),
+        borderRadius: BorderRadius.circular(999),
+        color: (statusColorMap[status] ?? Colors.white).withValues(alpha: 0.12),
+        border: Border.all(color: statusColorMap[status] ?? Colors.white),
       ),
       child: Row(
         children: [
@@ -394,9 +534,10 @@ class _LoansListScreenState extends State<LoansListScreen> {
           const SizedBox(width: 10),
           Text(
             statusMap[status] ?? "",
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 15,
+            style: TextStyle(
+              color: statusColorMap[status] ?? kTextPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],

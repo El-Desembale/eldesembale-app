@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
+import '../../../../utils/design_tokens.dart';
+
 class CustomListTile extends StatelessWidget {
   final String leadingIcon;
   final String title;
@@ -18,24 +20,20 @@ class CustomListTile extends StatelessWidget {
     required this.subTitle,
   });
 
-  static const _green = Color.fromRGBO(47, 255, 0, 1);
-
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(22.0),
+      borderRadius: BorderRadius.circular(kRadiusCard),
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 16.0),
         decoration: BoxDecoration(
-          color: isCompleted
-              ? const Color.fromRGBO(47, 255, 0, 0.08)
-              : Colors.white.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(22.0),
+          color: isCompleted ? kPrimaryGreenSoft : kSurfaceSoft,
+          borderRadius: BorderRadius.circular(kRadiusCard),
           border: Border.all(
             color: isCompleted
-                ? _green.withOpacity(0.4)
-                : Colors.white.withOpacity(0.1),
+                ? kPrimaryGreen.withValues(alpha: 0.4)
+                : kBorderFaint,
             width: 1.2,
           ),
         ),
@@ -48,7 +46,7 @@ class CustomListTile extends StatelessWidget {
                   SvgPicture.asset(
                     leadingIcon,
                     colorFilter: isCompleted
-                        ? const ColorFilter.mode(_green, BlendMode.srcIn)
+                        ? const ColorFilter.mode(kPrimaryGreen, BlendMode.srcIn)
                         : null,
                   ),
                   const SizedBox(width: 15.0),
@@ -59,21 +57,24 @@ class CustomListTile extends StatelessWidget {
                         Text(
                           title,
                           style: TextStyle(
-                            color: isCompleted ? _green : Colors.white,
-                            fontSize: 16.0,
+                            color: isCompleted ? kPrimaryGreen : kTextPrimary,
+                            fontSize: 15.0,
                             fontWeight: isCompleted
                                 ? FontWeight.w600
                                 : FontWeight.normal,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         if (isCompleted)
                           Text(
                             subTitle,
-                            maxLines: 1,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.5),
+                              color: kTextSecondary,
                               fontSize: 12.0,
+                              height: 1.3,
                             ),
                           ),
                       ],
@@ -83,8 +84,8 @@ class CustomListTile extends StatelessWidget {
               ),
             ),
             isCompleted
-                ? const Icon(Icons.check_circle, color: _green, size: 28)
-                : Icon(trailingIcon, color: Colors.white.withOpacity(0.5), size: 28),
+                ? const Icon(Icons.check_circle, color: kPrimaryGreen, size: 24)
+                : Icon(trailingIcon, color: kTextSecondary, size: 24),
           ],
         ),
       ),
