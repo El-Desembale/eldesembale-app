@@ -165,7 +165,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontFamily: kDisplayFont,
               fontSize: 24,
               fontWeight: FontWeight.w600,
               color: kTextPrimary,

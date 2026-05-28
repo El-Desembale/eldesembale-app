@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../utils/colors.dart';
+import '../../../../../utils/design_tokens.dart';
 
 class LoanCameraScreen extends StatefulWidget {
   final void Function(File) addFile;
@@ -75,7 +76,7 @@ class _LoanCameraScreenState extends State<LoanCameraScreen> {
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: FloatingActionButton(
           shape: const CircleBorder(),
-          backgroundColor: UIColors.primeraGrey.withOpacity(0.15),
+          backgroundColor: kSurfaceSoft,
           onPressed: () {
             context.pop();
           },
@@ -118,7 +119,7 @@ class _LoanCameraScreenState extends State<LoanCameraScreen> {
                           padding: const EdgeInsets.all(15),
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Color.fromRGBO(47, 255, 0, 1),
+                            color: kPrimaryGreen,
                           ),
                           child: const Icon(
                             Icons.camera_alt,
@@ -160,7 +161,7 @@ class _LoanCameraScreenState extends State<LoanCameraScreen> {
                                 width: 72,
                                 height: 55,
                                 decoration: BoxDecoration(
-                                  color: const Color.fromARGB(255, 47, 255, 0)
+                                  color: kPrimaryGreen
                                       .withOpacity(0.08),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -186,7 +187,7 @@ class _LoanCameraScreenState extends State<LoanCameraScreen> {
                         height: 62,
                         margin: const EdgeInsets.symmetric(horizontal: 20),
                         decoration: BoxDecoration(
-                          color: const Color.fromRGBO(47, 255, 0, 1),
+                          color: kPrimaryGreen,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(

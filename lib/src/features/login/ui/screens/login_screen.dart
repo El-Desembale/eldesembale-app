@@ -169,7 +169,6 @@ class _LoginScreenState extends State<LoginScreen> {
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
-            fontFamily: kDisplayFont,
             fontSize: 20,
             fontWeight: FontWeight.w600,
             color: kTextPrimary,
@@ -601,7 +600,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     widget.loginCubit.sendOtpSms(context: context),
                   ]);
-                  if (results[0]) {
+                  if (results[0] || results[1]) {
                     _pageController.jumpToPage(2);
                   }
                 }

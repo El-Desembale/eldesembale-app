@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../utils/design_tokens.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class TermsScreen extends StatefulWidget {
@@ -17,7 +18,7 @@ class _TermsScreenState extends State<TermsScreen> {
     super.initState();
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0xFF0d1f0d))
+      ..setBackgroundColor(kBgScreen)
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (_) {
@@ -31,17 +32,17 @@ class _TermsScreenState extends State<TermsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0d1f0d),
+      backgroundColor: kBgScreen,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0d1f0d),
+        backgroundColor: kBgScreen,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios, color: kTextPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Términos y condiciones',
-          style: TextStyle(color: Colors.white, fontSize: 18),
+          style: TextStyle(color: kTextPrimary, fontSize: 18, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
       ),
@@ -51,7 +52,7 @@ class _TermsScreenState extends State<TermsScreen> {
           if (_isLoading)
             const Center(
               child: CircularProgressIndicator(
-                color: Color.fromRGBO(47, 255, 0, 1),
+                color: kPrimaryGreen,
               ),
             ),
         ],
@@ -68,8 +69,8 @@ const String _termsHtml = '''
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      background-color: #0d1f0d;
-      color: #ffffffb3;
+      background-color: #0d1712;
+      color: #D9D2C4b3;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-size: 14px;
       line-height: 1.6;
@@ -77,7 +78,7 @@ const String _termsHtml = '''
       margin: 0;
     }
     h2 {
-      color: #ffffff;
+      color: #F6F2E9;
       font-size: 16px;
       margin-top: 24px;
       margin-bottom: 8px;

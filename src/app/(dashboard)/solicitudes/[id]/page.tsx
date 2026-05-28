@@ -15,10 +15,9 @@ import { PaymentCard } from '@/components/PaymentCard';
 
 const ACTION_STATUSES: { label: string; value: LoanRequest['status']; color: string }[] = [
   { label: 'Pendiente', value: 'pending', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
-  { label: 'En proceso', value: 'in_process', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-  { label: 'En desembolso', value: 'in_disbursement_process', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
-  { label: 'Aprobar', value: 'approved', color: 'bg-[#2FFF00]/20 text-[#2FFF00] border-[#2FFF00]/30' },
+  { label: 'Aprobar', value: 'approved', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
   { label: 'Rechazar', value: 'rejected', color: 'bg-red-500/20 text-red-400 border-red-500/30' },
+  { label: 'Desembolsar', value: 'disbursed', color: 'bg-[#2FFF00]/20 text-[#2FFF00] border-[#2FFF00]/30' },
 ];
 
 function parseLoanFromFirestore(id: string, data: Record<string, unknown>): LoanRequest {
@@ -88,7 +87,7 @@ export default function LoanDetailPage() {
         // Calculate available funds for budget check
         const [budgetConfig, allLoans] = await Promise.all([getBudgetConfig(), getLoans()]);
         if (budgetConfig && budgetConfig.totalCapital > 0) {
-          const approvedLoans = allLoans.filter(l => l.status === 'approved');
+          const approvedLoans = allLoans.filter(l => l.status === 'disbursed');
           const capitalLent = approvedLoans.reduce((sum, l) => sum + l.amount, 0);
           const capitalRecovered = approvedLoans.reduce((sum, l) => {
             if (l.installments <= 0) return sum;
@@ -273,7 +272,7 @@ export default function LoanDetailPage() {
       </div>
 
       {/* Insufficient funds warning */}
-      {availableFunds !== null && availableFunds < loan.amount && loan.status !== 'approved' && (
+      {availableFunds !== null && availableFunds < loan.amount && loan.status !== 'disbursed' && (
         <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 mb-4">
           <p className="text-red-400 font-semibold text-sm">Fondos insuficientes</p>
           <p className="text-red-300/70 text-xs mt-0.5">
@@ -287,7 +286,7 @@ export default function LoanDetailPage() {
         <h2 className="text-white font-semibold mb-3">Cambiar estado</h2>
         <div className="flex flex-wrap gap-2">
           {ACTION_STATUSES.map(action => {
-            const insufficientFunds = action.value === 'approved' && availableFunds !== null && availableFunds < loan.amount;
+            const insufficientFunds = action.value === 'disbursed' && availableFunds !== null && availableFunds < loan.amount;
             return (
               <button
                 key={action.value}

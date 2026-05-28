@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../config/auth/cubit/auth_cubit.dart';
+import '../../../../../core/di/injection_dependency.dart';
 import '../../../../../utils/colors.dart';
+import '../../../../../utils/design_tokens.dart';
 
 import '../../../../../utils/modalbottomsheet.dart';
 import '../../../../../utils/utils.dart';
@@ -23,19 +26,33 @@ class LoanBankAccountScreen extends StatefulWidget {
 }
 
 class _LoanBankAccountScreenState extends State<LoanBankAccountScreen> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _lastNameController;
+
   String name = '';
-
   String lastName = '';
-
   String documentType = '';
-
   String documentNumber = '';
-
   String bank = '';
-
   String accountType = '';
-
   String accountNumber = '';
+
+  @override
+  void initState() {
+    super.initState();
+    final user = sl<AuthCubit>(instanceName: 'auth').state.user;
+    name = user.name;
+    lastName = user.lastName;
+    _nameController = TextEditingController(text: name);
+    _lastNameController = TextEditingController(text: lastName);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _lastNameController.dispose();
+    super.dispose();
+  }
 
   bool get isFormValid =>
       name.isNotEmpty &&
@@ -60,7 +77,7 @@ class _LoanBankAccountScreenState extends State<LoanBankAccountScreen> {
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: FloatingActionButton(
               shape: const CircleBorder(),
-              backgroundColor: UIColors.primeraGrey.withOpacity(0.15),
+              backgroundColor: kSurfaceSoft,
               onPressed: () {
                 context.pop();
               },
@@ -80,7 +97,7 @@ class _LoanBankAccountScreenState extends State<LoanBankAccountScreen> {
   Widget _body(BuildContext context, HomeState state) {
     return Container(
       decoration: const BoxDecoration(
-        color: Color.fromARGB(255, 6, 16, 0),
+        color: kBgScreen,
       ),
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -98,7 +115,6 @@ class _LoanBankAccountScreenState extends State<LoanBankAccountScreen> {
             const Text(
               'Datos para finalizar',
               style: TextStyle(
-                fontFamily: "Unbounded",
                 color: Colors.white,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -111,6 +127,7 @@ class _LoanBankAccountScreenState extends State<LoanBankAccountScreen> {
               onlyNumber: false,
               title: 'Nombre (s)',
               hintText: 'Ingresa tu nombre',
+              controller: _nameController,
               onChanged: (value) {
                 name = value;
                 setState(() {});
@@ -120,7 +137,8 @@ class _LoanBankAccountScreenState extends State<LoanBankAccountScreen> {
             CustomTextfieldWidget(
               onlyNumber: false,
               title: 'Apellido (s)',
-              hintText: 'Ingresa tu apellido ',
+              hintText: 'Ingresa tu apellido',
+              controller: _lastNameController,
               onChanged: (value) {
                 lastName = value;
                 setState(() {});
@@ -216,7 +234,7 @@ class _LoanBankAccountScreenState extends State<LoanBankAccountScreen> {
                 height: 62,
                 decoration: BoxDecoration(
                   color: isFormValid
-                      ? const Color.fromRGBO(47, 255, 0, 1)
+                      ? kPrimaryGreen
                       : Colors.white.withOpacity(0.06),
                   borderRadius: BorderRadius.circular(12),
                 ),

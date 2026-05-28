@@ -140,7 +140,6 @@ class _AccountInformationScreenState extends State<AccountInformationScreen> {
               "Datos personales",
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: kDisplayFont,
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
                 color: kTextPrimary,

@@ -16,7 +16,7 @@ export function getExpectedInstallments(loan: LoanRequest): number {
 }
 
 export function isInMora(loan: LoanRequest): boolean {
-  if (loan.status !== 'approved') return false;
+  if (loan.status !== 'disbursed') return false;
   if (loan.installmentsPaid >= loan.installments) return false;
   return getExpectedInstallments(loan) > loan.installmentsPaid;
 }

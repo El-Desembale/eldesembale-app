@@ -17,14 +17,12 @@ final ThemeData lightTheme = darkTheme;
 final ThemeData darkTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark,
-  fontFamily: kBodyFont,
   colorScheme: _darkScheme,
   scaffoldBackgroundColor: kBgScreen,
   canvasColor: kBgScreen,
   splashFactory: NoSplash.splashFactory,
   textTheme: const TextTheme(
     headlineLarge: TextStyle(
-      fontFamily: kDisplayFont,
       fontSize: 24,
       fontWeight: FontWeight.w600,
       color: kTextPrimary,
@@ -32,7 +30,6 @@ final ThemeData darkTheme = ThemeData(
       letterSpacing: -0.4,
     ),
     headlineMedium: TextStyle(
-      fontFamily: kDisplayFont,
       fontSize: 20,
       fontWeight: FontWeight.w600,
       color: kTextPrimary,
@@ -40,7 +37,6 @@ final ThemeData darkTheme = ThemeData(
       letterSpacing: -0.2,
     ),
     titleLarge: TextStyle(
-      fontFamily: kDisplayFont,
       fontSize: 17,
       fontWeight: FontWeight.w600,
       color: kTextPrimary,

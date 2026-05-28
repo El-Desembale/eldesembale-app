@@ -5,13 +5,18 @@ const twilio = require("twilio");
 
 admin.initializeApp();
 
-const smtpEmail = process.env.SMTP_EMAIL || "";
-const smtpPassword = process.env.SMTP_PASSWORD || "";
 const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID || "";
 const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN || "";
 const twilioVerifyServiceSid = process.env.TWILIO_VERIFY_SERVICE_SID || "";
 
+const ADMIN_EMAILS = [
+  "andres.londono.cano@gmail.com",
+  "Stiven96inversionista@gmail.com",
+];
+
 function createTransporter() {
+  const smtpEmail = process.env.SMTP_EMAIL || "";
+  const smtpPassword = process.env.SMTP_PASSWORD || "";
   if (!smtpEmail || !smtpPassword) {
     throw new Error("SMTP_EMAIL y SMTP_PASSWORD son requeridos");
   }
@@ -257,7 +262,7 @@ async function sendInstallmentReceiptEmail({
   const userName = recipientName || payment.user_name || "Cliente";
 
   await transporter.sendMail({
-    from: `"El Desembale" <${smtpEmail}>`,
+    from: `"El Desembale" <${process.env.SMTP_EMAIL}>`,
     to: recipientEmail,
     subject: `Comprobante de pago · ${paidInstallments}/${totalInstallments} cuotas`,
     html: buildPaymentReceiptEmailHtml({
@@ -347,7 +352,7 @@ async function processLoanReminders({ notifyClients = true } = {}) {
 
     if (notifyClients && user.email) {
       await transporter.sendMail({
-        from: `"El Desembale" <${smtpEmail}>`,
+        from: `"El Desembale" <${process.env.SMTP_EMAIL}>`,
         to: user.email,
         subject,
         html: buildReminderEmailHtml({
@@ -388,7 +393,7 @@ async function processLoanReminders({ notifyClients = true } = {}) {
     ].join("\n");
 
     await transporter.sendMail({
-      from: `"El Desembale" <${smtpEmail}>`,
+      from: `"El Desembale" <${process.env.SMTP_EMAIL}>`,
       to: admins.map((adminUser) => adminUser.email).join(","),
       subject: `Resumen de mora y próximos pagos · ${reminders.length} recordatorios`,
       html: buildReminderEmailHtml({
@@ -473,7 +478,9 @@ exports.sendPushNotification = functions.https.onCall(async (data, context) => {
   }
 });
 
-exports.sendOtpEmail = functions.https.onCall(async (data, context) => {
+exports.sendOtpEmail = functions.runWith({
+  secrets: ["SMTP_EMAIL", "SMTP_PASSWORD"],
+}).https.onCall(async (data, context) => {
   const { email } = data;
 
   if (!email) {
@@ -495,16 +502,10 @@ exports.sendOtpEmail = functions.https.onCall(async (data, context) => {
     used: false,
   });
 
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: smtpEmail,
-      pass: smtpPassword,
-    },
-  });
+  const transporter = createTransporter();
 
   const mailOptions = {
-    from: `"El Desembale" <${smtpEmail}>`,
+    from: `"El Desembale" <${process.env.SMTP_EMAIL}>`,
     to: email,
     subject: "Código de verificación - El Desembale",
     html: `
@@ -528,7 +529,9 @@ exports.sendOtpEmail = functions.https.onCall(async (data, context) => {
   }
 });
 
-exports.sendLoanReminderEmails = functions.pubsub
+exports.sendLoanReminderEmails = functions.runWith({
+  secrets: ["SMTP_EMAIL", "SMTP_PASSWORD"],
+}).pubsub
   .schedule("0 8 * * *")
   .timeZone("America/Bogota")
   .onRun(async () => {
@@ -537,7 +540,9 @@ exports.sendLoanReminderEmails = functions.pubsub
     return null;
   });
 
-exports.sendAdminRemindersTest = functions.https.onCall(async () => {
+exports.sendAdminRemindersTest = functions.runWith({
+  secrets: ["SMTP_EMAIL", "SMTP_PASSWORD"],
+}).https.onCall(async () => {
   try {
     const result = await processLoanReminders({ notifyClients: false });
     return { success: true, ...result };
@@ -665,4 +670,92 @@ exports.sendInstallmentReceiptTest = functions.runWith({
       "No se pudo enviar la prueba del comprobante de pago."
     );
   }
+});
+
+exports.notifyAdminsOnPayment = functions.runWith({
+  secrets: ["SMTP_EMAIL", "SMTP_PASSWORD"],
+}).firestore.document("payments/{paymentId}").onCreate(async (snap) => {
+  const payment = snap.data();
+  if (!payment || payment.status !== "APPROVED") return null;
+
+  const isSubscription = payment.type === "subscription";
+  const isInstallment = payment.type === "installment";
+  if (!isSubscription && !isInstallment) return null;
+
+  try {
+    const transporter = createTransporter();
+    const fromEmail = process.env.SMTP_EMAIL;
+    const amount = formatCurrency(payment.amount || 0);
+    const userName = payment.user_name || "Usuario";
+    const userPhone = payment.user_phone || "";
+    const userEmail = payment.user_email || "";
+    const paymentDate = payment.created_at?.toDate
+      ? formatDate(payment.created_at.toDate())
+      : formatDate(new Date());
+
+    let subject, bodyHtml;
+
+    if (isSubscription) {
+      subject = `💳 Nueva suscripción · ${userName} · ${amount}`;
+      bodyHtml = `
+        <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;background:#08150d;border-radius:18px;padding:32px;color:#f4f7f1;">
+          <div style="display:inline-block;padding:6px 14px;border-radius:999px;background:#1d3324;color:#a8d08d;font-size:12px;font-weight:700;margin-bottom:18px;">
+            Pago de suscripción
+          </div>
+          <h2 style="color:#a8d08d;margin:0 0 18px 0;font-size:22px;">Nueva suscripción pagada</h2>
+          <table style="width:100%;border-collapse:collapse;font-size:15px;color:#d7e1d5;">
+            <tr><td style="padding:8px 0;color:#92a097;">Usuario</td><td style="padding:8px 0;text-align:right;font-weight:600;">${userName}</td></tr>
+            <tr><td style="padding:8px 0;color:#92a097;">Teléfono</td><td style="padding:8px 0;text-align:right;">${userPhone}</td></tr>
+            <tr><td style="padding:8px 0;color:#92a097;">Correo</td><td style="padding:8px 0;text-align:right;">${userEmail}</td></tr>
+            <tr><td style="padding:8px 0;color:#92a097;">Valor pagado</td><td style="padding:8px 0;text-align:right;font-size:20px;font-weight:700;color:#a8d08d;">${amount}</td></tr>
+            <tr><td style="padding:8px 0;color:#92a097;">Fecha</td><td style="padding:8px 0;text-align:right;">${paymentDate}</td></tr>
+          </table>
+          <p style="margin-top:24px;color:#92a097;font-size:12px;">El Desembale · Panel de administración</p>
+        </div>
+      `;
+    } else {
+      // installment
+      let loanInfo = "";
+      if (payment.loan_id) {
+        const loanRecord = await findLoanById(payment.loan_id);
+        if (loanRecord) {
+          const loan = loanRecord.data;
+          const installmentNum = payment.installment_number || "?";
+          const totalInstallments = loan.installments || "?";
+          loanInfo = `<tr><td style="padding:8px 0;color:#92a097;">Crédito</td><td style="padding:8px 0;text-align:right;">${formatCurrency(loan.amount || 0)}</td></tr>
+            <tr><td style="padding:8px 0;color:#92a097;">Cuota</td><td style="padding:8px 0;text-align:right;">${installmentNum} / ${totalInstallments}</td></tr>`;
+        }
+      }
+      subject = `💰 Cuota pagada · ${userName} · ${amount}`;
+      bodyHtml = `
+        <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;background:#08150d;border-radius:18px;padding:32px;color:#f4f7f1;">
+          <div style="display:inline-block;padding:6px 14px;border-radius:999px;background:#1d3324;color:#a8d08d;font-size:12px;font-weight:700;margin-bottom:18px;">
+            Pago de cuota
+          </div>
+          <h2 style="color:#a8d08d;margin:0 0 18px 0;font-size:22px;">Cuota recibida</h2>
+          <table style="width:100%;border-collapse:collapse;font-size:15px;color:#d7e1d5;">
+            <tr><td style="padding:8px 0;color:#92a097;">Usuario</td><td style="padding:8px 0;text-align:right;font-weight:600;">${userName}</td></tr>
+            <tr><td style="padding:8px 0;color:#92a097;">Teléfono</td><td style="padding:8px 0;text-align:right;">${userPhone}</td></tr>
+            ${loanInfo}
+            <tr><td style="padding:8px 0;color:#92a097;">Valor pagado</td><td style="padding:8px 0;text-align:right;font-size:20px;font-weight:700;color:#a8d08d;">${amount}</td></tr>
+            <tr><td style="padding:8px 0;color:#92a097;">Fecha</td><td style="padding:8px 0;text-align:right;">${paymentDate}</td></tr>
+          </table>
+          <p style="margin-top:24px;color:#92a097;font-size:12px;">El Desembale · Panel de administración</p>
+        </div>
+      `;
+    }
+
+    await transporter.sendMail({
+      from: `"El Desembale Admin" <${fromEmail}>`,
+      to: ADMIN_EMAILS.join(", "),
+      subject,
+      html: bodyHtml,
+    });
+
+    console.log("Admin payment notification sent:", { type: payment.type, userPhone, amount: payment.amount });
+  } catch (error) {
+    console.error("Error sending admin payment notification:", error);
+  }
+
+  return null;
 });

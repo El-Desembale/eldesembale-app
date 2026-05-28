@@ -505,6 +505,18 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   Future<void> submitLoan(BuildContext context) async {
+    // Block if there's an active approved loan with unpaid installments
+    final activeLoan = state.loans.where((l) => l.status == 'approved').firstOrNull;
+    if (activeLoan != null &&
+        activeLoan.installments > 0 &&
+        activeLoan.installmentsPaid < activeLoan.installments) {
+      ModalbottomsheetUtils.customError(
+        context,
+        'Préstamo activo',
+        'Debes pagar todas las cuotas del préstamo activo antes de solicitar uno nuevo.',
+      );
+      return;
+    }
     isLoading(true);
     final authUser = sl<AuthCubit>(instanceName: 'auth').state.user;
     final response = await _createLoanUseCase.call(

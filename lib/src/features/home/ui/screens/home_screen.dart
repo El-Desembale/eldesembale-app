@@ -149,76 +149,90 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontFamily: kDisplayFont,
                               color: kTextPrimary,
                               fontSize: 24,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const SizedBox(height: 20),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: kSurfaceSoft,
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(
-                                color: kBorderFaint,
+                          const SizedBox(height: 8),
+                          Column(
+                            children: [
+                              const Text(
+                                'COP',
+                                style: TextStyle(
+                                  color: kTextSecondary,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 2.5,
+                                ),
                               ),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 18,
-                              vertical: 12,
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  '\$',
-                                  style: TextStyle(
-                                    fontFamily: kDisplayFont,
-                                    color: kTextSecondary,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
+                              const SizedBox(height: 6),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 10),
+                                    child: Text(
+                                      '\$',
+                                      style: TextStyle(
+                                        color: kTextSecondary,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: TextField(
-                                    controller: _amountController,
-                                    keyboardType: TextInputType.number,
-                                    inputFormatters: [
-                                      _AmountInputFormatter(
-                                          max: state.limits.maxAmmount),
+                                  const SizedBox(width: 4),
+                                  IntrinsicWidth(
+                                    child: TextField(
+                                      controller: _amountController,
+                                      textAlign: TextAlign.center,
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [
+                                        _AmountInputFormatter(
+                                            max: state.limits.maxAmmount),
+                                      ],
+                                      style: const TextStyle(
+                                        color: kTextPrimary,
+                                        fontSize: 52,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: -1.5,
+                                        height: 1.1,
+                                      ),
+                                      decoration: const InputDecoration(
+                                        border: InputBorder.none,
+                                        isDense: true,
+                                        contentPadding: EdgeInsets.zero,
+                                      ),
+                                      onChanged: (value) {
+                                        final raw = value.replaceAll(',', '');
+                                        final amount = double.tryParse(raw) ??
+                                            state.limits.minAmmount.toDouble();
+                                        widget.homeCubit
+                                            .updateAmountDirectly(amount);
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Container(
+                                height: 2,
+                                margin: const EdgeInsets.symmetric(horizontal: 48),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.transparent,
+                                      kPrimaryGreen.withValues(alpha: 0.7),
+                                      kPrimaryGreen,
+                                      kPrimaryGreen.withValues(alpha: 0.7),
+                                      Colors.transparent,
                                     ],
-                                    style: const TextStyle(
-                                      fontFamily: kDisplayFont,
-                                      color: kTextPrimary,
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    decoration: const InputDecoration(
-                                      border: InputBorder.none,
-                                      isDense: true,
-                                      contentPadding: EdgeInsets.zero,
-                                    ),
-                                    onChanged: (value) {
-                                      final raw = value.replaceAll(',', '');
-                                      final amount = double.tryParse(raw) ??
-                                          state.limits.minAmmount.toDouble();
-                                      widget.homeCubit
-                                          .updateAmountDirectly(amount);
-                                    },
                                   ),
+                                  borderRadius: BorderRadius.circular(2),
                                 ),
-                                const Text(
-                                  'COP',
-                                  style: TextStyle(
-                                    color: kTextSecondary,
-                                    fontSize: 11,
-                                    letterSpacing: 1,
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 12),
                           SliderTheme(
@@ -279,7 +293,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           const Text(
                             'Periodo de Pago',
                             style: TextStyle(
-                              fontFamily: kDisplayFont,
                               color: kTextPrimary,
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -305,7 +318,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           const Text(
                             'Número de Cuotas',
                             style: TextStyle(
-                              fontFamily: kDisplayFont,
                               color: kTextPrimary,
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -451,7 +463,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     NumberFormat('\$#,##0', 'en_US')
                         .format(loan.amount.toInt()),
                     style: const TextStyle(
-                      fontFamily: kDisplayFont,
                       color: kTextPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -619,6 +630,74 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 
+  Widget _buildActiveLoanBlockedButton() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.blue.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.blue.withOpacity(0.2)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.info_outline, color: Colors.blue.withOpacity(0.7), size: 18),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Debes pagar todas las cuotas del préstamo activo antes de solicitar uno nuevo.',
+                  style: const TextStyle(color: kTextSecondary, fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          height: 62,
+          decoration: BoxDecoration(
+            color: kSurfaceSoft,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: kBorderFaint),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 25),
+                child: Text(
+                  'Nueva solicitud',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.3),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Container(
+                  width: 46,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: kBgScreenAlt,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.lock_outline_rounded,
+                    color: Colors.white.withValues(alpha: 0.2),
+                    size: 20,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildBudgetExhaustedBanner() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -720,13 +799,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     }
 
-    // Si hay una aprobada (en proceso de pago): mostrar tarjeta + permitir nueva
+    // Si hay una aprobada: bloquear nueva solicitud hasta que esté totalmente pagada
     if (approvedLoan != null) {
+      final fullyPaid = approvedLoan.installmentsPaid >= approvedLoan.installments &&
+          approvedLoan.installments > 0;
       return Column(
         children: [
           _buildLoanCard(context, approvedLoan),
           const SizedBox(height: 12),
-          _buildNewRequestButton(context),
+          if (fullyPaid)
+            _buildNewRequestButton(context)
+          else
+            _buildActiveLoanBlockedButton(),
         ],
       );
     }

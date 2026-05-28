@@ -63,6 +63,28 @@ class DrawerWidget extends StatelessWidget {
                   height: MediaQuery.sizeOf(context).height * 0.01,
                 ),
                 _drawerItem(
+                  "Términos y condiciones",
+                  AssetImages.request,
+                  () {
+                    Navigator.of(context).pop();
+                    context.push(AppRoutes.terms);
+                  },
+                ),
+                SizedBox(
+                  height: MediaQuery.sizeOf(context).height * 0.01,
+                ),
+                _drawerItem(
+                  "Política de privacidad",
+                  AssetImages.request,
+                  () {
+                    Navigator.of(context).pop();
+                    context.push(AppRoutes.privacyPolicy);
+                  },
+                ),
+                SizedBox(
+                  height: MediaQuery.sizeOf(context).height * 0.01,
+                ),
+                _drawerItem(
                   "Cerrar sesión",
                   AssetImages.back,
                   () {
@@ -79,7 +101,7 @@ class DrawerWidget extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 24),
                   child: Text(
-                    "Versión 1.0.1",
+                    "v2.0.0",
                     style: TextStyle(
                       color: kTextSecondary,
                       fontSize: 12,

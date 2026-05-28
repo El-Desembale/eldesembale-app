@@ -3,6 +3,7 @@ import {
   getDocs,
   doc,
   updateDoc,
+  deleteDoc,
   query,
   orderBy,
   where,
@@ -58,6 +59,10 @@ export async function getUserLoans(phone: string): Promise<LoanRequest[]> {
 
 export async function updateLoanStatus(loanId: string, status: LoanRequest['status']): Promise<void> {
   await updateDoc(doc(db, 'loan_request', loanId), { status });
+}
+
+export async function deleteLoanRequest(loanId: string): Promise<void> {
+  await deleteDoc(doc(db, 'loan_request', loanId));
 }
 
 export async function getUsers(): Promise<User[]> {

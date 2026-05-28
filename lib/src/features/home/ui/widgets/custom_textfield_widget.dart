@@ -8,12 +8,14 @@ class CustomTextfieldWidget extends StatelessWidget {
   final String hintText;
   final void Function(String)? onChanged;
   final bool onlyNumber;
+  final TextEditingController? controller;
   const CustomTextfieldWidget({
     super.key,
     required this.title,
     required this.hintText,
     required this.onlyNumber,
     required this.onChanged,
+    this.controller,
   });
 
   @override
@@ -38,8 +40,10 @@ class CustomTextfieldWidget extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           TextField(
+            controller: controller,
             decoration: InputDecoration(
               isDense: true,
+              filled: false,
               hintText: hintText,
               hintStyle: const TextStyle(color: kTextSecondary),
               enabledBorder: InputBorder.none,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'colors.dart';
+import 'design_tokens.dart';
 
 class Utils {
   static double getTotalAmount(
@@ -47,10 +48,10 @@ class Utils {
         vertical: 15,
       ),
       filled: true,
-      fillColor: UIColors.primaryBlack,
+      fillColor: kPrimaryGreenDeep,
       hintText: label,
       hintStyle: const TextStyle(
-        color: UIColors.primaryTextColor,
+        color: kTextPrimary,
         fontSize: 16.0,
       ),
       border: customImputBorder(),
@@ -66,10 +67,10 @@ class Utils {
         vertical: 15,
       ),
       filled: true,
-      fillColor: UIColors.primaryBlack,
+      fillColor: kPrimaryGreenDeep,
       hintText: label,
       hintStyle: const TextStyle(
-        color: UIColors.primaryTextColor,
+        color: kTextPrimary,
         fontSize: 18.0,
       ),
       suffixIcon: imagePath != null ? Image.asset(imagePath) : null,
@@ -82,7 +83,7 @@ class Utils {
   static ElevatedButton defaultButton(String text, Function() onPressed) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: UIColors.primaryBlack,
+        backgroundColor: kPrimaryGreenDeep,
         side: const BorderSide(
           color: Colors.black,
           width: 2,
@@ -99,7 +100,7 @@ class Utils {
       child: Text(
         text,
         style: const TextStyle(
-          color: UIColors.primaryTextColor,
+          color: kTextPrimary,
           fontSize: 12.0,
           fontWeight: FontWeight.bold,
         ),
@@ -113,7 +114,7 @@ class Utils {
       decoration: BoxDecoration(
         boxShadow: const [
           BoxShadow(
-            color: UIColors.secondaryYellow,
+            color: kWarningSoft,
             blurRadius: 10.0,
             spreadRadius: 1.0,
             offset: Offset(0, 0),
@@ -123,8 +124,8 @@ class Utils {
       ),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: UIColors.primaryColorButton,
-          shadowColor: UIColors.secondaryYellow,
+          backgroundColor: kPrimaryGreenDeep,
+          shadowColor: kWarningSoft,
           padding: const EdgeInsets.symmetric(
             horizontal: 25.0,
             vertical: 15,
@@ -149,7 +150,7 @@ class Utils {
   static ElevatedButton secondaryButton(String text, Function() onPressed) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: UIColors.primaryYellow,
+        backgroundColor: kWarningSoft,
         padding: const EdgeInsets.symmetric(
           horizontal: 25.0,
           vertical: 15,
@@ -173,7 +174,7 @@ class Utils {
 
   static Decoration defaultContainerDecoration() {
     return BoxDecoration(
-      color: UIColors.primaryBlack,
+      color: kPrimaryGreenDeep,
       borderRadius: BorderRadius.circular(12.0),
       border: Border.all(
         color: Colors.black,

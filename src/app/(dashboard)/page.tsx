@@ -10,10 +10,9 @@ import { LoanRequest, STATUS_LABELS } from '@/lib/types';
 const STATUS_FILTERS: { label: string; value: LoanRequest['status'] | 'all' | 'mora' }[] = [
   { label: 'Todas', value: 'all' },
   { label: 'Pendientes', value: 'pending' },
-  { label: 'En revisión', value: 'in_process' },
-  { label: 'En desembolso', value: 'in_disbursement_process' },
   { label: 'Aprobadas', value: 'approved' },
   { label: 'Rechazadas', value: 'rejected' },
+  { label: 'Desembolsadas', value: 'disbursed' },
   { label: 'En mora', value: 'mora' },
 ];
 
@@ -43,14 +42,12 @@ function formatDateInput(date: Date) {
 
 function getStatusTone(status: LoanRequest['status'] | 'mora') {
   switch (status) {
-    case 'approved':
+    case 'disbursed':
       return 'bg-emerald-500/14 text-emerald-300 ring-1 ring-emerald-500/25';
+    case 'approved':
+      return 'bg-sky-500/14 text-sky-300 ring-1 ring-sky-500/25';
     case 'pending':
       return 'bg-amber-500/14 text-amber-300 ring-1 ring-amber-500/25';
-    case 'in_process':
-      return 'bg-slate-300/10 text-slate-200 ring-1 ring-white/10';
-    case 'in_disbursement_process':
-      return 'bg-sky-500/14 text-sky-300 ring-1 ring-sky-500/25';
     case 'rejected':
       return 'bg-rose-500/14 text-rose-300 ring-1 ring-rose-500/25';
     case 'mora':
@@ -146,15 +143,15 @@ export default function HomePage() {
 
   const summary = useMemo(() => {
     const pending = loans.filter((loan) => loan.status === 'pending').length;
-    const inReview = loans.filter((loan) => loan.status === 'in_process').length;
     const approved = loans.filter((loan) => loan.status === 'approved').length;
+    const disbursed = loans.filter((loan) => loan.status === 'disbursed').length;
     const overdue = loans.filter(isInMora).length;
 
     return {
       total: loans.length,
       pending,
-      inReview,
       approved,
+      disbursed,
       overdue,
     };
   }, [loans]);
@@ -217,13 +214,6 @@ export default function HomePage() {
             <div className="mb-4 inline-flex items-center rounded-full border border-[#31453b] bg-[#121d17] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9db2a1]">
               Panel de solicitudes
             </div>
-            <h1 className="text-3xl font-semibold tracking-[-0.04em] text-[#f6f5ef] md:text-4xl">
-              Solicitudes de préstamo ordenadas para decidir más rápido
-            </h1>
-            <p className="mt-3 max-w-xl text-sm leading-6 text-[#8fa393]">
-              Revisa el volumen total, filtra por estado o fecha y entra al
-              detalle de cada solicitud desde una sola tabla operativa.
-            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -251,19 +241,19 @@ export default function HomePage() {
           label="Pendientes"
           value={summary.pending}
           accent="bg-[#d2a45c]"
-          helper="Esperando revisión inicial"
-        />
-        <SummaryCard
-          label="En revisión"
-          value={summary.inReview}
-          accent="bg-[#7d8fa4]"
-          helper="Casos con validación en curso"
+          helper="Esperando revisión"
         />
         <SummaryCard
           label="Aprobadas"
           value={summary.approved}
+          accent="bg-[#7d8fa4]"
+          helper="Aceptadas, pendientes de desembolso"
+        />
+        <SummaryCard
+          label="Desembolsadas"
+          value={summary.disbursed}
           accent="bg-[#6ea37d]"
-          helper="Solicitudes listas o ya activadas"
+          helper="Dinero ya enviado al cliente"
         />
         <SummaryCard
           label="En mora"

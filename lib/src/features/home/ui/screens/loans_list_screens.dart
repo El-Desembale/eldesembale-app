@@ -114,7 +114,6 @@ class _LoansListScreenState extends State<LoansListScreen> {
                     const Text(
                       'Solicitudes',
                       style: TextStyle(
-                        fontFamily: kDisplayFont,
                         color: kTextPrimary,
                         fontSize: 24,
                         fontWeight: FontWeight.w600,

@@ -37,7 +37,6 @@ class ModalbottomsheetUtils {
                 'Código incorrecto',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontFamily: kDisplayFont,
                   color: kTextPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -98,7 +97,6 @@ class ModalbottomsheetUtils {
                 title,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontFamily: kDisplayFont,
                   color: kTextPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -162,7 +160,6 @@ class ModalbottomsheetUtils {
                 title,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontFamily: kDisplayFont,
                   color: kTextPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -222,7 +219,6 @@ class ModalbottomsheetUtils {
                 '¡Solicitud enviada!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontFamily: kDisplayFont,
                   color: kTextPrimary,
                   fontSize: 20,
                   fontWeight: FontWeight.w600,

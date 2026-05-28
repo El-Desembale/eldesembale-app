@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../utils/colors.dart';
+import '../../../../../utils/design_tokens.dart';
 import '../../../cubit/home_cubit.dart';
 
 class LoanDirectionScreen extends StatefulWidget {
@@ -91,7 +92,7 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
                   const TextSpan(
                     text: ' *',
                     style: TextStyle(
-                      color: Color.fromRGBO(47, 255, 0, 1),
+                      color: kPrimaryGreen,
                       fontSize: 12,
                     ),
                   )
@@ -102,16 +103,31 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
     );
   }
 
-  Widget _inputBox({required Widget child}) {
+  Widget _inputBox({required Widget child, BuildContext? ctx}) {
+    final theme = ctx != null ? Theme.of(ctx) : null;
+    final inner = theme != null
+        ? Theme(
+            data: theme.copyWith(
+              inputDecorationTheme: const InputDecorationTheme(
+                filled: false,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            child: child,
+          )
+        : child;
     return Container(
       height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        color: kInputSurface,
+        borderRadius: BorderRadius.circular(kRadiusInput),
+        border: Border.all(color: kBorderFaint),
       ),
-      child: child,
+      child: inner,
     );
   }
 
@@ -129,7 +145,7 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: FloatingActionButton(
               shape: const CircleBorder(),
-              backgroundColor: UIColors.primeraGrey.withOpacity(0.15),
+              backgroundColor: kSurfaceSoft,
               onPressed: () => context.pop(),
               child: const Icon(Icons.arrow_back, color: Colors.white, size: 35),
             ),
@@ -142,7 +158,7 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
 
   Widget _body(BuildContext context, HomeState state) {
     return Container(
-      decoration: const BoxDecoration(color: Color.fromARGB(255, 6, 16, 0)),
+      decoration: const BoxDecoration(color: kBgScreen),
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
         left: 30,
@@ -157,7 +173,6 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
           const Text(
             'Dirección de residencia',
             style: TextStyle(
-              fontFamily: "Unbounded",
               color: Colors.white,
               fontSize: 15,
               fontWeight: FontWeight.bold,
@@ -170,7 +185,7 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
           Row(
             children: [
               Expanded(
-                child: _inputBox(
+                child: _inputBox(ctx: context,
                   child: _isCustomWayType
                       ? Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -235,7 +250,7 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _inputBox(
+                child: _inputBox(ctx: context,
                   child: TextField(
                     controller: _wayNumberController,
                     inputFormatters: [
@@ -262,7 +277,7 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
           Row(
             children: [
               Expanded(
-                child: _inputBox(
+                child: _inputBox(ctx: context,
                   child: TextField(
                     controller: _wayNumber2Controller,
                     onChanged: (value) => setState(() => wayNumber2 = value),
@@ -278,7 +293,7 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _inputBox(
+                child: _inputBox(ctx: context,
                   child: TextField(
                     controller: _wayNumber3Controller,
                     onChanged: (value) => setState(() => wayNumber3 = value),
@@ -302,7 +317,7 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
 
           // Interior
           _label('Interior'),
-          _inputBox(
+          _inputBox(ctx: context, 
             child: TextField(
               controller: _interiorController,
               onChanged: (value) => setState(() => interior = value),
@@ -318,34 +333,43 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
 
           // Referencia
           _label('Referencia'),
-          Container(
-            constraints: const BoxConstraints(minHeight: 56, maxHeight: 120),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
-            ),
-            child: TextField(
-              controller: _additionalInfoController,
-              onChanged: (value) => setState(() => additionalInfo = value),
-              maxLines: null,
-              keyboardType: TextInputType.multiline,
-              decoration: InputDecoration(
-                hintText: 'Ayúdanos a encontrar tu dirección',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.35)),
+          Theme(
+            data: Theme.of(context).copyWith(
+              inputDecorationTheme: const InputDecorationTheme(
+                filled: false,
                 border: InputBorder.none,
-                isDense: true,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
                 contentPadding: EdgeInsets.zero,
               ),
-              style: const TextStyle(color: Colors.white),
+            ),
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 56, maxHeight: 120),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: kInputSurface,
+                borderRadius: BorderRadius.circular(kRadiusInput),
+                border: Border.all(color: kBorderFaint),
+              ),
+              child: TextField(
+                controller: _additionalInfoController,
+                onChanged: (value) => setState(() => additionalInfo = value),
+                maxLines: null,
+                keyboardType: TextInputType.multiline,
+                style: const TextStyle(color: kTextPrimary),
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 20),
 
           // Ciudad
           _label('Ciudad'),
-          _inputBox(
+          _inputBox(ctx: context, 
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 dropdownColor: const Color.fromARGB(255, 15, 25, 10),
@@ -394,7 +418,7 @@ class _LoanDirectionScreenState extends State<LoanDirectionScreen> {
               height: 62,
               decoration: BoxDecoration(
                 color: enabled
-                    ? const Color.fromRGBO(47, 255, 0, 1)
+                    ? kPrimaryGreen
                     : Colors.white.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
               ),

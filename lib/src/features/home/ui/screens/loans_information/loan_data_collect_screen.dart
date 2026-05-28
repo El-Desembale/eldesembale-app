@@ -9,6 +9,7 @@ import '../../../../../config/auth/cubit/auth_cubit.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../core/di/injection_dependency.dart';
 import '../../../../../utils/colors.dart';
+import '../../../../../utils/design_tokens.dart';
 import '../../../../../utils/images.dart';
 import '../../../../../utils/modalbottomsheet.dart';
 import '../../../cubit/home_cubit.dart';
@@ -34,7 +35,7 @@ class LoanDataCollectScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: FloatingActionButton(
               shape: const CircleBorder(),
-              backgroundColor: UIColors.primeraGrey.withOpacity(0.15),
+              backgroundColor: kSurfaceSoft,
               onPressed: () {
                 context.pop();
               },
@@ -66,7 +67,7 @@ class LoanDataCollectScreen extends StatelessWidget {
   Widget _body(BuildContext context, HomeState state) {
     return Container(
       decoration: const BoxDecoration(
-        color: Color.fromARGB(255, 6, 16, 0),
+        color: kBgScreen,
       ),
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -83,7 +84,6 @@ class LoanDataCollectScreen extends StatelessWidget {
             child: Text(
               'Datos para finalizar',
               style: TextStyle(
-                fontFamily: "Unbounded",
                 color: Colors.white,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -203,7 +203,7 @@ class LoanDataCollectScreen extends StatelessWidget {
             child: Container(
               height: 62,
               decoration: BoxDecoration(
-                color: const Color.fromRGBO(47, 255, 0, 1),
+                color: kPrimaryGreen,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -539,11 +539,11 @@ class _OptionButton extends StatelessWidget {
               width: 46,
               height: 46,
               decoration: BoxDecoration(
-                color: const Color.fromRGBO(47, 255, 0, 0.1),
+                color: kPrimaryGreenSoft,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon,
-                  color: const Color.fromRGBO(47, 255, 0, 1), size: 24),
+                  color: kPrimaryGreen, size: 24),
             ),
             const SizedBox(width: 14),
             Expanded(

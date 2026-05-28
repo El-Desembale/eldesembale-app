@@ -101,7 +101,6 @@ class _LoanInfoDetailScreenState extends State<LoanInfoDetailScreen> {
                           child: Text(
                             NumberFormat("#,##0", "en_US").format(loan.amount),
                             style: const TextStyle(
-                              fontFamily: kDisplayFont,
                               color: kTextPrimary,
                               fontSize: 30,
                               fontWeight: FontWeight.w600,
@@ -238,8 +237,8 @@ class _LoanInfoDetailScreenState extends State<LoanInfoDetailScreen> {
                   const SizedBox(height: 20),
                   const Text(
                     'Fechas de Pago',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontFamily: kDisplayFont,
                       color: kTextPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,

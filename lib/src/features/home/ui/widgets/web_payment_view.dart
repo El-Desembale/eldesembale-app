@@ -244,7 +244,6 @@ class _WebPaymentViewState extends State<WebPaymentView> {
                 title,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontFamily: kDisplayFont,
                   color: kTextPrimary,
                   fontSize: 24,
                   fontWeight: FontWeight.w600,

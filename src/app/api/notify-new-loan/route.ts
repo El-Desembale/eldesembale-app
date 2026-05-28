@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+
+function getAdminApp(): App {
+  if (getApps().length) return getApps()[0];
+  const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+  if (!raw) throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON not set');
+  return initializeApp({ credential: cert(JSON.parse(raw)) });
+}
 
 interface NewLoanPayload {
   loanId: string;
@@ -8,6 +17,32 @@ interface NewLoanPayload {
   installments: number;
   paymentPeriod: string;
   clientName?: string;
+}
+
+async function syncDocumentsToUserProfile(loanId: string, phone: string): Promise<void> {
+  const app = getAdminApp();
+  const db = getFirestore(app);
+
+  const loanDoc = await db.collection('loan_request').doc(loanId).get();
+  if (!loanDoc.exists) return;
+
+  const loanData = loanDoc.data() as Record<string, unknown>;
+  const raw = (loanData.loan_information as Record<string, unknown>) || {};
+
+  const documents = {
+    ccFrontalPicture: (raw.cc_frontal_picture as string) || '',
+    ccBackPicture: (raw.cc_back_picture as string) || '',
+    selfiePicture: (raw.selfie_picture as string) || '',
+    empInvoiceFile: (raw.emp_invoice_file as string) || '',
+  };
+
+  const hasAnyDoc = Object.values(documents).some(v => v);
+  if (!hasAnyDoc) return;
+
+  const snap = await db.collection('users').where('phone', '==', phone).limit(1).get();
+  if (!snap.empty) {
+    await snap.docs[0].ref.update({ documents });
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -81,9 +116,14 @@ export async function POST(req: NextRequest) {
       subject: `Nueva solicitud · ${clientDisplay} · ${amountFormatted}`,
       html,
     });
-
-    return NextResponse.json({ success: true });
   } catch (e: unknown) {
     return NextResponse.json({ success: false, error: (e as Error).message }, { status: 500 });
   }
+
+  // Sync loan documents to user profile (non-blocking)
+  syncDocumentsToUserProfile(loanId, phone).catch(e =>
+    console.error('syncDocumentsToUserProfile failed:', e)
+  );
+
+  return NextResponse.json({ success: true });
 }

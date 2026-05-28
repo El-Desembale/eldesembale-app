@@ -20,7 +20,9 @@ import '../../features/home/ui/screens/loans_list_screens.dart';
 import '../../features/home/ui/screens/subscription_screen.dart';
 import '../../features/login/cubit/login_cubit.dart';
 import '../../features/login/ui/screens/login_screen.dart';
+import '../../features/login/ui/screens/privacy_policy_screen.dart';
 import '../../features/login/ui/screens/recovery_password_screen.dart';
+import '../../features/login/ui/screens/terms_screen.dart';
 import '../../features/onboarding/ui/screens/onboarding_screen.dart';
 
 class AppRoutes {
@@ -39,6 +41,8 @@ class AppRoutes {
   static const loanBankAccount = '/loan-bank-account';
   static const loansList = '/loans-list';
   static const subscrption = '/subscription';
+  static const terms = '/terms';
+  static const privacyPolicy = '/privacy-policy';
 
   static final LoginCubit _loginCubit = sl<LoginCubit>();
   static final HomeCubit _homeCubit = sl<HomeCubit>();
@@ -180,6 +184,14 @@ class AppRoutes {
               ),
         );
       },
+    ),
+    GoRoute(
+      path: terms,
+      pageBuilder: (context, state) => const NoTransitionPage(child: TermsScreen()),
+    ),
+    GoRoute(
+      path: privacyPolicy,
+      pageBuilder: (context, state) => const NoTransitionPage(child: PrivacyPolicyScreen()),
     ),
     GoRoute(
       path: subscrption,

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../utils/colors.dart';
+import '../../../../utils/design_tokens.dart';
 import '../../../../utils/images.dart';
 import '../../../../utils/modalbottomsheet.dart';
 import '../../../shared/widgets/floating_label_input.dart';
@@ -65,7 +66,7 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
       widget.loginCubit.sendOtpSms(context: context),
     ]);
     if (mounted) {
-      setState(() => _otpSent = results[0]);
+      setState(() => _otpSent = results[0] || results[1]);
     }
   }
 
@@ -123,7 +124,7 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
                       height: 50,
                       child: CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          UIColors.primaryYellow,
+                          kWarningSoft,
                         ),
                       ),
                     ),
@@ -184,7 +185,6 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
               textAlign: TextAlign.start,
               maxLines: 1,
               style: TextStyle(
-                fontFamily: "Unbounded",
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -291,7 +291,6 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
               textAlign: TextAlign.start,
               maxLines: 1,
               style: TextStyle(
-                fontFamily: "Unbounded",
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -372,7 +371,7 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
       children: [
         Icon(
           passed ? Icons.check_circle : Icons.radio_button_unchecked,
-          color: passed ? const Color.fromRGBO(47, 255, 0, 1) : Colors.white24,
+          color: passed ? kPrimaryGreen : Colors.white24,
           size: 18,
         ),
         const SizedBox(width: 8),

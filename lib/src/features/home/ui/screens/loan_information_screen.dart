@@ -60,7 +60,6 @@ class LoanInformationScreen extends StatelessWidget {
             style: TextStyle(
               color: kTextPrimary,
               fontWeight: FontWeight.bold,
-              fontFamily: kDisplayFont,
               fontSize: 18,
             ),
           ),
@@ -118,24 +117,22 @@ class LoanInformationScreen extends StatelessWidget {
         height: MediaQuery.sizeOf(context).height,
         width: MediaQuery.sizeOf(context).width,
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Spacer(),
+            SizedBox(height: MediaQuery.of(context).padding.top + 24),
             const Text(
               'Detalles del Préstamo',
-              maxLines: 2,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: kDisplayFont,
                 color: kTextPrimary,
                 fontSize: 22,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               decoration: BoxDecoration(
                 color: kSurfaceSoft,
                 borderRadius: BorderRadius.circular(24),
@@ -148,7 +145,7 @@ class LoanInformationScreen extends StatelessWidget {
                     style: TextStyle(
                       color: kTextSecondary,
                       fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -158,17 +155,16 @@ class LoanInformationScreen extends StatelessWidget {
                       NumberFormat("#,##0", "en_US")
                           .format(state.totalLoanAmount),
                       style: const TextStyle(
-                        fontFamily: kDisplayFont,
                         color: kTextPrimary,
-                        fontSize: 30,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               decoration: BoxDecoration(
@@ -232,16 +228,17 @@ class LoanInformationScreen extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 20),
             const Text(
               'Fechas de Pago',
+              textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: kDisplayFont,
                 color: kTextPrimary,
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             Expanded(
               child: Container(
                 padding:

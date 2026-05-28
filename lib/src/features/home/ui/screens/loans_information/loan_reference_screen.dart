@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../utils/colors.dart';
+import '../../../../../utils/design_tokens.dart';
 
 import '../../../cubit/home_cubit.dart';
 import '../../../data/entities/loan_information_entity.dart';
@@ -51,7 +52,7 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: FloatingActionButton(
               shape: const CircleBorder(),
-              backgroundColor: UIColors.primeraGrey.withOpacity(0.15),
+              backgroundColor: kSurfaceSoft,
               onPressed: () {
                 if (_pageController.hasClients) {
                   if (_pageController.page == 0) {
@@ -81,7 +82,7 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
   Widget _body(BuildContext context, HomeState state) {
     return Container(
       decoration: const BoxDecoration(
-        color: Color.fromARGB(255, 6, 16, 0),
+        color: kBgScreen,
       ),
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -99,7 +100,6 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
               const Text(
                 'Primera Referencia',
                 style: TextStyle(
-                  fontFamily: "Unbounded",
                   color: Colors.white,
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
@@ -223,12 +223,23 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                 ),
               const SizedBox(height: 15),
               if (firstReferenceRelationship.isNotEmpty)
-                Container(
+                Theme(
+                  data: Theme.of(context).copyWith(
+                    inputDecorationTheme: const InputDecorationTheme(
+                      filled: false,
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                  child: Container(
                   padding: const EdgeInsets.symmetric(
                       vertical: 5.0, horizontal: 16.0),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(22.0),
+                    color: kInputSurface,
+                    borderRadius: BorderRadius.circular(kRadiusInput),
+                    border: Border.all(color: kBorderFaint),
                   ),
                   child: Row(
                     children: [
@@ -248,7 +259,7 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                             Text(
                               'Teléfono de $firstReferenceRelationship',
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: kTextPrimary,
                                 fontSize: 14.0,
                               ),
                             ),
@@ -280,6 +291,7 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                       ),
                     ],
                   ),
+                  ),
                 ),
               const SizedBox(height: 35),
               Builder(builder: (context) {
@@ -300,7 +312,7 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                     height: 62,
                     decoration: BoxDecoration(
                       color: isFirstValid
-                          ? const Color.fromRGBO(47, 255, 0, 1)
+                          ? kPrimaryGreen
                           : Colors.white.withOpacity(0.06),
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -350,7 +362,6 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
               const Text(
                 'Segunda Referencia',
                 style: TextStyle(
-                  fontFamily: "Unbounded",
                   color: Colors.white,
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
@@ -477,12 +488,23 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                 ),
               const SizedBox(height: 15),
               if (secondReferenceRelationship.isNotEmpty)
-                Container(
+                Theme(
+                  data: Theme.of(context).copyWith(
+                    inputDecorationTheme: const InputDecorationTheme(
+                      filled: false,
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                  child: Container(
                   padding: const EdgeInsets.symmetric(
                       vertical: 5.0, horizontal: 16.0),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(22.0),
+                    color: kInputSurface,
+                    borderRadius: BorderRadius.circular(kRadiusInput),
+                    border: Border.all(color: kBorderFaint),
                   ),
                   child: Row(
                     children: [
@@ -502,7 +524,7 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                             Text(
                               'Teléfono de $secondReferenceRelationship',
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: kTextPrimary,
                                 fontSize: 14.0,
                               ),
                             ),
@@ -534,6 +556,7 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                       ),
                     ],
                   ),
+                  ),
                 ),
               const SizedBox(height: 35),
               Builder(builder: (context) {
@@ -564,7 +587,7 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                     height: 62,
                     decoration: BoxDecoration(
                       color: isSecondValid
-                          ? const Color.fromRGBO(47, 255, 0, 1)
+                          ? kPrimaryGreen
                           : Colors.white.withOpacity(0.06),
                       borderRadius: BorderRadius.circular(12),
                     ),
