@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -316,14 +318,11 @@ class LoanDataCollectScreen extends StatelessWidget {
                   description: 'Selecciona una foto desde tu galería',
                   onTap: () async {
                     Navigator.of(ctx).pop();
-                    FilePickerResult? result =
-                        await FilePicker.platform.pickFiles(
-                      type: FileType.custom,
-                      allowedExtensions: ['jpg', 'jpeg', 'png'],
+                    final picked = await ImagePicker().pickImage(
+                      source: ImageSource.gallery,
+                      imageQuality: 85,
                     );
-                    if (result != null) {
-                      homeCubit.addSelfieFile(File(result.files.first.path!));
-                    }
+                    if (picked != null) homeCubit.addSelfieFile(File(picked.path));
                   },
                 ),
               ],
@@ -403,14 +402,11 @@ class LoanDataCollectScreen extends StatelessWidget {
                   description: 'Selecciona una foto desde tu galería',
                   onTap: () async {
                     Navigator.of(ctx).pop();
-                    FilePickerResult? result =
-                        await FilePicker.platform.pickFiles(
-                      type: FileType.custom,
-                      allowedExtensions: ['jpg', 'jpeg', 'png'],
+                    final picked = await ImagePicker().pickImage(
+                      source: ImageSource.gallery,
+                      imageQuality: 85,
                     );
-                    if (result != null) {
-                      onFileSaved(File(result.files.first.path!));
-                    }
+                    if (picked != null) onFileSaved(File(picked.path));
                   },
                 ),
               ],
@@ -489,14 +485,14 @@ class LoanDataCollectScreen extends StatelessWidget {
                       'Selecciona un PDF o imagen desde tu dispositivo',
                   onTap: () async {
                     Navigator.of(ctx).pop();
-                    FilePickerResult? result =
-                        await FilePicker.platform.pickFiles(
+                    final result = await FilePicker.platform.pickFiles(
                       type: FileType.custom,
                       allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+                      withData: true,
                     );
                     if (result != null) {
-                      homeCubit
-                          .addEmpInvoiceFile(File(result.files.first.path!));
+                      final file = await LoanDataCollectScreen._platformFileToFile(result.files.first);
+                      if (file != null) homeCubit.addEmpInvoiceFile(file);
                     }
                   },
                 ),
@@ -506,6 +502,18 @@ class LoanDataCollectScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  // Convierte un PlatformFile a File, usando bytes si path es null (dispositivos físicos / cloud)
+  static Future<File?> _platformFileToFile(PlatformFile pf) async {
+    if (pf.path != null) return File(pf.path!);
+    if (pf.bytes != null) {
+      final dir = await getTemporaryDirectory();
+      final tmp = File('${dir.path}/${pf.name}');
+      await tmp.writeAsBytes(pf.bytes!);
+      return tmp;
+    }
+    return null;
   }
 }
 

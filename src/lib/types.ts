@@ -23,11 +23,18 @@ export interface LoanRequest {
   installments: number;
   interest: number;
   paymentPeriod: string;
-  status: 'pending' | 'approved' | 'rejected' | 'in_process' | 'in_disbursement_process';
+  status: 'pending' | 'approved' | 'rejected' | 'disbursed';
   installmentsPaid: number;
   phone: string;
   isSubscribed: boolean;
   loanInformation: LoanInformation;
+}
+
+export interface UserDocuments {
+  ccFrontalPicture?: string;
+  ccBackPicture?: string;
+  selfiePicture?: string;
+  empInvoiceFile?: string;
 }
 
 export interface User {
@@ -39,24 +46,23 @@ export interface User {
   isSubscribed: boolean;
   admin: boolean;
   loanRequests?: LoanRequest[];
+  documents?: UserDocuments;
 }
 
 export type LoanStatus = LoanRequest['status'];
 
 export const STATUS_LABELS: Record<LoanStatus, string> = {
   pending: 'Pendiente',
-  in_process: 'En revisión',
-  in_disbursement_process: 'En desembolso',
-  approved: 'Aprobado',
-  rejected: 'Rechazado',
+  approved: 'Aprobada',
+  rejected: 'Rechazada',
+  disbursed: 'Desembolsada',
 };
 
 export const STATUS_COLORS: Record<LoanStatus, string> = {
   pending: '#f59e0b',
-  in_process: '#ffffff',
-  in_disbursement_process: '#60a5fa',
-  approved: '#2FFF00',
+  approved: '#60a5fa',
   rejected: '#f87171',
+  disbursed: '#2FFF00',
 };
 
 // Payment types
