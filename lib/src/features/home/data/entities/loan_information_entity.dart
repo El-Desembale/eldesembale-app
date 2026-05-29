@@ -64,10 +64,14 @@ class LoanInformationEntity {
       firstReference: LoanReferenceEntity(
         phone: ((firstReferenceMap['phone'] as num?) ?? 0).toInt(),
         relationship: (firstReferenceMap['relationship'] as String?) ?? '',
+        name: (firstReferenceMap['name'] as String?) ?? '',
+        lastName: (firstReferenceMap['last_name'] as String?) ?? '',
       ),
       secondReference: LoanReferenceEntity(
         phone: ((secondReferenceMap['phone'] as num?) ?? 0).toInt(),
         relationship: (secondReferenceMap['relationship'] as String?) ?? '',
+        name: (secondReferenceMap['name'] as String?) ?? '',
+        lastName: (secondReferenceMap['last_name'] as String?) ?? '',
       ),
       bankInformation: LoanBankAccountEntity(
         bankName: (bankInformationMap['bank_name'] as String?) ?? '',
@@ -91,10 +95,14 @@ class LoanInformationEntity {
       'direction': direction,
       'first_reference': {
         'relationship': firstReference.relationship,
+        'name': firstReference.name,
+        'last_name': firstReference.lastName,
         'phone': firstReference.phone,
       },
       'second_reference': {
         'relationship': secondReference.relationship,
+        'name': secondReference.name,
+        'last_name': secondReference.lastName,
         'phone': secondReference.phone,
       },
       'bank_information': {
@@ -216,18 +224,25 @@ class LoanInformationEntity {
 
 class LoanReferenceEntity {
   final String relationship;
+  final String name;
+  final String lastName;
   final int phone;
   LoanReferenceEntity({
     required this.relationship,
+    this.name = '',
+    this.lastName = '',
     required this.phone,
   });
   LoanReferenceEntity copyWith({
-    String? name,
     String? relationship,
+    String? name,
+    String? lastName,
     int? phone,
   }) {
     return LoanReferenceEntity(
       relationship: relationship ?? this.relationship,
+      name: name ?? this.name,
+      lastName: lastName ?? this.lastName,
       phone: phone ?? this.phone,
     );
   }

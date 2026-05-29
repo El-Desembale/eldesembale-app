@@ -2,12 +2,13 @@
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <!-- Android 13+ granular media permissions (no broad storage access) -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
     <!-- Remove broad storage permissions injected by plugins (prohibited for loan apps) -->
+    <!-- image_picker usa el Photo Picker del sistema (sin permisos) en Android 11+ -->
+    <!-- file_picker usa ACTION_OPEN_DOCUMENT del sistema (sin permisos) para PDFs -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove" />
     <application
         android:label="El desembale"
         android:name="${applicationName}"

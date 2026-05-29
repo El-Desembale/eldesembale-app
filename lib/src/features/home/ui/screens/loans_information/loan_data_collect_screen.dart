@@ -174,66 +174,60 @@ class LoanDataCollectScreen extends StatelessWidget {
           ),
           const Spacer(),
           GestureDetector(
-            onTap: () async {
-              //TODO: CAMBIAR ESTO PARA PODER SIMULAR
+            onTap: () {
               if (state.loanInformation.isLoanInformationCompleted) {
-                if (sl<AuthCubit>(instanceName: 'auth')
-                    .state
-                    .user
-                    .isSubscribed) {
-                  await homeCubit.submitLoan(context);
-                } else {
-                  final response = await context.push<bool>(
-                    AppRoutes.subscrption,
-                    extra: {
-                      'returnSuccessResult': true,
-                    },
-                  );
-                  if (!context.mounted) return;
-                  if (response ?? false) {
-                    await homeCubit.submitLoan(context);
-                  }
-                }
+                context.push(AppRoutes.loanConfirm);
               } else {
                 ModalbottomsheetUtils.customError(
                   context,
-                  "Error",
-                  "Por favor complete todos los campos",
+                  "Faltan datos",
+                  "Por favor completa todos los campos antes de continuar",
                 );
               }
             },
             child: Container(
               height: 62,
               decoration: BoxDecoration(
-                color: kPrimaryGreen,
+                color: state.loanInformation.isLoanInformationCompleted
+                    ? kPrimaryGreen
+                    : kSurfaceSoft,
                 borderRadius: BorderRadius.circular(12),
+                border: state.loanInformation.isLoanInformationCompleted
+                    ? null
+                    : Border.all(color: kBorderFaint),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.only(left: 25),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 25),
                     child: Text(
-                      'Hacer la solicitud',
+                      'Revisar y enviar',
                       style: TextStyle(
-                        color: Colors.black,
+                        color: state.loanInformation.isLoanInformationCompleted
+                            ? Colors.black
+                            : kTextSecondary,
                         fontSize: 15,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 16),
+                    padding: const EdgeInsets.only(right: 10),
                     child: Container(
-                      width: 62,
-                      height: 40,
+                      width: 48, height: 48,
                       decoration: BoxDecoration(
-                        color: const Color.fromRGBO(255, 255, 255, 0.5),
+                        color: state.loanInformation.isLoanInformationCompleted
+                            ? const Color.fromRGBO(0, 0, 0, 0.15)
+                            : kBgScreen,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(
-                        Icons.arrow_forward,
-                        color: Colors.black,
-                        size: 30,
+                      child: Icon(
+                        Icons.arrow_forward_rounded,
+                        color: state.loanInformation.isLoanInformationCompleted
+                            ? Colors.black
+                            : kTextSecondary,
+                        size: 22,
                       ),
                     ),
                   ),

@@ -25,10 +25,14 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
   PageController _pageController = PageController();
   String firstReferenceRelationship = '';
   String firstOtherRelationship = '';
+  String firstReferenceName = '';
+  String firstReferenceLastName = '';
   int firstPhoneNumber = 0;
 
   String secondReferenceRelationship = '';
   String secondOtherRelationship = '';
+  String secondReferenceName = '';
+  String secondReferenceLastName = '';
   int secondPhoneNumber = 0;
 
   List<String> relationshipList = [
@@ -222,82 +226,146 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                   ),
                 ),
               const SizedBox(height: 15),
-              if (firstReferenceRelationship.isNotEmpty)
+              if (firstReferenceRelationship.isNotEmpty) ...[
+                // Nombre
                 Theme(
                   data: Theme.of(context).copyWith(
                     inputDecorationTheme: const InputDecorationTheme(
-                      filled: false,
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
+                      filled: false, border: InputBorder.none,
+                      enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),
                   child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 5.0, horizontal: 16.0),
-                  decoration: BoxDecoration(
-                    color: kInputSurface,
-                    borderRadius: BorderRadius.circular(kRadiusInput),
-                    border: Border.all(color: kBorderFaint),
+                    padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 16.0),
+                    decoration: BoxDecoration(
+                      color: kInputSurface,
+                      borderRadius: BorderRadius.circular(kRadiusInput),
+                      border: Border.all(color: kBorderFaint),
+                    ),
+                    child: Row(children: [
+                      const Icon(Icons.person_outline, color: kTextSecondary, size: 22),
+                      const SizedBox(width: 10),
+                      Expanded(child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Nombre', style: TextStyle(color: kTextSecondary, fontSize: 12)),
+                          TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Nombre de la referencia',
+                              hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+                              enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
+                            ),
+                            style: const TextStyle(color: Colors.white),
+                            keyboardType: TextInputType.name,
+                            textCapitalization: TextCapitalization.words,
+                            onChanged: (value) { firstReferenceName = value; setState(() {}); },
+                          ),
+                        ],
+                      )),
+                    ]),
                   ),
-                  child: Row(
-                    children: [
+                ),
+                const SizedBox(height: 10),
+                // Apellido
+                Theme(
+                  data: Theme.of(context).copyWith(
+                    inputDecorationTheme: const InputDecorationTheme(
+                      filled: false, border: InputBorder.none,
+                      enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 16.0),
+                    decoration: BoxDecoration(
+                      color: kInputSurface,
+                      borderRadius: BorderRadius.circular(kRadiusInput),
+                      border: Border.all(color: kBorderFaint),
+                    ),
+                    child: Row(children: [
+                      const Icon(Icons.person_outline, color: kTextSecondary, size: 22),
+                      const SizedBox(width: 10),
+                      Expanded(child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Apellido', style: TextStyle(color: kTextSecondary, fontSize: 12)),
+                          TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Apellido de la referencia',
+                              hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+                              enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
+                            ),
+                            style: const TextStyle(color: Colors.white),
+                            keyboardType: TextInputType.name,
+                            textCapitalization: TextCapitalization.words,
+                            onChanged: (value) { firstReferenceLastName = value; setState(() {}); },
+                          ),
+                        ],
+                      )),
+                    ]),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Teléfono
+                Theme(
+                  data: Theme.of(context).copyWith(
+                    inputDecorationTheme: const InputDecorationTheme(
+                      filled: false, border: InputBorder.none,
+                      enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 16.0),
+                    decoration: BoxDecoration(
+                      color: kInputSurface,
+                      borderRadius: BorderRadius.circular(kRadiusInput),
+                      border: Border.all(color: kBorderFaint),
+                    ),
+                    child: Row(children: [
                       CountryCodePicker(
-                        enabled: false,
-                        initialSelection: 'CO',
-                        showCountryOnly: false,
-                        showOnlyCountryWhenClosed: false,
-                        alignLeft: false,
+                        enabled: false, initialSelection: 'CO',
+                        showCountryOnly: false, showOnlyCountryWhenClosed: false, alignLeft: false,
                         textStyle: const TextStyle(color: Colors.white, fontSize: 14),
                         boxDecoration: const BoxDecoration(color: Colors.transparent),
                       ),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Teléfono de $firstReferenceRelationship',
-                              style: const TextStyle(
-                                color: kTextPrimary,
-                                fontSize: 14.0,
-                              ),
+                      Expanded(child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Teléfono de $firstReferenceRelationship',
+                              style: const TextStyle(color: kTextPrimary, fontSize: 14.0)),
+                          TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Número de teléfono',
+                              hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+                              enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
                             ),
-                            TextField(
-                              decoration: InputDecoration(
-                                hintText: 'Número de teléfono',
-                                hintStyle: TextStyle(
-                                    color: Colors.white.withOpacity(0.6)),
-                                enabledBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                              ),
-                              style: const TextStyle(color: Colors.white),
-                              keyboardType: TextInputType.phone,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(10),
-                              ],
-                              onChanged: (value) {
-                                if (value.isEmpty) {
-                                  firstPhoneNumber = 0;
-                                } else {
-                                  firstPhoneNumber = int.parse(value);
-                                }
-                                setState(() {});
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                            style: const TextStyle(color: Colors.white),
+                            keyboardType: TextInputType.phone,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(10),
+                            ],
+                            onChanged: (value) {
+                              firstPhoneNumber = value.isEmpty ? 0 : int.parse(value);
+                              setState(() {});
+                            },
+                          ),
+                        ],
+                      )),
+                    ]),
                   ),
                 ),
+              ],
               const SizedBox(height: 35),
               Builder(builder: (context) {
-                final isFirstValid = firstReferenceRelationship == 'Otro'
-                    ? firstOtherRelationship.isNotEmpty && firstPhoneNumber != 0
-                    : firstReferenceRelationship.isNotEmpty && firstPhoneNumber != 0;
+                final isFirstValid = (firstReferenceRelationship == 'Otro'
+                    ? firstOtherRelationship.isNotEmpty
+                    : firstReferenceRelationship.isNotEmpty)
+                    && firstReferenceName.isNotEmpty
+                    && firstReferenceLastName.isNotEmpty
+                    && firstPhoneNumber != 0;
                 return GestureDetector(
                   onTap: () {
                     if (isFirstValid) {
@@ -487,82 +555,146 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                   ),
                 ),
               const SizedBox(height: 15),
-              if (secondReferenceRelationship.isNotEmpty)
+              if (secondReferenceRelationship.isNotEmpty) ...[
+                // Nombre
                 Theme(
                   data: Theme.of(context).copyWith(
                     inputDecorationTheme: const InputDecorationTheme(
-                      filled: false,
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
+                      filled: false, border: InputBorder.none,
+                      enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),
                   child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 5.0, horizontal: 16.0),
-                  decoration: BoxDecoration(
-                    color: kInputSurface,
-                    borderRadius: BorderRadius.circular(kRadiusInput),
-                    border: Border.all(color: kBorderFaint),
+                    padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 16.0),
+                    decoration: BoxDecoration(
+                      color: kInputSurface,
+                      borderRadius: BorderRadius.circular(kRadiusInput),
+                      border: Border.all(color: kBorderFaint),
+                    ),
+                    child: Row(children: [
+                      const Icon(Icons.person_outline, color: kTextSecondary, size: 22),
+                      const SizedBox(width: 10),
+                      Expanded(child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Nombre', style: TextStyle(color: kTextSecondary, fontSize: 12)),
+                          TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Nombre de la referencia',
+                              hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+                              enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
+                            ),
+                            style: const TextStyle(color: Colors.white),
+                            keyboardType: TextInputType.name,
+                            textCapitalization: TextCapitalization.words,
+                            onChanged: (value) { secondReferenceName = value; setState(() {}); },
+                          ),
+                        ],
+                      )),
+                    ]),
                   ),
-                  child: Row(
-                    children: [
+                ),
+                const SizedBox(height: 10),
+                // Apellido
+                Theme(
+                  data: Theme.of(context).copyWith(
+                    inputDecorationTheme: const InputDecorationTheme(
+                      filled: false, border: InputBorder.none,
+                      enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 16.0),
+                    decoration: BoxDecoration(
+                      color: kInputSurface,
+                      borderRadius: BorderRadius.circular(kRadiusInput),
+                      border: Border.all(color: kBorderFaint),
+                    ),
+                    child: Row(children: [
+                      const Icon(Icons.person_outline, color: kTextSecondary, size: 22),
+                      const SizedBox(width: 10),
+                      Expanded(child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Apellido', style: TextStyle(color: kTextSecondary, fontSize: 12)),
+                          TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Apellido de la referencia',
+                              hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+                              enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
+                            ),
+                            style: const TextStyle(color: Colors.white),
+                            keyboardType: TextInputType.name,
+                            textCapitalization: TextCapitalization.words,
+                            onChanged: (value) { secondReferenceLastName = value; setState(() {}); },
+                          ),
+                        ],
+                      )),
+                    ]),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Teléfono
+                Theme(
+                  data: Theme.of(context).copyWith(
+                    inputDecorationTheme: const InputDecorationTheme(
+                      filled: false, border: InputBorder.none,
+                      enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 16.0),
+                    decoration: BoxDecoration(
+                      color: kInputSurface,
+                      borderRadius: BorderRadius.circular(kRadiusInput),
+                      border: Border.all(color: kBorderFaint),
+                    ),
+                    child: Row(children: [
                       CountryCodePicker(
-                        enabled: false,
-                        initialSelection: 'CO',
-                        showCountryOnly: false,
-                        showOnlyCountryWhenClosed: false,
-                        alignLeft: false,
+                        enabled: false, initialSelection: 'CO',
+                        showCountryOnly: false, showOnlyCountryWhenClosed: false, alignLeft: false,
                         textStyle: const TextStyle(color: Colors.white, fontSize: 14),
                         boxDecoration: const BoxDecoration(color: Colors.transparent),
                       ),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Teléfono de $secondReferenceRelationship',
-                              style: const TextStyle(
-                                color: kTextPrimary,
-                                fontSize: 14.0,
-                              ),
+                      Expanded(child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Teléfono de $secondReferenceRelationship',
+                              style: const TextStyle(color: kTextPrimary, fontSize: 14.0)),
+                          TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Número de teléfono',
+                              hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+                              enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
                             ),
-                            TextField(
-                              decoration: InputDecoration(
-                                hintText: 'Número de teléfono',
-                                hintStyle: TextStyle(
-                                    color: Colors.white.withOpacity(0.6)),
-                                enabledBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                              ),
-                              style: const TextStyle(color: Colors.white),
-                              keyboardType: TextInputType.phone,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(10),
-                              ],
-                              onChanged: (value) {
-                                if (value.isEmpty) {
-                                  secondPhoneNumber = 0;
-                                } else {
-                                  secondPhoneNumber = int.parse(value);
-                                }
-                                setState(() {});
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                            style: const TextStyle(color: Colors.white),
+                            keyboardType: TextInputType.phone,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(10),
+                            ],
+                            onChanged: (value) {
+                              secondPhoneNumber = value.isEmpty ? 0 : int.parse(value);
+                              setState(() {});
+                            },
+                          ),
+                        ],
+                      )),
+                    ]),
                   ),
                 ),
+              ],
               const SizedBox(height: 35),
               Builder(builder: (context) {
-                final isSecondValid = secondReferenceRelationship == "Otro"
-                    ? secondOtherRelationship.isNotEmpty && secondPhoneNumber != 0
-                    : secondReferenceRelationship.isNotEmpty && secondPhoneNumber != 0;
+                final isSecondValid = (secondReferenceRelationship == "Otro"
+                    ? secondOtherRelationship.isNotEmpty
+                    : secondReferenceRelationship.isNotEmpty)
+                    && secondReferenceName.isNotEmpty
+                    && secondReferenceLastName.isNotEmpty
+                    && secondPhoneNumber != 0;
                 return GestureDetector(
                   onTap: () {
                     if (isSecondValid) {
@@ -571,12 +703,16 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
                           relationship: firstReferenceRelationship == "Otro"
                               ? firstOtherRelationship
                               : firstReferenceRelationship,
+                          name: firstReferenceName,
+                          lastName: firstReferenceLastName,
                           phone: firstPhoneNumber,
                         ),
                         LoanReferenceEntity(
                           relationship: secondReferenceRelationship == "Otro"
                               ? secondOtherRelationship
                               : secondReferenceRelationship,
+                          name: secondReferenceName,
+                          lastName: secondReferenceLastName,
                           phone: secondPhoneNumber,
                         ),
                       );

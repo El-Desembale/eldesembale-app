@@ -431,16 +431,23 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   Widget _buildLoanCard(BuildContext context, LoanRequestEntity loan) {
     final isPending = loan.status == 'pending';
+    final isReviewing = loan.status == 'reviewing';
     final statusLabel = isPending
         ? 'Pendiente'
-        : loan.status == 'in_process'
+        : isReviewing
             ? 'En revisión'
-            : loan.status == 'in_disbursement_process'
-                ? 'En desembolso'
-                : loan.status == 'approved'
-                    ? 'Activo'
-                    : 'Rechazado';
-    final statusColor = isPending ? kTextSecondary : kPrimaryGreen;
+            : loan.status == 'approved'
+                ? 'Activo'
+                : loan.status == 'disbursed'
+                    ? 'Desembolsado'
+                    : loan.status == 'rejected'
+                        ? 'Rechazado'
+                        : loan.status;
+    final statusColor = (isPending || isReviewing)
+        ? kTextSecondary
+        : loan.status == 'rejected'
+            ? const Color(0xFFf87171)
+            : kPrimaryGreen;
     return GestureDetector(
       onTap: () async {
         await context.push(AppRoutes.loansList);
@@ -575,7 +582,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Tienes una solicitud en revisión. Espera la respuesta antes de hacer una nueva.',
+                  'Tienes una solicitud activa. Espera la respuesta antes de hacer una nueva.',
                   style: const TextStyle(
                     color: kTextSecondary,
                     fontSize: 12,
@@ -730,12 +737,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final budgetAvailable = state.limits.budgetAvailable;
     final budgetExhausted = budgetAvailable != null && budgetAvailable <= 0;
 
-    final pendingLoan =
-        state.loans.where((l) => l.status == 'pending').firstOrNull;
+    final pendingLoan = state.loans
+        .where((l) => l.status == 'pending' || l.status == 'reviewing')
+        .firstOrNull;
     final approvedLoan =
         state.loans.where((l) => l.status == 'approved').firstOrNull;
 
-    // Si hay una solicitud en revisión: mostrar tarjeta + bloquear botón
+    // Si hay una solicitud pendiente o en revisión: mostrar tarjeta + bloquear botón
     if (pendingLoan != null) {
       return Column(
         children: [

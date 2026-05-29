@@ -12,6 +12,7 @@ import '../../features/home/ui/screens/home_screen.dart';
 import '../../features/home/ui/screens/loan_information_screen.dart';
 import '../../features/home/ui/screens/loans_information/loan_bank_account_screen.dart';
 import '../../features/home/ui/screens/loans_information/loan_camera_screen.dart';
+import '../../features/home/ui/screens/loans_information/loan_confirm_screen.dart';
 import '../../features/home/ui/screens/loans_information/loan_data_collect_screen.dart';
 import '../../features/home/ui/screens/loans_information/loan_direction_screen.dart';
 import '../../features/home/ui/screens/loans_information/loan_reference_screen.dart';
@@ -41,6 +42,7 @@ class AppRoutes {
   static const loanBankAccount = '/loan-bank-account';
   static const loansList = '/loans-list';
   static const subscrption = '/subscription';
+  static const loanConfirm = '/loan-confirm';
   static const terms = '/terms';
   static const privacyPolicy = '/privacy-policy';
 
@@ -184,6 +186,12 @@ class AppRoutes {
               ),
         );
       },
+    ),
+    GoRoute(
+      path: loanConfirm,
+      pageBuilder: (context, state) => NoTransitionPage(
+        child: LoanConfirmScreen(homeCubit: _homeCubit),
+      ),
     ),
     GoRoute(
       path: terms,
