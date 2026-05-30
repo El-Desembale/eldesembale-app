@@ -882,3 +882,128 @@ exports.recalculateUserRisk = functions.https.onCall(async (data) => {
   await recalcRiskForPhone(phone);
   return { success: true };
 });
+
+// ════════════════════════════════════════════════════════════════
+//  OTP para la web (envío a correo + celular, verifica cualquiera)
+// ════════════════════════════════════════════════════════════════
+
+const OTP_CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+function normalizePhone(phone, countryCode) {
+  let p = String(phone || "").trim();
+  if (p.startsWith("+")) return p;
+  const cc = String(countryCode || "+57").replace(/[^0-9+]/g, "");
+  return `${cc.startsWith("+") ? cc : "+" + cc}${p}`;
+}
+
+// Envía el código por correo (código propio en otp_codes) y por SMS (Twilio Verify)
+exports.sendRecoveryOtp = functions.runWith({
+  secrets: ["SMTP_EMAIL", "SMTP_PASSWORD", "TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_VERIFY_SERVICE_SID"],
+}).https.onRequest(async (req, res) => {
+  Object.entries(OTP_CORS).forEach(([k, v]) => res.set(k, v));
+  if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+
+  const { phone, countryCode } = req.body || {};
+  if (!phone) { res.status(400).json({ success: false, error: "phone requerido" }); return; }
+
+  try {
+    // Buscar usuario por teléfono
+    const snap = await admin.firestore().collection("users")
+      .where("phone", "==", String(phone).trim()).limit(1).get();
+    if (snap.empty) { res.status(404).json({ success: false, error: "Cuenta no encontrada" }); return; }
+    const user = snap.docs[0].data();
+    const email = user.email;
+    const fullPhone = normalizePhone(phone, countryCode || user.countryCode);
+
+    let emailSent = false; let smsSent = false;
+
+    // 1. Correo con código propio guardado en otp_codes
+    if (email) {
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      const now = admin.firestore.Timestamp.now();
+      const expiresAt = admin.firestore.Timestamp.fromMillis(now.toMillis() + 10 * 60 * 1000);
+      await admin.firestore().collection("otp_codes").add({
+        email: email.toLowerCase().trim(), phone: String(phone).trim(),
+        code, createdAt: now, expiresAt, used: false,
+      });
+      try {
+        const transporter = createTransporter();
+        await transporter.sendMail({
+          from: `"El Desembale" <${process.env.SMTP_EMAIL}>`,
+          to: email,
+          subject: "Código de verificación - El Desembale",
+          html: `<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#0d1712;border-radius:12px;color:#f4f7f1;">
+            <h2 style="color:#a8d08d;text-align:center;margin-bottom:8px;">El Desembale</h2>
+            <p style="color:#c7d0c8;text-align:center;">Tu código de verificación es:</p>
+            <div style="text-align:center;margin:24px 0;"><span style="font-size:34px;font-weight:bold;letter-spacing:8px;color:#0d1712;background:#a8d08d;padding:14px 28px;border-radius:8px;display:inline-block;">${code}</span></div>
+            <p style="color:#92a097;text-align:center;font-size:13px;">Expira en 10 minutos. No lo compartas con nadie.</p>
+          </div>`,
+        });
+        emailSent = true;
+      } catch (e) { console.error("OTP email error", e); }
+    }
+
+    // 2. SMS vía Twilio Verify (código propio de Twilio)
+    try {
+      const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+      await client.verify.v2.services(process.env.TWILIO_VERIFY_SERVICE_SID)
+        .verifications.create({ to: fullPhone, channel: "sms" });
+      smsSent = true;
+    } catch (e) { console.error("OTP sms error", e?.message || e); }
+
+    res.json({ success: emailSent || smsSent, emailSent, smsSent, email });
+  } catch (e) {
+    console.error("sendRecoveryOtp error", e);
+    res.status(500).json({ success: false, error: "Error enviando el código" });
+  }
+});
+
+// Verifica el código contra el correo (otp_codes) o el SMS (Twilio Verify)
+exports.verifyRecoveryOtp = functions.runWith({
+  secrets: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_VERIFY_SERVICE_SID"],
+}).https.onRequest(async (req, res) => {
+  Object.entries(OTP_CORS).forEach(([k, v]) => res.set(k, v));
+  if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+
+  const { phone, email, code, countryCode } = req.body || {};
+  if (!code || (!phone && !email)) {
+    res.status(400).json({ success: false, error: "code y (phone o email) requeridos" });
+    return;
+  }
+
+  // 1. Verificar contra el código de correo en otp_codes
+  if (email) {
+    try {
+      const now = admin.firestore.Timestamp.now();
+      const snap = await admin.firestore().collection("otp_codes")
+        .where("email", "==", email.toLowerCase().trim())
+        .where("code", "==", String(code).trim())
+        .where("used", "==", false).get();
+      const valid = snap.docs.find((d) => d.data().expiresAt.toMillis() > now.toMillis());
+      if (valid) {
+        await valid.ref.update({ used: true });
+        res.json({ success: true, channel: "email" });
+        return;
+      }
+    } catch (e) { console.error("verify email error", e); }
+  }
+
+  // 2. Verificar contra Twilio Verify (SMS)
+  if (phone) {
+    try {
+      const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+      const check = await client.verify.v2.services(process.env.TWILIO_VERIFY_SERVICE_SID)
+        .verificationChecks.create({ to: normalizePhone(phone, countryCode), code: String(code).trim() });
+      if (check.status === "approved") {
+        res.json({ success: true, channel: "sms" });
+        return;
+      }
+    } catch (e) { console.error("verify sms error", e?.message || e); }
+  }
+
+  res.json({ success: false, error: "Código inválido o expirado" });
+});
