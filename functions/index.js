@@ -759,3 +759,126 @@ exports.notifyAdminsOnPayment = functions.runWith({
 
   return null;
 });
+
+// ════════════════════════════════════════════════════════════════
+//  PERFIL DE RIESGO Y CUPO (centralizado)
+//  Recalcula y persiste en el documento del usuario cuando cambian
+//  préstamos o pagos. Otros clientes solo leen los campos resultantes.
+// ════════════════════════════════════════════════════════════════
+
+const NEW_MAX_AMOUNT = 200000;
+const GOOD_PAYER_MAX_AMOUNT = 500000;
+
+function getExpectedInstallments(loan) {
+  const daysPerPeriod = getDaysPerPeriod(loan.payment_period);
+  const createdAt = loan.created_at?.toDate
+    ? loan.created_at.toDate()
+    : new Date(loan.created_at || Date.now());
+  const daysSince = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+  const installments = Number(loan.installments || 0);
+  return Math.min(Math.floor(daysSince / daysPerPeriod), installments);
+}
+
+function loanIsInMora(loan) {
+  if (loan.status !== "disbursed") return false;
+  const paid = Number(loan.installments_paid || 0);
+  const installments = Number(loan.installments || 0);
+  if (paid >= installments) return false;
+  return getExpectedInstallments(loan) > paid;
+}
+
+function computeUserRisk(loans, previousMax) {
+  const paid = loans.filter((l) => Number(l.installments || 0) > 0 &&
+    Number(l.installments_paid || 0) >= Number(l.installments || 0));
+  const active = loans.filter((l) => l.status === "disbursed" &&
+    Number(l.installments_paid || 0) < Number(l.installments || 0));
+  const inMora = loans.filter(loanIsInMora);
+
+  const hadMoraEver = inMora.length > 0 || loans.some((l) => l.hadMora === true);
+  const currentLate = inMora.reduce(
+    (s, l) => s + Math.max(getExpectedInstallments(l) - Number(l.installments_paid || 0), 0), 0);
+  const severeMora = currentLate > 1 || inMora.length > 1 ||
+    loans.some((l) => Number(l.maxLateInstallments || 0) > 1);
+  const paidWithoutMora = paid.some((l) => l.hadMora !== true);
+
+  let profile; let maxLoanAmount; let blocked = false;
+  if (severeMora) {
+    profile = "BLOCKED"; maxLoanAmount = 0; blocked = true;
+  } else if (hadMoraEver) {
+    profile = "MEDIUM_RISK";
+    maxLoanAmount = Math.min(Math.max(previousMax || NEW_MAX_AMOUNT, NEW_MAX_AMOUNT), GOOD_PAYER_MAX_AMOUNT);
+  } else if (paidWithoutMora) {
+    profile = "GOOD_PAYER"; maxLoanAmount = GOOD_PAYER_MAX_AMOUNT;
+  } else {
+    profile = "NEW"; maxLoanAmount = NEW_MAX_AMOUNT;
+  }
+
+  return {
+    riskProfile: profile,
+    maxLoanAmount,
+    isBlockedForNewLoans: blocked,
+    hasHadLatePayments: hadMoraEver,
+    hasSevereLatePayments: severeMora,
+    totalLoans: loans.length,
+    paidLoans: paid.length,
+    activeLoans: active.length,
+    currentLateInstallments: currentLate,
+  };
+}
+
+async function recalcRiskForPhone(phone) {
+  if (!phone) return;
+  const db = admin.firestore();
+  const [loansSnap, userSnap] = await Promise.all([
+    db.collection("loan_request").where("phone", "==", phone).get(),
+    db.collection("users").where("phone", "==", phone).limit(1).get(),
+  ]);
+  if (userSnap.empty) return;
+  const loans = loansSnap.docs.map((d) => d.data());
+  const userDoc = userSnap.docs[0];
+  const previousMax = userDoc.data().maxLoanAmount;
+  const risk = computeUserRisk(loans, previousMax);
+  await userDoc.ref.update({
+    ...risk,
+    riskUpdatedAt: admin.firestore.Timestamp.now(),
+  });
+  console.log("Risk recalculated for", phone, risk.riskProfile, risk.maxLoanAmount);
+}
+
+exports.recalcRiskOnLoanChange = functions.firestore
+  .document("loan_request/{loanId}")
+  .onWrite(async (change) => {
+    const after = change.after.exists ? change.after.data() : null;
+    const before = change.before.exists ? change.before.data() : null;
+    const phone = after?.phone || before?.phone;
+    try {
+      await recalcRiskForPhone(phone);
+    } catch (e) {
+      console.error("recalcRiskOnLoanChange error", e);
+    }
+    return null;
+  });
+
+exports.recalcRiskOnPaymentChange = functions.firestore
+  .document("payments/{paymentId}")
+  .onWrite(async (change) => {
+    const after = change.after.exists ? change.after.data() : null;
+    const before = change.before.exists ? change.before.data() : null;
+    const phone = after?.user_phone || before?.user_phone;
+    try {
+      await recalcRiskForPhone(phone);
+    } catch (e) {
+      console.error("recalcRiskOnPaymentChange error", e);
+    }
+    return null;
+  });
+
+// Callable para recalcular manualmente (usado por el admin o scripts)
+exports.recalculateUserRisk = functions.https.onCall(async (data) => {
+  const phone = data?.phone;
+  if (!phone) {
+    throw new functions.https.HttpsError("invalid-argument", "phone es requerido");
+  }
+  await recalcRiskForPhone(phone);
+  return { success: true };
+});
