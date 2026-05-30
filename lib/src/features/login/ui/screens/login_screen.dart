@@ -202,28 +202,31 @@ class _LoginScreenState extends State<LoginScreen> {
           _header("Inicia sesión o regístrate", "Ingresa tu número de celular"),
           const SizedBox(height: 24),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Country code
               Container(
-                width: 110,
-                height: 52,
+                width: 100,
+                height: 56,
                 decoration: BoxDecoration(
                   color: kInputSurface,
                   borderRadius: BorderRadius.circular(kRadiusInput),
                   border: Border.all(color: kBorderFaint),
                 ),
-                child: CountryCodePicker(
-                  padding: EdgeInsets.zero,
-                  boxDecoration: const BoxDecoration(color: Colors.transparent),
-                  backgroundColor: Colors.transparent,
-                  textStyle: const TextStyle(color: kTextPrimary, fontSize: 14),
-                  onChanged: (country) {
-                    if (country.dialCode != null) {
-                      widget.loginCubit.updateCountryCode(country.dialCode!);
-                    }
-                  },
-                  initialSelection: 'CO',
-                  alignLeft: true,
+                child: Center(
+                  child: CountryCodePicker(
+                    padding: EdgeInsets.zero,
+                    boxDecoration: const BoxDecoration(color: Colors.transparent),
+                    backgroundColor: Colors.transparent,
+                    textStyle: const TextStyle(color: kTextPrimary, fontSize: 14),
+                    onChanged: (country) {
+                      if (country.dialCode != null) {
+                        widget.loginCubit.updateCountryCode(country.dialCode!);
+                      }
+                    },
+                    initialSelection: 'CO',
+                    alignLeft: false,
+                  ),
                 ),
               ),
               const SizedBox(width: 10),

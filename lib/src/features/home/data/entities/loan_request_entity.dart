@@ -54,5 +54,7 @@ class LoanRequestEntity {
     );
   }
 
-  bool get canPay => status == 'approved' && installmentsPaid < installments;
+  // Un crédito está activo (en proceso de pago) cuando fue aprobado o desembolsado
+  bool get isActive => status == 'approved' || status == 'disbursed';
+  bool get canPay => isActive && installmentsPaid < installments;
 }

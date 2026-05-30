@@ -374,7 +374,7 @@ class _LoansListScreenState extends State<LoansListScreen> {
                   ],
                 ),
                 Builder(builder: (context) {
-                  final bool isApproved = loan.status == "approved";
+                  final bool isApproved = loan.isActive;
                   final bool hasPending = isApproved && loan.canPay;
                   String? nextDateStr;
                   String? nextAmountStr;
@@ -398,12 +398,11 @@ class _LoansListScreenState extends State<LoansListScreen> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        loan.status == "pending" || loan.status == "rejected"
+                        loan.status == "pending" ||
+                                loan.status == "reviewing" ||
+                                loan.status == "rejected"
                             ? "Solicitado ${DateFormat('d/M/y').format(loan.createdAt.toDate())}"
-                            : loan.status == "in_disbursement_process"
-                                ? DateFormat('d/M/y')
-                                    .format(loan.createdAt.toDate())
-                                : "Desembolso: ${DateFormat('d/M/y').format(loan.createdAt.toDate())}",
+                            : "Desembolso: ${DateFormat('d/M/y').format(loan.createdAt.toDate())}",
                         style: const TextStyle(
                           color: kTextPrimary,
                           fontSize: 11,
@@ -499,25 +498,25 @@ class _LoansListScreenState extends State<LoansListScreen> {
   Widget status(String status) {
     Map<String, String> statusMap = {
       "pending": "Pendiente",
+      "reviewing": "En revisión",
       "approved": "Activo",
       "rejected": "Rechazado",
-      "in_process": "En revisión",
-      "in_disbursement_process": "En desembolso",
+      "disbursed": "Desembolsado",
     };
     Map<String, Color> statusColorMap = {
       "pending": kWarningSoft,
+      "reviewing": const Color(0xFFA78BFA),
       "approved": kPrimaryGreen,
       "rejected": kDangerSoft,
-      "in_process": const Color(0xFFD8E7DD),
-      "in_disbursement_process": const Color(0xFF8CC5FF),
+      "disbursed": const Color(0xFF8CC5FF),
     };
 
     Map<String, String> statusIconMap = {
       "pending": AssetImages.loanClock,
+      "reviewing": AssetImages.loanWaitting,
       "approved": AssetImages.loanCheck,
       "rejected": AssetImages.loanCancel,
-      "in_process": AssetImages.loanWaitting,
-      "in_disbursement_process": AssetImages.loanCash,
+      "disbursed": AssetImages.loanCash,
     };
 
     return Container(

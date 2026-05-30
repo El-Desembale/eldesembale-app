@@ -11,7 +11,6 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import '../../../../utils/design_tokens.dart';
 import '../../../../utils/modalbottomsheet.dart';
 import '../../cubit/home_cubit.dart';
-import '../../../shared/widgets/back_circle_button.dart';
 import '../../../shared/widgets/primary_action_button.dart';
 
 class WebPaymentView extends StatefulWidget {
@@ -131,60 +130,142 @@ class _WebPaymentViewState extends State<WebPaymentView> {
     super.initState();
   }
 
+  Future<void> _handleClose() async {
+    final canGoBack = await _controller.canGoBack();
+    if (canGoBack) {
+      _controller.goBack();
+      return;
+    }
+    if (!mounted) return;
+    final exit = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: kBgScreenAlt,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: kBorderFaint),
+        ),
+        title: const Text(
+          '¿Cancelar el pago?',
+          style: TextStyle(color: kTextPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Si sales ahora, el pago no se completará.',
+          style: TextStyle(color: kTextSecondary, fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Seguir pagando', style: TextStyle(color: kTextSecondary)),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: const Color(0xFFf87171)),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Salir', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    if ((exit ?? false) && mounted) {
+      context.pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final showHeader = !_procesingPayment && !_showApprovedState;
     return PopScope(
-      canPop: _isLocked,
-      child: SafeArea(
-        child: Scaffold(
-          body: Stack(
+      canPop: !_procesingPayment && !_showApprovedState,
+      child: Scaffold(
+        backgroundColor: kBgScreen,
+        body: SafeArea(
+          child: Column(
             children: [
-              WebViewWidget(
-                controller: _controller,
-              ),
-              if (_hasExitedCheckout)
+              // Barra superior fija, siempre visible
+              if (showHeader)
                 Container(
-                  color: const Color(0xFF0D1712),
-                ),
-              if (_procesingPayment)
-                _statusOverlay(
-                  icon: Icons.lock_outline_rounded,
-                  title: 'Validando tu pago',
-                  message:
-                      'Este proceso puede tardar unos segundos. Por favor no cierres la aplicación.',
-                  footer: 'Pago protegido con Wompi',
-                  showLoader: true,
-                ),
-              if (_showApprovedState)
-                _statusOverlay(
-                  icon: Icons.check_rounded,
-                  title: 'Tu pago ha sido aprobado',
-                  message: 'Vamos a continuar con el proceso de tu solicitud.',
-                  footer: 'Confirmación recibida correctamente',
-                  showLoader: false,
-                  action: PrimaryActionButton(
-                    label: 'Entendido',
-                    icon: Icons.check_rounded,
-                    margin: EdgeInsets.zero,
-                    onTap: () async {
-                      setState(() => _showApprovedState = false);
-                      await widget.onSuccessfulPayment();
-                    },
+                  height: 54,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: const BoxDecoration(
+                    color: kBgScreen,
+                    border: Border(bottom: BorderSide(color: kBorderFaint)),
+                  ),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: _handleClose,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFf87171).withOpacity(0.14),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(color: const Color(0xFFf87171).withOpacity(0.4)),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.arrow_back_rounded, color: Color(0xFFf87171), size: 18),
+                              SizedBox(width: 6),
+                              Text(
+                                'Salir',
+                                style: TextStyle(
+                                  color: Color(0xFFf87171),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const Expanded(
+                        child: Text(
+                          'Pago seguro',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: kTextPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 72),
+                    ],
                   ),
                 ),
-              Padding(
-                padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).padding.top + 8, left: 16),
-                child: BackCircleButton(
-                  heroTag: 'wompi_back',
-                  onPressed: () {
-                    if (currentUrl
-                        .contains("https://checkout.wompi.co/method")) {
-                      context.pop();
-                    } else {
-                      _controller.goBack();
-                    }
-                  },
+              Expanded(
+                child: Stack(
+                  children: [
+                    WebViewWidget(controller: _controller),
+                    if (_hasExitedCheckout)
+                      Container(color: const Color(0xFF0D1712)),
+                    if (_procesingPayment)
+                      _statusOverlay(
+                        icon: Icons.lock_outline_rounded,
+                        title: 'Validando tu pago',
+                        message:
+                            'Este proceso puede tardar unos segundos. Por favor no cierres la aplicación.',
+                        footer: 'Pago protegido con Wompi',
+                        showLoader: true,
+                      ),
+                    if (_showApprovedState)
+                      _statusOverlay(
+                        icon: Icons.check_rounded,
+                        title: 'Tu pago ha sido aprobado',
+                        message: 'Vamos a continuar con el proceso de tu solicitud.',
+                        footer: 'Confirmación recibida correctamente',
+                        showLoader: false,
+                        action: PrimaryActionButton(
+                          label: 'Entendido',
+                          icon: Icons.check_rounded,
+                          margin: EdgeInsets.zero,
+                          onTap: () async {
+                            setState(() => _showApprovedState = false);
+                            await widget.onSuccessfulPayment();
+                          },
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ],

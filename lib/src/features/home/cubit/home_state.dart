@@ -13,6 +13,10 @@ class HomeState {
   final int subscriptionAmount;
   final LoanInformationEntity? reusableLoanInformation;
   List<LoanRequestEntity> loans;
+  // Perfil de riesgo del usuario
+  final String riskProfile;
+  final int maxLoanAmount;
+  final bool isBlockedForNewLoans;
   HomeState({
     required this.limits,
     required this.paymentPeriod,
@@ -24,6 +28,9 @@ class HomeState {
     this.reusableLoanInformation,
     this.isLoading = false,
     this.error,
+    this.riskProfile = 'NEW',
+    this.maxLoanAmount = 200000,
+    this.isBlockedForNewLoans = false,
   });
 
   HomeState copyWith({
@@ -37,6 +44,9 @@ class HomeState {
     List<LoanRequestEntity>? loans,
     int? subscriptionAmount,
     Object? reusableLoanInformation = _homeStateNoChange,
+    String? riskProfile,
+    int? maxLoanAmount,
+    bool? isBlockedForNewLoans,
   }) {
     return HomeState(
       error: error ?? this.error,
@@ -51,6 +61,9 @@ class HomeState {
       reusableLoanInformation: reusableLoanInformation == _homeStateNoChange
           ? this.reusableLoanInformation
           : reusableLoanInformation as LoanInformationEntity?,
+      riskProfile: riskProfile ?? this.riskProfile,
+      maxLoanAmount: maxLoanAmount ?? this.maxLoanAmount,
+      isBlockedForNewLoans: isBlockedForNewLoans ?? this.isBlockedForNewLoans,
     );
   }
 }

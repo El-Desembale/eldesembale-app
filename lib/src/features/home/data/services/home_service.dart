@@ -68,7 +68,7 @@ class HomeServiceImpl implements HomeService {
         if (totalCapital > 0) {
           final loansSnap = await _database
               .collection('loan_request')
-              .where('status', isEqualTo: 'approved')
+              .where('status', whereIn: ['approved', 'disbursed'])
               .get();
           double capitalLent = 0;
           double capitalRecovered = 0;

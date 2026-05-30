@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 
 import '../../../config/auth/cubit/auth_cubit.dart';
 import '../../../core/di/injection_dependency.dart';
@@ -57,7 +58,7 @@ class HomeCubit extends Cubit<HomeState> {
               maxAmmount: 1000000,
               maxInstallments: 8,
               minInstallments: 2,
-              interest: 10.0,
+              interest: 1.1,
             ),
             loans: [],
             selectedInstallments: 4,
@@ -302,7 +303,48 @@ class HomeCubit extends Cubit<HomeState> {
         setLimits(limits);
       },
     );
+    await _refreshUserRiskAndCap();
     isLoading(false);
+  }
+
+  // Lee el perfil de riesgo/cupo fresco desde Firestore y topa el monto máximo
+  Future<void> _refreshUserRiskAndCap() async {
+    try {
+      final phone = sl<AuthCubit>(instanceName: 'auth').state.user.phone;
+      if (phone.isEmpty) return;
+      final snap = await FirebaseFirestore.instance
+          .collection('users')
+          .where('phone', isEqualTo: phone)
+          .limit(1)
+          .get();
+      if (snap.docs.isEmpty) return;
+      final d = snap.docs.first.data();
+      final maxLoan = (d['maxLoanAmount'] as num?)?.toInt() ?? 200000;
+      final blocked = d['isBlockedForNewLoans'] ?? false;
+      final riskProfile = d['riskProfile'] ?? 'NEW';
+
+      // Topa el monto máximo del slider al cupo del usuario
+      final effectiveMax =
+          state.limits.maxAmmount > maxLoan ? maxLoan : state.limits.maxAmmount;
+      final cappedLimits = state.limits.copyWith(maxAmmount: effectiveMax);
+      // El monto por defecto se ajusta al cupo del perfil:
+      // - si el usuario aún no ha tocado el monto (valor genérico inicial), o
+      // - si el monto seleccionado excede el cupo
+      const genericDefault = 250000.0;
+      final isAtGenericDefault = state.totalLoanAmount == genericDefault;
+      final adjustedTotal =
+          (isAtGenericDefault || state.totalLoanAmount > effectiveMax)
+              ? effectiveMax.toDouble()
+              : state.totalLoanAmount;
+
+      emit(state.copyWith(
+        limits: cappedLimits,
+        totalLoanAmount: adjustedTotal,
+        riskProfile: riskProfile,
+        maxLoanAmount: maxLoan,
+        isBlockedForNewLoans: blocked,
+      ));
+    } catch (_) {}
   }
 
   void setLimits(LimitModel newLimits) {
@@ -505,8 +547,31 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   Future<void> submitLoan(BuildContext context) async {
-    // Block if there's an active approved loan with unpaid installments
-    final activeLoan = state.loans.where((l) => l.status == 'approved').firstOrNull;
+    // Recalcula riesgo/cupo fresco antes de validar
+    await _refreshUserRiskAndCap();
+
+    // Bloqueo por mora grave
+    if (state.isBlockedForNewLoans) {
+      ModalbottomsheetUtils.customError(
+        context,
+        'Solicitud no disponible',
+        'Presentas mora en un crédito anterior y no puedes solicitar nuevos créditos en este momento.',
+      );
+      return;
+    }
+
+    // Tope de cupo según el perfil de riesgo
+    if (state.totalLoanAmount > state.maxLoanAmount) {
+      ModalbottomsheetUtils.customError(
+        context,
+        'Monto sobre el cupo',
+        'El monto máximo permitido para tu perfil es \$${NumberFormat('#,##0', 'en_US').format(state.maxLoanAmount)}.',
+      );
+      return;
+    }
+
+    // Block if there's an active (approved/disbursed) loan with unpaid installments
+    final activeLoan = state.loans.where((l) => l.isActive).firstOrNull;
     if (activeLoan != null &&
         activeLoan.installments > 0 &&
         activeLoan.installmentsPaid < activeLoan.installments) {
@@ -604,7 +669,7 @@ class HomeCubit extends Cubit<HomeState> {
           maxAmmount: 50000,
           maxInstallments: 8,
           minInstallments: 1,
-          interest: 10.0,
+          interest: 1.1,
         ),
         totalLoanAmount: 30000,
         selectedInstallments: 4,

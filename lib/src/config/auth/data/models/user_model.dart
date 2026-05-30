@@ -7,6 +7,9 @@ class UserModel extends UserEntity {
     required super.name,
     required super.lastName,
     required super.isSubscribed,
+    super.riskProfile,
+    super.maxLoanAmount,
+    super.isBlockedForNewLoans,
   });
   static UserModel initial() => UserModel(
         name: "",
@@ -21,6 +24,9 @@ class UserModel extends UserEntity {
         name: json["name"],
         lastName: json["last_name"],
         isSubscribed: json["isSubscribed"] ?? false,
+        riskProfile: json["riskProfile"] ?? 'NEW',
+        maxLoanAmount: (json["maxLoanAmount"] as num?)?.toInt() ?? 200000,
+        isBlockedForNewLoans: json["isBlockedForNewLoans"] ?? false,
       );
 
   Map<String, dynamic> toJson() => {
@@ -29,6 +35,9 @@ class UserModel extends UserEntity {
         "name": name,
         "last_name": lastName,
         "isSubscribed": isSubscribed,
+        "riskProfile": riskProfile,
+        "maxLoanAmount": maxLoanAmount,
+        "isBlockedForNewLoans": isBlockedForNewLoans,
       };
 
   UserModel copyWith({
@@ -37,6 +46,9 @@ class UserModel extends UserEntity {
     String? name,
     String? lastName,
     bool? isSubscribed,
+    String? riskProfile,
+    int? maxLoanAmount,
+    bool? isBlockedForNewLoans,
   }) {
     return UserModel(
       email: email ?? this.email,
@@ -44,6 +56,9 @@ class UserModel extends UserEntity {
       name: name ?? this.name,
       lastName: lastName ?? this.lastName,
       isSubscribed: isSubscribed ?? this.isSubscribed,
+      riskProfile: riskProfile ?? this.riskProfile,
+      maxLoanAmount: maxLoanAmount ?? this.maxLoanAmount,
+      isBlockedForNewLoans: isBlockedForNewLoans ?? this.isBlockedForNewLoans,
     );
   }
 }

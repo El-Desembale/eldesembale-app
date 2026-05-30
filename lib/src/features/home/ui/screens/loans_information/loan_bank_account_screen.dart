@@ -190,8 +190,8 @@ class _LoanBankAccountScreenState extends State<LoanBankAccountScreen> {
                 }
               },
               options: const [
-                'Corriente',
                 'Ahorros',
+                'Corriente',
               ],
             ),
             const SizedBox(height: 15),

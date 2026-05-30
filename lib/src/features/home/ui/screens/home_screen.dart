@@ -28,6 +28,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _amountController = TextEditingController();
+  final FocusNode _amountFocus = FocusNode();
 
   @override
   initState() {
@@ -55,6 +56,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _amountController.dispose();
+    _amountFocus.dispose();
     super.dispose();
   }
 
@@ -65,10 +67,28 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
+  String _riskProfileLabel(String profile) {
+    switch (profile) {
+      case 'GOOD_PAYER':
+        return 'de buen pagador';
+      case 'MEDIUM_RISK':
+        return 'actual';
+      default:
+        return 'de cliente nuevo';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HomeCubit, HomeState>(
+    return BlocConsumer<HomeCubit, HomeState>(
       bloc: widget.homeCubit,
+      listener: (context, state) {
+        // Sincroniza el monto mostrado cuando cambia por el cupo/perfil
+        // (sin interferir si el usuario está escribiendo)
+        if (!_amountFocus.hasFocus) {
+          _syncController(state.totalLoanAmount);
+        }
+      },
       builder: (BuildContext context, HomeState state) {
         return Scaffold(
           key: _scaffoldKey,
@@ -186,6 +206,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   IntrinsicWidth(
                                     child: TextField(
                                       controller: _amountController,
+                                      focusNode: _amountFocus,
                                       textAlign: TextAlign.center,
                                       keyboardType: TextInputType.number,
                                       inputFormatters: [
@@ -289,6 +310,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               ],
                             ),
                           ),
+                          // Nota sutil de cupo según perfil
+                          if (state.maxLoanAmount < 1000000) ...[
+                            const SizedBox(height: 12),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              child: Text(
+                                'Cupo ${_riskProfileLabel(state.riskProfile)}: \$${NumberFormat('#,##0', 'en_US').format(state.maxLoanAmount)}. Paga a tiempo y crecerá hasta \$1.000.000.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: kTextSecondary.withValues(alpha: 0.7),
+                                  fontSize: 11,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 20),
                           const Text(
                             'Periodo de Pago',
@@ -443,11 +480,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     : loan.status == 'rejected'
                         ? 'Rechazado'
                         : loan.status;
-    final statusColor = (isPending || isReviewing)
+    final statusColor = isPending
         ? kTextSecondary
-        : loan.status == 'rejected'
-            ? const Color(0xFFf87171)
-            : kPrimaryGreen;
+        : isReviewing
+            ? const Color(0xFFa78bfa)
+            : loan.status == 'rejected'
+                ? const Color(0xFFf87171)
+                : kPrimaryGreen;
     return GestureDetector(
       onTap: () async {
         await context.push(AppRoutes.loansList);
@@ -637,6 +676,63 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 
+  Widget _buildRiskBlockedButton() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFF766C).withOpacity(0.08),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFFF766C).withOpacity(0.25)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.block, color: Color(0xFFFF766C), size: 20),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  'Presentas mora en un crédito anterior y no puedes solicitar nuevos créditos. Ponte al día para volver a solicitar.',
+                  style: TextStyle(color: kTextSecondary, fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          height: 62,
+          decoration: BoxDecoration(
+            color: kSurfaceSoft,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: kBorderFaint),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 25),
+                child: Text(
+                  'Solicitud no disponible',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.3),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Icon(Icons.lock_outline_rounded,
+                    color: Colors.white.withValues(alpha: 0.2), size: 22),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildActiveLoanBlockedButton() {
     return Column(
       children: [
@@ -740,8 +836,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final pendingLoan = state.loans
         .where((l) => l.status == 'pending' || l.status == 'reviewing')
         .firstOrNull;
-    final approvedLoan =
-        state.loans.where((l) => l.status == 'approved').firstOrNull;
+    final approvedLoan = state.loans.where((l) => l.isActive).firstOrNull;
+
+    // Bloqueado por mora grave: no puede solicitar nuevos créditos
+    if (state.isBlockedForNewLoans && approvedLoan == null && pendingLoan == null) {
+      return _buildRiskBlockedButton();
+    }
 
     // Si hay una solicitud pendiente o en revisión: mostrar tarjeta + bloquear botón
     if (pendingLoan != null) {

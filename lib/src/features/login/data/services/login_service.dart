@@ -171,6 +171,9 @@ class LoginServiceImpl implements LoginService {
           lastName: doc['lastName'] ?? "",
           name: doc['name'] ?? "",
           isSubscribed: doc['isSubscribed'] ?? false,
+          riskProfile: doc['riskProfile'] ?? 'NEW',
+          maxLoanAmount: (doc['maxLoanAmount'] as num?)?.toInt() ?? 200000,
+          isBlockedForNewLoans: doc['isBlockedForNewLoans'] ?? false,
         );
         _saveFcmToken(user);
         return model;

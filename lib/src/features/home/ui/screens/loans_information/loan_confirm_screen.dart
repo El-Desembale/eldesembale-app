@@ -119,7 +119,7 @@ class LoanConfirmScreen extends StatelessWidget {
                               Container(width: 1, height: 28, color: kBorderFaint),
                               _miniStat('Cuotas', '${state.selectedInstallments}'),
                               Container(width: 1, height: 28, color: kBorderFaint),
-                              _miniStat('Interés', '${state.limits.interest.toStringAsFixed(1)}%'),
+                              _miniStat('Interés', _fmtInterest(state.limits.interest)),
                             ],
                           ),
                         ),
@@ -263,6 +263,12 @@ class LoanConfirmScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  static String _fmtInterest(double multiplier) {
+    // interest se guarda como multiplicador (1.1 = 10% de interés)
+    final pct = (multiplier - 1) * 100;
+    return pct % 1 == 0 ? '${pct.toInt()}%' : '${pct.toStringAsFixed(1)}%';
   }
 
   Widget _miniStat(String label, String value) {

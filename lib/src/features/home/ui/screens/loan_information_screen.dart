@@ -30,7 +30,7 @@ class LoanInformationScreen extends StatelessWidget {
           floatingActionButton: BackCircleButton(
             heroTag: 'loan_information_back',
             onPressed: () {
-              context.pop();
+              context.go(AppRoutes.home);
             },
           ),
           body: _body(context, state),
@@ -95,14 +95,14 @@ class LoanInformationScreen extends StatelessWidget {
     if (!context.mounted) return;
 
     if (useSameData == true) {
+      // Reutiliza todos los datos y salta directo a la confirmación
       homeCubit.useReusableLoanInformation();
+      context.push(AppRoutes.loanConfirm);
     } else if (useSameData == false) {
+      // Datos cambiaron: limpia y muestra el checklist para volver a llenar
       homeCubit.resetLoanInformation();
-    } else {
-      return;
+      context.push(AppRoutes.loanDataCollect);
     }
-
-    context.push(AppRoutes.loanDataCollect);
   }
 
   Widget _body(BuildContext context, HomeState state) {
@@ -140,13 +140,36 @@ class LoanInformationScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  const Text(
-                    'Total Prestado',
-                    style: TextStyle(
-                      color: kTextSecondary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Total Prestado',
+                        style: TextStyle(
+                          color: kTextSecondary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => context.go(AppRoutes.home),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: kPrimaryGreenSoft,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: const Text(
+                            'Cambiar',
+                            style: TextStyle(
+                              color: kPrimaryGreen,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   FittedBox(

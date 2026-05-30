@@ -178,51 +178,56 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
               ),
               SizedBox(height: MediaQuery.sizeOf(context).height * 0.05),
               if (firstReferenceRelationship == 'Otro')
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 5.0, horizontal: 16.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(22.0),
+                Theme(
+                  data: Theme.of(context).copyWith(
+                    inputDecorationTheme: const InputDecorationTheme(
+                      filled: false,
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
                   ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.person_outline,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                      const SizedBox(width: 15.0),
-                      Expanded(
-                        child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            '¿Qué otro?',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18.0,
-                            ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 5.0, horizontal: 16.0),
+                    decoration: BoxDecoration(
+                      color: kInputSurface,
+                      borderRadius: BorderRadius.circular(kRadiusInput),
+                      border: Border.all(color: kBorderFaint),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.person_outline, color: Colors.white, size: 26),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                '¿Qué parentesco?',
+                                style: TextStyle(color: kTextSecondary, fontSize: 12),
+                              ),
+                              TextField(
+                                decoration: InputDecoration(
+                                  hintText: 'Ej: Cuñado, Tío...',
+                                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+                                  border: InputBorder.none,
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                                style: const TextStyle(color: kTextPrimary),
+                                keyboardType: TextInputType.name,
+                                onChanged: (value) {
+                                  firstOtherRelationship = value;
+                                  setState(() {});
+                                },
+                              ),
+                            ],
                           ),
-                          TextField(
-                            decoration: InputDecoration(
-                              hintText: 'Ingrese el nombre',
-                              hintStyle: TextStyle(
-                                  color: Colors.white.withOpacity(0.6)),
-                              enabledBorder: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                            ),
-                            style: const TextStyle(color: Colors.white),
-                            keyboardType: TextInputType.name,
-                            onChanged: (value) {
-                              firstOtherRelationship = value;
-                              setState(() {});
-                            },
-                          ),
-                        ],
-                      ),
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               const SizedBox(height: 15),
@@ -507,51 +512,56 @@ class _LoanRefencesScreenState extends State<LoanRefencesScreen> {
               ),
               SizedBox(height: MediaQuery.sizeOf(context).height * 0.05),
               if (secondReferenceRelationship == 'Otro')
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 5.0, horizontal: 16.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(22.0),
+                Theme(
+                  data: Theme.of(context).copyWith(
+                    inputDecorationTheme: const InputDecorationTheme(
+                      filled: false,
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
                   ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.person_outline,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                      const SizedBox(width: 15.0),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              '¿Qué otro?',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18.0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 5.0, horizontal: 16.0),
+                    decoration: BoxDecoration(
+                      color: kInputSurface,
+                      borderRadius: BorderRadius.circular(kRadiusInput),
+                      border: Border.all(color: kBorderFaint),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.person_outline, color: Colors.white, size: 26),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                '¿Qué parentesco?',
+                                style: TextStyle(color: kTextSecondary, fontSize: 12),
                               ),
-                            ),
-                            TextField(
-                              decoration: InputDecoration(
-                                hintText: 'Ingrese el nombre',
-                                hintStyle: TextStyle(
-                                    color: Colors.white.withOpacity(0.6)),
-                                enabledBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
+                              TextField(
+                                decoration: InputDecoration(
+                                  hintText: 'Ej: Cuñado, Tío...',
+                                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+                                  border: InputBorder.none,
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                                style: const TextStyle(color: kTextPrimary),
+                                keyboardType: TextInputType.name,
+                                onChanged: (value) {
+                                  secondOtherRelationship = value;
+                                  setState(() {});
+                                },
                               ),
-                              style: const TextStyle(color: Colors.white),
-                              keyboardType: TextInputType.name,
-                              onChanged: (value) {
-                                secondOtherRelationship = value;
-                                setState(() {});
-                              },
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               const SizedBox(height: 15),
