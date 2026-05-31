@@ -16,7 +16,7 @@ class UserEntity {
     required this.lastName,
     required this.isSubscribed,
     this.riskProfile = 'NEW',
-    this.maxLoanAmount = 200000,
+    this.maxLoanAmount = 100000,
     this.isBlockedForNewLoans = false,
   });
 }

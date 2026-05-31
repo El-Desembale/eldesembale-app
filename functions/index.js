@@ -766,8 +766,9 @@ exports.notifyAdminsOnPayment = functions.runWith({
 //  préstamos o pagos. Otros clientes solo leen los campos resultantes.
 // ════════════════════════════════════════════════════════════════
 
-const NEW_MAX_AMOUNT = 200000;
-const GOOD_PAYER_MAX_AMOUNT = 500000;
+const NEW_MAX_AMOUNT = 100000;     // cupo del primer préstamo
+const CUPO_INCREMENT = 50000;      // aumento por préstamo pagado sin mora
+const MAX_CUPO = 1000000;          // tope máximo
 
 function getExpectedInstallments(loan) {
   const daysPerPeriod = getDaysPerPeriod(loan.payment_period);
@@ -799,16 +800,18 @@ function computeUserRisk(loans, previousMax) {
     (s, l) => s + Math.max(getExpectedInstallments(l) - Number(l.installments_paid || 0), 0), 0);
   const severeMora = currentLate > 1 || inMora.length > 1 ||
     loans.some((l) => Number(l.maxLateInstallments || 0) > 1);
-  const paidWithoutMora = paid.some((l) => l.hadMora !== true);
+  const paidWithoutMoraCount = paid.filter((l) => l.hadMora !== true).length;
 
   let profile; let maxLoanAmount; let blocked = false;
   if (severeMora) {
     profile = "BLOCKED"; maxLoanAmount = 0; blocked = true;
   } else if (hadMoraEver) {
     profile = "MEDIUM_RISK";
-    maxLoanAmount = Math.min(Math.max(previousMax || NEW_MAX_AMOUNT, NEW_MAX_AMOUNT), GOOD_PAYER_MAX_AMOUNT);
-  } else if (paidWithoutMora) {
-    profile = "GOOD_PAYER"; maxLoanAmount = GOOD_PAYER_MAX_AMOUNT;
+    maxLoanAmount = Math.min(Math.max(previousMax || NEW_MAX_AMOUNT, NEW_MAX_AMOUNT), MAX_CUPO);
+  } else if (paidWithoutMoraCount > 0) {
+    profile = "GOOD_PAYER";
+    // Cupo progresivo: $100.000 base + $50.000 por cada préstamo pagado sin mora
+    maxLoanAmount = Math.min(NEW_MAX_AMOUNT + CUPO_INCREMENT * paidWithoutMoraCount, MAX_CUPO);
   } else {
     profile = "NEW"; maxLoanAmount = NEW_MAX_AMOUNT;
   }

@@ -319,7 +319,7 @@ class HomeCubit extends Cubit<HomeState> {
           .get();
       if (snap.docs.isEmpty) return;
       final d = snap.docs.first.data();
-      final maxLoan = (d['maxLoanAmount'] as num?)?.toInt() ?? 200000;
+      final maxLoan = (d['maxLoanAmount'] as num?)?.toInt() ?? 100000;
       final blocked = d['isBlockedForNewLoans'] ?? false;
       final riskProfile = d['riskProfile'] ?? 'NEW';
 
