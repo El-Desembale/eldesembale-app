@@ -6,6 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../domain/loan_calc.dart';
 import '../../domain/models/limit_model.dart';
 import '../entities/loan_information_entity.dart';
 import '../entities/loan_request_entity.dart';
@@ -112,6 +113,52 @@ class HomeServiceImpl implements HomeService {
     }
   }
 
+  // Lee los parámetros configurables del pricing (config/loan_pricing y config/wompi).
+  // Cae a los defaults del motor si los docs no existen o están incompletos.
+  Future<LoanPricingConfig> _getPricingConfig() async {
+    var cfg = kDefaultPricingConfig;
+    try {
+      final results = await Future.wait([
+        _database.collection('config').doc('loan_pricing').get(),
+        _database.collection('config').doc('wompi').get(),
+      ]);
+      final pricingDoc = results[0];
+      final wompiDoc = results[1];
+
+      double interesMensual = cfg.interesMensual;
+      PricingSplit split = cfg.split;
+      WompiFees wompi = cfg.wompi;
+
+      double pick(dynamic v, double fallback) =>
+          (v is num) ? v.toDouble() : fallback;
+
+      if (pricingDoc.exists) {
+        final d = pricingDoc.data() as Map<String, dynamic>;
+        final s = (d['split'] as Map<String, dynamic>?) ?? {};
+        interesMensual = pick(d['interes_mensual'], cfg.interesMensual);
+        split = PricingSplit(
+          interes: pick(s['interes'], cfg.split.interes),
+          plataforma: pick(s['plataforma'], cfg.split.plataforma),
+          administrativo: pick(s['administrativo'], cfg.split.administrativo),
+        );
+      }
+      if (wompiDoc.exists) {
+        final d = wompiDoc.data() as Map<String, dynamic>;
+        wompi = WompiFees(
+          porcentaje: pick(d['porcentaje'], cfg.wompi.porcentaje),
+          fijo: pick(d['fijo'], cfg.wompi.fijo),
+          iva: pick(d['iva'], cfg.wompi.iva),
+        );
+      }
+      cfg = LoanPricingConfig(
+        interesMensual: interesMensual,
+        split: split,
+        wompi: wompi,
+      );
+    } catch (_) {}
+    return cfg;
+  }
+
   @override
   Future<bool> createLoan({
     required int selectedInstallments,
@@ -144,6 +191,19 @@ class HomeServiceImpl implements HomeService {
       var uuid = const Uuid();
 
       String generatedId = uuid.v4();
+
+      // Desglose del crédito (capital + interés/plataforma/administrativo + Wompi por cuota),
+      // calculado y guardado al crear (snapshot de tarifas) para no recalcular histórico.
+      final createdAt = DateTime.now();
+      final pricingConfig = await _getPricingConfig();
+      final pricing = computeLoanPricing(
+        capital: totalLoanAmount,
+        numeroCuotas: selectedInstallments,
+        paymentPeriod: paymentPeriod,
+        fechaDesembolso: createdAt,
+        config: pricingConfig,
+      );
+
       await _database.collection('loan_request').doc(generatedId).set({
         'id': generatedId,
         'amount': totalLoanAmount,
@@ -153,8 +213,9 @@ class HomeServiceImpl implements HomeService {
         'payment_period': paymentPeriod,
         'installments_paid': 0,
         'status': 'pending',
-        'created_at': DateTime.now(),
+        'created_at': createdAt,
         'loan_information': loanInformation,
+        'pricing': pricing.toMap(),
       });
 
       // Notificar al admin por WhatsApp
@@ -168,7 +229,10 @@ class HomeServiceImpl implements HomeService {
             'installments': selectedInstallments,
             'paymentPeriod': paymentPeriod,
             'interest': interest,
-            'createdAt': DateTime.now().toIso8601String(),
+            'createdAt': createdAt.toIso8601String(),
+            'installmentAmounts':
+                pricing.installments.map((c) => c.totalCliente).toList(),
+            'totalCliente': pricing.totalCliente,
             if (clientName != null && clientName.isNotEmpty)
               'clientName': clientName,
           },

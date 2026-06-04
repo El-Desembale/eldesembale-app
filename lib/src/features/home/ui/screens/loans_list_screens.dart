@@ -354,7 +354,10 @@ class _LoansListScreenState extends State<LoansListScreen> {
               color: kInputSurface,
               border: Border.all(color: kBorderFaint),
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Column(
@@ -379,20 +382,22 @@ class _LoansListScreenState extends State<LoansListScreen> {
                   String? nextDateStr;
                   String? nextAmountStr;
                   if (hasPending) {
-                    final nextDate = Utils.calculateInstallmentDate(
-                      installmentIndex: loan.installmentsPaid,
-                      paymentPeriod: loan.paymentPeriod,
-                      baseDate: loan.createdAt.toDate(),
-                    );
-                    final totalAmount = Utils.getTotalAmount(
-                      loan.amount,
-                      loan.installments,
-                      loan.interest,
-                      loan.paymentPeriod,
-                    );
+                    // Modelo nuevo: fecha y monto de la próxima cuota desde el desglose.
+                    final nextCuota = (loan.pricing != null &&
+                            loan.installmentsPaid <
+                                loan.pricing!.installments.length)
+                        ? loan.pricing!.installments[loan.installmentsPaid]
+                        : null;
+                    final nextDate = nextCuota?.fechaVencimiento ??
+                        Utils.calculateInstallmentDate(
+                          installmentIndex: loan.installmentsPaid,
+                          paymentPeriod: loan.paymentPeriod,
+                          baseDate: loan.createdAt.toDate(),
+                        );
+                    final nextAmount = loan.cuotaAmount(loan.installmentsPaid);
                     nextDateStr = DateFormat('d/M/y').format(nextDate);
                     nextAmountStr =
-                        NumberFormat("#,##0", "en_US").format(totalAmount);
+                        NumberFormat("#,##0", "en_US").format(nextAmount);
                   }
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -487,6 +492,47 @@ class _LoansListScreenState extends State<LoansListScreen> {
                     ],
                   );
                 }),
+              ],
+            ),
+                if (loan.status == 'rejected' &&
+                    loan.rejectionReason.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: kDangerSoft.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: kDangerSoft.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Motivo del rechazo',
+                          style: TextStyle(
+                            color: Color(0xFFFF766C),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          loan.rejectionReason,
+                          style: const TextStyle(
+                            color: kTextPrimary,
+                            fontSize: 13,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

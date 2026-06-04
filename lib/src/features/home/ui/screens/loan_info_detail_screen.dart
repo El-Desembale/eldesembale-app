@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../utils/design_tokens.dart';
 import '../../../../utils/utils.dart';
 import '../../cubit/home_cubit.dart';
+import '../../domain/loan_calc.dart';
 import '../../../shared/widgets/back_circle_button.dart';
 import '../../../shared/widgets/primary_action_button.dart';
 import '../widgets/web_payment_view.dart';
@@ -52,19 +53,14 @@ class _LoanInfoDetailScreenState extends State<LoanInfoDetailScreen> {
 
   Widget _body(BuildContext context, HomeState state) {
     final loan = state.loans[widget.loanIndex];
-    final installmentAmount = Utils.getTotalAmount(
-      loan.amount,
-      loan.installments,
-      loan.interest,
-      loan.paymentPeriod,
-    );
     final paidInstallments = loan.installmentsPaid.clamp(0, loan.installments);
     final remainingInstallments =
         (loan.installments - paidInstallments).clamp(0, loan.installments);
     final progress =
         loan.installments == 0 ? 0.0 : paidInstallments / loan.installments;
     final selected = _selectedUpTo ?? 0;
-    final totalToPay = installmentAmount * selected;
+    // Modelo nuevo: se cobra el total_cliente del desglose persistido por cuota.
+    final totalToPay = loan.sumInstallments(paidInstallments, selected).toDouble();
 
     return Container(
       decoration: const BoxDecoration(color: kBgScreen),
@@ -110,6 +106,45 @@ class _LoanInfoDetailScreenState extends State<LoanInfoDetailScreen> {
                       ],
                     ),
                   ),
+                  if (loan.status == 'rejected' &&
+                      loan.rejectionReason.isNotEmpty) ...[
+                    const SizedBox(height: 18),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: kDangerSoft.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: kDangerSoft.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Motivo del rechazo',
+                            style: TextStyle(
+                              color: Color(0xFFFF766C),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            loan.rejectionReason,
+                            style: const TextStyle(
+                              color: kTextPrimary,
+                              fontSize: 14,
+                              height: 1.45,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 18),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -234,6 +269,11 @@ class _LoanInfoDetailScreenState extends State<LoanInfoDetailScreen> {
                       ],
                     ),
                   ),
+                  // Desglose del crédito (vista cliente: Wompi absorbido en Plataforma)
+                  if (loan.pricing != null) ...[
+                    const SizedBox(height: 14),
+                    _DesgloseCard(pricing: loan.pricing!),
+                  ],
                   const SizedBox(height: 20),
                   const Text(
                     'Fechas de Pago',
@@ -255,11 +295,18 @@ class _LoanInfoDetailScreenState extends State<LoanInfoDetailScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 itemCount: loan.installments,
                 itemBuilder: (context, index) {
-                  final dueDate = Utils.calculateInstallmentDate(
-                    installmentIndex: index,
-                    paymentPeriod: loan.paymentPeriod,
-                    baseDate: loan.createdAt.toDate(),
-                  );
+                  // Fecha y monto desde el desglose persistido (si existe); si no, legacy.
+                  final cuota = (loan.pricing != null &&
+                          index < loan.pricing!.installments.length)
+                      ? loan.pricing!.installments[index]
+                      : null;
+                  final dueDate = cuota?.fechaVencimiento ??
+                      Utils.calculateInstallmentDate(
+                        installmentIndex: index,
+                        paymentPeriod: loan.paymentPeriod,
+                        baseDate: loan.createdAt.toDate(),
+                      );
+                  final cuotaMonto = loan.cuotaAmount(index);
                   final isPaid = index < loan.installmentsPaid;
                   final isPending = !isPaid;
                   // Which pending index is this? (0 = first unpaid)
@@ -341,7 +388,7 @@ class _LoanInfoDetailScreenState extends State<LoanInfoDetailScreen> {
                               Flexible(
                                 child: Text(
                                   NumberFormat("#,##0", "en_US")
-                                      .format(installmentAmount),
+                                      .format(cuotaMonto),
                                   textAlign: TextAlign.right,
                                   style: TextStyle(
                                     color: isPaid
@@ -436,6 +483,83 @@ class _LoanInfoDetailScreenState extends State<LoanInfoDetailScreen> {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Desglose del crédito para el cliente: Capital, Interés, Plataforma (Wompi absorbido),
+/// Administrativo y Total. No muestra Wompi como concepto independiente.
+class _DesgloseCard extends StatelessWidget {
+  final LoanPricing pricing;
+  const _DesgloseCard({required this.pricing});
+
+  @override
+  Widget build(BuildContext context) {
+    final f = NumberFormat("#,##0", "en_US");
+    final plataformaCliente = pricing.plataformaTotal + pricing.wompiTotal;
+    Widget row(String label, int value, {bool strong = false}) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 3),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: strong ? kTextPrimary : kTextSecondary,
+                fontSize: strong ? 14 : 13,
+                fontWeight: strong ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+            Text(
+              '\$${f.format(value)}',
+              style: TextStyle(
+                color: strong ? kPrimaryGreen : kTextPrimary,
+                fontSize: strong ? 15 : 13,
+                fontWeight: strong ? FontWeight.w800 : FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: kSurfaceSoft,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: kBorderFaint),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Desglose del crédito',
+            style: TextStyle(
+              color: kTextSecondary,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+            ),
+          ),
+          const SizedBox(height: 8),
+          row('Capital', pricing.capital),
+          row('Interés', pricing.interesTotal),
+          row('Plataforma *', plataformaCliente),
+          row('Administrativo', pricing.administrativoTotal),
+          const SizedBox(height: 8),
+          Container(height: 1, color: kBorderFaint),
+          const SizedBox(height: 8),
+          row('Total a pagar', pricing.totalCliente, strong: true),
+          const SizedBox(height: 8),
+          const Text(
+            '* Incluye gastos de plataforma y el costo de procesamiento del pago.',
+            style: TextStyle(color: kTextSecondary, fontSize: 10, height: 1.4),
+          ),
+        ],
       ),
     );
   }
