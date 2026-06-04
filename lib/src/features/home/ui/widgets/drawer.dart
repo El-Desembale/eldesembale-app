@@ -63,6 +63,17 @@ class DrawerWidget extends StatelessWidget {
                   height: MediaQuery.sizeOf(context).height * 0.01,
                 ),
                 _drawerItem(
+                  "Ayuda",
+                  AssetImages.request,
+                  () {
+                    Navigator.of(context).pop();
+                    context.push(AppRoutes.support);
+                  },
+                ),
+                SizedBox(
+                  height: MediaQuery.sizeOf(context).height * 0.01,
+                ),
+                _drawerItem(
                   "Términos y condiciones",
                   AssetImages.request,
                   () {

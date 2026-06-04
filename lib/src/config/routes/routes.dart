@@ -18,6 +18,7 @@ import '../../features/home/ui/screens/loans_information/loan_direction_screen.d
 import '../../features/home/ui/screens/loans_information/loan_reference_screen.dart';
 import '../../features/home/ui/screens/loans_information/loan_selfie_screen.dart';
 import '../../features/home/ui/screens/loans_list_screens.dart';
+import '../../features/home/ui/screens/support_chat_screen.dart';
 import '../../features/home/ui/screens/subscription_screen.dart';
 import '../../features/login/cubit/login_cubit.dart';
 import '../../features/login/ui/screens/login_screen.dart';
@@ -45,6 +46,7 @@ class AppRoutes {
   static const loanConfirm = '/loan-confirm';
   static const terms = '/terms';
   static const privacyPolicy = '/privacy-policy';
+  static const support = '/support';
 
   static final LoginCubit _loginCubit = sl<LoginCubit>();
   static final HomeCubit _homeCubit = sl<HomeCubit>();
@@ -200,6 +202,10 @@ class AppRoutes {
     GoRoute(
       path: privacyPolicy,
       pageBuilder: (context, state) => const NoTransitionPage(child: PrivacyPolicyScreen()),
+    ),
+    GoRoute(
+      path: support,
+      pageBuilder: (context, state) => const NoTransitionPage(child: SupportChatScreen()),
     ),
     GoRoute(
       path: subscrption,
