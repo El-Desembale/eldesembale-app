@@ -14,6 +14,7 @@ import '../../../core/di/injection_dependency.dart';
 import '../../../utils/modalbottomsheet.dart';
 import '../data/entities/loan_information_entity.dart';
 import '../data/entities/loan_request_entity.dart';
+import '../domain/loan_calc.dart';
 import '../domain/models/limit_model.dart';
 import '../domain/use_case/create_loan_use_case.dart';
 import '../domain/use_case/get_limits_use_case.dart';
@@ -633,23 +634,51 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 
+  // Tarifas de Wompi (porcentaje/fijo/iva) desde config/wompi, con fallback a defaults.
+  Future<WompiFees> _getWompiFees() async {
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('config')
+          .doc('wompi')
+          .get();
+      if (snap.exists) {
+        final data = snap.data()!;
+        double pick(dynamic v, double fallback) =>
+            (v is num) ? v.toDouble() : fallback;
+        final def = kDefaultPricingConfig.wompi;
+        return WompiFees(
+          porcentaje: pick(data['porcentaje'], def.porcentaje),
+          fijo: pick(data['fijo'], def.fijo),
+          iva: pick(data['iva'], def.iva),
+        );
+      }
+    } catch (_) {}
+    return kDefaultPricingConfig.wompi;
+  }
+
   Future<void> savePaymentRecord({
     required String transactionId,
     required String reference,
     required String status,
     required int amountInCents,
+    int? wompiFee,
     String? loanId,
     int? installmentNumber,
   }) async {
     final user = sl<AuthCubit>(instanceName: 'auth').state.user;
     final type =
         reference.startsWith('subscription') ? 'subscription' : 'installment';
+    // Comisión Wompi: exacta si viene del desglose del crédito; estimada con las
+    // tarifas vigentes para suscripciones y créditos legacy.
+    final fee = wompiFee ??
+        wompiFeeFromGross(amountInCents / 100, await _getWompiFees());
     await _savePaymentRecordUseCase.call(
       transactionId: transactionId,
       reference: reference,
       type: type,
       status: status,
       amountInCents: amountInCents,
+      wompiFee: fee,
       userPhone: user.phone,
       userEmail: user.email,
       userName: '${user.name} ${user.lastName}'.trim(),

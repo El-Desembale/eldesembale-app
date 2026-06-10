@@ -439,6 +439,19 @@ class _LoanInfoDetailScreenState extends State<LoanInfoDetailScreen> {
                       enabled: selected > 0,
                       margin: EdgeInsets.zero,
                       onTap: () async {
+                        // Comisión Wompi exacta de las cuotas seleccionadas (desde el
+                        // desglose persistido); null para créditos legacy → se estima.
+                        int? selectedWompiFee;
+                        if (loan.pricing != null) {
+                          var fee = 0;
+                          for (var i = loan.installmentsPaid;
+                              i < loan.installmentsPaid + selected &&
+                                  i < loan.pricing!.installments.length;
+                              i++) {
+                            fee += loan.pricing!.installments[i].comisionWompi;
+                          }
+                          selectedWompiFee = fee;
+                        }
                         final payment = await widget.homeCubit.generatePayment(
                           context,
                           totalToPay.truncate(),
@@ -452,6 +465,7 @@ class _LoanInfoDetailScreenState extends State<LoanInfoDetailScreen> {
                               homeCubit: widget.homeCubit,
                               reference: payment.reference,
                               amountInCents: payment.amountInCents,
+                              wompiFee: selectedWompiFee,
                               loanId: loan.id,
                               installmentNumber:
                                   loan.installmentsPaid + selected,
@@ -488,8 +502,9 @@ class _LoanInfoDetailScreenState extends State<LoanInfoDetailScreen> {
   }
 }
 
-/// Desglose del crédito para el cliente: Capital, Interés, Plataforma (Wompi absorbido),
-/// Administrativo y Total. No muestra Wompi como concepto independiente.
+/// Desglose del crédito para el cliente: Capital e Intereses como un único concepto
+/// (incluye plataforma, administrativo y procesamiento del pago de forma transparente).
+/// El detalle discriminado es exclusivo del admin.
 class _DesgloseCard extends StatelessWidget {
   final LoanPricing pricing;
   const _DesgloseCard({required this.pricing});
@@ -497,7 +512,7 @@ class _DesgloseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final f = NumberFormat("#,##0", "en_US");
-    final plataformaCliente = pricing.plataformaTotal + pricing.wompiTotal;
+    final interesesCliente = pricing.totalCliente - pricing.capital;
     Widget row(String label, int value, {bool strong = false}) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 3),
@@ -547,16 +562,14 @@ class _DesgloseCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           row('Capital', pricing.capital),
-          row('Interés', pricing.interesTotal),
-          row('Plataforma *', plataformaCliente),
-          row('Administrativo', pricing.administrativoTotal),
+          row('Intereses *', interesesCliente),
           const SizedBox(height: 8),
           Container(height: 1, color: kBorderFaint),
           const SizedBox(height: 8),
           row('Total a pagar', pricing.totalCliente, strong: true),
           const SizedBox(height: 8),
           const Text(
-            '* Incluye gastos de plataforma y el costo de procesamiento del pago.',
+            '* Incluye el costo total del servicio de crédito.',
             style: TextStyle(color: kTextSecondary, fontSize: 10, height: 1.4),
           ),
         ],

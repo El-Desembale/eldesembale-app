@@ -38,6 +38,7 @@ abstract class HomeService {
     required String type,
     required String status,
     required int amountInCents,
+    required int wompiFee,
     required String userPhone,
     required String userEmail,
     required String userName,
@@ -319,6 +320,7 @@ class HomeServiceImpl implements HomeService {
     required String type,
     required String status,
     required int amountInCents,
+    required int wompiFee,
     required String userPhone,
     required String userEmail,
     required String userName,
@@ -326,13 +328,19 @@ class HomeServiceImpl implements HomeService {
     int? installmentNumber,
   }) async {
     try {
+      // Campos financieros estándar: bruto pagado, comisión Wompi y neto recibido.
+      final grossAmount = amountInCents / 100;
+      final fee = wompiFee < 0 ? 0 : wompiFee;
       await _database.collection('payments').doc(transactionId).set({
         'id': transactionId,
         'reference': reference,
         'type': type,
         'status': status,
-        'amount': amountInCents / 100,
+        'amount': grossAmount,
         'amount_in_cents': amountInCents,
+        'gross_amount': grossAmount,
+        'wompi_fee': fee,
+        'net_amount': grossAmount - fee,
         'currency': 'COP',
         'user_phone': userPhone,
         'user_email': userEmail,

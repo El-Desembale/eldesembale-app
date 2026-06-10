@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../config/auth/cubit/auth_cubit.dart';
 import '../../../../core/di/injection_dependency.dart';
@@ -16,9 +20,11 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
   final _service = SupportChatService(sl(instanceName: 'firebaseDatabase'));
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
+  final _imagePicker = ImagePicker();
   bool _sending = false;
   String _error = '';
   String _lastSeenMessageId = '';
+  final List<_PendingSupportAttachment> _pendingAttachments = [];
 
   @override
   void initState() {
@@ -58,7 +64,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
 
   Future<void> _send(AuthState authState) async {
     final text = _controller.text.trim();
-    if (text.isEmpty || _sending) return;
+    if ((text.isEmpty && _pendingAttachments.isEmpty) || _sending) return;
     setState(() {
       _sending = true;
       _error = '';
@@ -67,16 +73,29 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
       final fullName = [authState.user.name, authState.user.lastName]
           .where((part) => part.trim().isNotEmpty)
           .join(' ');
+      final attachments = <SupportAttachmentModel>[];
+      for (final pending in _pendingAttachments) {
+        final uploaded = await _service.uploadAttachment(
+          phone: authState.user.phone,
+          file: pending.file,
+          fileName: pending.name,
+        );
+        attachments.add(uploaded);
+      }
       await _service.sendMessage(
         phone: authState.user.phone,
         customerName: fullName,
         customerEmail: authState.user.email,
         text: text,
+        attachments: attachments,
       );
       _controller.clear();
+      setState(() {
+        _pendingAttachments.clear();
+      });
     } catch (_) {
       setState(() {
-        _error = 'No se pudo enviar el mensaje. Intenta de nuevo.';
+        _error = 'No se pudo enviar el mensaje o los adjuntos. Intenta de nuevo.';
       });
     } finally {
       if (mounted) {
@@ -107,6 +126,144 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
     final hour = date.hour.toString().padLeft(2, '0');
     final minute = date.minute.toString().padLeft(2, '0');
     return '${date.day.toString().padLeft(2, '0')} $month · $hour:$minute';
+  }
+
+  String _formatBytes(int size) {
+    if (size <= 0) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    final index = (size > 0 ? (size.bitLength / 10).floor() : 0).clamp(0, units.length - 1);
+    final value = size / (1 << (index * 10));
+    final digits = value >= 10 || index == 0 ? 0 : 1;
+    return '${value.toStringAsFixed(digits)} ${units[index]}';
+  }
+
+  Future<void> _pickImages() async {
+    final files = await _imagePicker.pickMultiImage(imageQuality: 85);
+    if (files.isEmpty) return;
+    for (final file in files) {
+      _addPendingAttachment(File(file.path), file.name);
+    }
+  }
+
+  Future<void> _pickFiles() async {
+    final result = await FilePicker.platform.pickFiles(
+      allowMultiple: true,
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'heic', 'doc', 'docx', 'xls', 'xlsx', 'txt'],
+      withData: true,
+    );
+    if (result == null) return;
+    for (final file in result.files) {
+      final resolved = await _platformFileToFile(file);
+      if (resolved != null) {
+        _addPendingAttachment(resolved, file.name);
+      }
+    }
+  }
+
+  Future<void> _showAttachmentOptions() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: kBgScreenAlt,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Adjuntar al chat',
+                  style: TextStyle(
+                    color: kTextPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Puedes enviar imágenes y archivos para que soporte revise tu caso.',
+                  style: TextStyle(
+                    color: kTextSecondary.withValues(alpha: 0.8),
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _AttachmentOptionButton(
+                  icon: Icons.photo_library_outlined,
+                  label: 'Elegir imágenes',
+                  description: 'Selecciona fotos desde tu galería',
+                  onTap: () async {
+                    Navigator.of(ctx).pop();
+                    await _pickImages();
+                  },
+                ),
+                const SizedBox(height: 12),
+                _AttachmentOptionButton(
+                  icon: Icons.attach_file_outlined,
+                  label: 'Elegir archivos',
+                  description: 'PDF, Word, Excel, texto e imágenes',
+                  onTap: () async {
+                    Navigator.of(ctx).pop();
+                    await _pickFiles();
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _addPendingAttachment(File file, String name) {
+    final exists = _pendingAttachments.any(
+      (attachment) => attachment.name == name && attachment.file.path == file.path,
+    );
+    if (exists) return;
+    setState(() {
+      _error = '';
+      _pendingAttachments.add(_PendingSupportAttachment(file: file, name: name));
+    });
+  }
+
+  void _removePendingAttachment(_PendingSupportAttachment attachment) {
+    setState(() {
+      _pendingAttachments.remove(attachment);
+    });
+  }
+
+  bool _isImageAttachmentName(String name) {
+    final lower = name.toLowerCase();
+    return lower.endsWith('.jpg') ||
+        lower.endsWith('.jpeg') ||
+        lower.endsWith('.png') ||
+        lower.endsWith('.webp') ||
+        lower.endsWith('.heic');
+  }
+
+  static Future<File?> _platformFileToFile(PlatformFile pf) async {
+    if (pf.path != null) return File(pf.path!);
+    if (pf.bytes == null) return null;
+    final tempDir = Directory.systemTemp;
+    final file = File('${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}_${pf.name}');
+    await file.writeAsBytes(pf.bytes!);
+    return file;
   }
 
   @override
@@ -279,14 +436,29 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      message.text,
-                                      style: TextStyle(
-                                        color: isCustomer ? kBgScreen : kTextPrimary,
-                                        height: 1.5,
+                                    if (message.text.isNotEmpty) ...[
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        message.text,
+                                        style: TextStyle(
+                                          color: isCustomer ? kBgScreen : kTextPrimary,
+                                          height: 1.5,
+                                        ),
                                       ),
-                                    ),
+                                    ],
+                                    if (message.attachments.isNotEmpty) ...[
+                                      SizedBox(height: message.text.isNotEmpty ? 12 : 8),
+                                      ...message.attachments.map(
+                                        (attachment) => Padding(
+                                          padding: const EdgeInsets.only(bottom: 10),
+                                          child: _MessageAttachmentCard(
+                                            attachment: attachment,
+                                            isCustomer: isCustomer,
+                                            formatBytes: _formatBytes,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                     const SizedBox(height: 8),
                                     Text(
                                       _formatDate(message.createdAt),
@@ -332,6 +504,27 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                             contentPadding: const EdgeInsets.all(16),
                           ),
                         ),
+                        if (_pendingAttachments.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            height: 88,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _pendingAttachments.length,
+                              separatorBuilder: (_, __) => const SizedBox(width: 10),
+                              itemBuilder: (context, index) {
+                                final attachment = _pendingAttachments[index];
+                                final isImage = _isImageAttachmentName(attachment.name);
+                                return _PendingAttachmentCard(
+                                  attachment: attachment,
+                                  isImage: isImage,
+                                  formatBytes: _formatBytes,
+                                  onRemove: () => _removePendingAttachment(attachment),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 12),
                         Row(
                           children: [
@@ -350,8 +543,21 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                               ),
                             ),
                             const SizedBox(width: 12),
+                            IconButton.filledTonal(
+                              onPressed: _sending ? null : _showAttachmentOptions,
+                              style: IconButton.styleFrom(
+                                backgroundColor: kSurfaceSoft,
+                                foregroundColor: kTextPrimary,
+                              ),
+                              icon: const Icon(Icons.attach_file_rounded),
+                            ),
+                            const SizedBox(width: 12),
                             FilledButton(
-                              onPressed: _sending ? null : () => _send(authState),
+                              onPressed: _sending ||
+                                      (_controller.text.trim().isEmpty &&
+                                          _pendingAttachments.isEmpty)
+                                  ? null
+                                  : () => _send(authState),
                               style: FilledButton.styleFrom(
                                 backgroundColor: kPrimaryGreen,
                                 foregroundColor: kBgScreen,
@@ -395,6 +601,246 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),
+      ),
+    );
+  }
+}
+
+class _PendingSupportAttachment {
+  final File file;
+  final String name;
+
+  const _PendingSupportAttachment({
+    required this.file,
+    required this.name,
+  });
+}
+
+class _AttachmentOptionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String description;
+  final Future<void> Function() onTap;
+
+  const _AttachmentOptionButton({
+    required this.icon,
+    required this.label,
+    required this.description,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Ink(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: kSurfaceSoft,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: kBorderFaint),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: kPrimaryGreen.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: kPrimaryGreen),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: kTextPrimary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: TextStyle(
+                      color: kTextSecondary.withValues(alpha: 0.82),
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PendingAttachmentCard extends StatelessWidget {
+  final _PendingSupportAttachment attachment;
+  final bool isImage;
+  final String Function(int) formatBytes;
+  final VoidCallback onRemove;
+
+  const _PendingAttachmentCard({
+    required this.attachment,
+    required this.isImage,
+    required this.formatBytes,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 220,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: kSurfaceSoft,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: kBorderFaint),
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: 48,
+              height: 48,
+              color: kPrimaryGreen.withValues(alpha: 0.12),
+              child: isImage
+                  ? Image.file(attachment.file, fit: BoxFit.cover)
+                  : const Icon(Icons.insert_drive_file_outlined, color: kPrimaryGreen),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  attachment.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: kTextPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  formatBytes(attachment.file.lengthSync()),
+                  style: TextStyle(
+                    color: kTextSecondary.withValues(alpha: 0.82),
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: onRemove,
+            icon: const Icon(Icons.close_rounded, color: kTextPrimary, size: 18),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MessageAttachmentCard extends StatelessWidget {
+  final SupportAttachmentModel attachment;
+  final bool isCustomer;
+  final String Function(int) formatBytes;
+
+  const _MessageAttachmentCard({
+    required this.attachment,
+    required this.isCustomer,
+    required this.formatBytes,
+  });
+
+  bool get _isImage =>
+      attachment.kind == 'image' || attachment.contentType.startsWith('image/');
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isImage) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Image.network(
+          attachment.url,
+          width: 220,
+          height: 180,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            width: 220,
+            height: 120,
+            color: isCustomer ? kBgScreen.withValues(alpha: 0.08) : kSurfaceFaint,
+            alignment: Alignment.center,
+            child: Text(
+              attachment.name,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: isCustomer ? kBgScreen : kTextPrimary,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isCustomer ? kBgScreen.withValues(alpha: 0.08) : kSurfaceFaint,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.insert_drive_file_outlined,
+            color: isCustomer ? kBgScreen : kTextPrimary,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  attachment.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: isCustomer ? kBgScreen : kTextPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  formatBytes(attachment.size),
+                  style: TextStyle(
+                    color: isCustomer
+                        ? kBgScreen.withValues(alpha: 0.72)
+                        : kTextSecondary.withValues(alpha: 0.76),
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

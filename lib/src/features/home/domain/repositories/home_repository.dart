@@ -33,6 +33,7 @@ abstract class HomeRepository {
     required String type,
     required String status,
     required int amountInCents,
+    required int wompiFee,
     required String userPhone,
     required String userEmail,
     required String userName,

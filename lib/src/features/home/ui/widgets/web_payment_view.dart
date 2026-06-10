@@ -19,6 +19,9 @@ class WebPaymentView extends StatefulWidget {
   final HomeCubit homeCubit;
   final String reference;
   final int amountInCents;
+
+  /// Comisión Wompi exacta (suma de las cuotas pagadas); null para estimarla.
+  final int? wompiFee;
   final String? loanId;
   final int? installmentNumber;
 
@@ -29,6 +32,7 @@ class WebPaymentView extends StatefulWidget {
     required this.homeCubit,
     required this.reference,
     required this.amountInCents,
+    this.wompiFee,
     this.loanId,
     this.installmentNumber,
   });
@@ -391,6 +395,7 @@ class _WebPaymentViewState extends State<WebPaymentView> {
         reference: widget.reference,
         status: status,
         amountInCents: widget.amountInCents,
+        wompiFee: widget.wompiFee,
         loanId: widget.loanId,
         installmentNumber: widget.installmentNumber,
       );

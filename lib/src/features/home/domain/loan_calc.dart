@@ -239,6 +239,16 @@ double grossUpWompi(double cuotaCredito, WompiFees wompi) {
       (1 - wompi.porcentaje * ivaFactor);
 }
 
+/// Comisión de Wompi (tarifa variable + fija, con IVA) sobre un monto bruto cobrado al
+/// cliente. Se usa para registrar `wompi_fee` en transacciones sin desglose persistido
+/// (suscripciones y cuotas legacy).
+int wompiFeeFromGross(num gross, WompiFees wompi) {
+  if (gross <= 0) return 0;
+  final ivaFactor = 1 + wompi.iva;
+  return (gross * wompi.porcentaje * ivaFactor + wompi.fijo * ivaFactor)
+      .round();
+}
+
 /// Calcula el desglose completo. Redondea a pesos enteros y ajusta las diferencias por
 /// redondeo en la última cuota para que la suma de las cuotas coincida con los totales.
 LoanPricing computeLoanPricing({
