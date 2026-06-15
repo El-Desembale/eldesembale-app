@@ -1,4 +1,5 @@
 class UserEntity {
+  final String id;
   final String name;
   final String lastName;
   final String email;
@@ -10,6 +11,7 @@ class UserEntity {
   final bool isBlockedForNewLoans;
 
   UserEntity({
+    this.id = '',
     required this.email,
     required this.phone,
     required this.name,

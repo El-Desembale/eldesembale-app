@@ -105,7 +105,7 @@ class LoginServiceImpl implements LoginService {
   }) async {
     try {
       final FirebaseFirestore firestore = FirebaseFirestore.instance;
-      await firestore.collection('users').add({
+      final userRef = await firestore.collection('users').add({
         'phone': user,
         'name': name,
         'lastName': lastName,
@@ -130,6 +130,7 @@ class LoginServiceImpl implements LoginService {
       }
 
       final model = UserModel(
+        id: userRef.id,
         email: email,
         phone: user,
         lastName: lastName,
@@ -157,7 +158,8 @@ class LoginServiceImpl implements LoginService {
           .where('password', isEqualTo: password)
           .get();
       if (userQuery.docs.isNotEmpty) {
-        final doc = userQuery.docs.first.data() as Map<String, dynamic>;
+        final userDoc = userQuery.docs.first;
+        final doc = userDoc.data() as Map<String, dynamic>;
         // Try Firebase Auth session for Storage uploads (non-blocking)
         try {
           final auth = FirebaseAuth.instance;
@@ -166,6 +168,7 @@ class LoginServiceImpl implements LoginService {
           }
         } catch (_) {}
         final model = UserModel(
+          id: userDoc.id,
           email: doc['email'] ?? "",
           phone: user,
           lastName: doc['lastName'] ?? "",

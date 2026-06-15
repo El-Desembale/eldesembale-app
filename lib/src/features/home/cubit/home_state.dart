@@ -12,6 +12,13 @@ class HomeState {
   final LoanInformationEntity loanInformation;
   final int subscriptionAmount;
   final LoanInformationEntity? reusableLoanInformation;
+  final String transferBankName;
+  final String transferAccountType;
+  final String transferAccountNumber;
+  final String transferKey;
+  final String transferAccountHolder;
+  final String transferAccountDocument;
+  final String transferNotes;
   List<LoanRequestEntity> loans;
   // Perfil de riesgo del usuario
   final String riskProfile;
@@ -26,6 +33,13 @@ class HomeState {
     required this.loans,
     this.subscriptionAmount = 22000,
     this.reusableLoanInformation,
+    this.transferBankName = '',
+    this.transferAccountType = '',
+    this.transferAccountNumber = '',
+    this.transferKey = '',
+    this.transferAccountHolder = '',
+    this.transferAccountDocument = '',
+    this.transferNotes = '',
     this.isLoading = false,
     this.error,
     this.riskProfile = 'NEW',
@@ -44,6 +58,13 @@ class HomeState {
     List<LoanRequestEntity>? loans,
     int? subscriptionAmount,
     Object? reusableLoanInformation = _homeStateNoChange,
+    String? transferBankName,
+    String? transferAccountType,
+    String? transferAccountNumber,
+    String? transferKey,
+    String? transferAccountHolder,
+    String? transferAccountDocument,
+    String? transferNotes,
     String? riskProfile,
     int? maxLoanAmount,
     bool? isBlockedForNewLoans,
@@ -61,6 +82,16 @@ class HomeState {
       reusableLoanInformation: reusableLoanInformation == _homeStateNoChange
           ? this.reusableLoanInformation
           : reusableLoanInformation as LoanInformationEntity?,
+      transferBankName: transferBankName ?? this.transferBankName,
+      transferAccountType: transferAccountType ?? this.transferAccountType,
+      transferAccountNumber:
+          transferAccountNumber ?? this.transferAccountNumber,
+      transferKey: transferKey ?? this.transferKey,
+      transferAccountHolder:
+          transferAccountHolder ?? this.transferAccountHolder,
+      transferAccountDocument:
+          transferAccountDocument ?? this.transferAccountDocument,
+      transferNotes: transferNotes ?? this.transferNotes,
       riskProfile: riskProfile ?? this.riskProfile,
       maxLoanAmount: maxLoanAmount ?? this.maxLoanAmount,
       isBlockedForNewLoans: isBlockedForNewLoans ?? this.isBlockedForNewLoans,

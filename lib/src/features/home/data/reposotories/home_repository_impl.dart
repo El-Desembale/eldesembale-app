@@ -130,8 +130,13 @@ class HomeRepositoryImpl implements HomeRepository {
     required String userPhone,
     required String userEmail,
     required String userName,
+    String source = 'wompi',
     String? loanId,
     int? installmentNumber,
+    int? installmentsToPay,
+    String? proofUrl,
+    String? proofName,
+    String? proofContentType,
   }) async {
     try {
       return Right(
@@ -145,8 +150,13 @@ class HomeRepositoryImpl implements HomeRepository {
           userPhone: userPhone,
           userEmail: userEmail,
           userName: userName,
+          source: source,
           loanId: loanId,
           installmentNumber: installmentNumber,
+          installmentsToPay: installmentsToPay,
+          proofUrl: proofUrl,
+          proofName: proofName,
+          proofContentType: proofContentType,
         ),
       );
     } catch (e) {

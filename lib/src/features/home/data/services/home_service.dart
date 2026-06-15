@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../domain/loan_calc.dart';
@@ -42,8 +43,13 @@ abstract class HomeService {
     required String userPhone,
     required String userEmail,
     required String userName,
+    String source = 'wompi',
     String? loanId,
     int? installmentNumber,
+    int? installmentsToPay,
+    String? proofUrl,
+    String? proofName,
+    String? proofContentType,
   });
 }
 
@@ -52,6 +58,41 @@ class HomeServiceImpl implements HomeService {
   HomeServiceImpl(
     this._database,
   );
+
+  String get _adminAppUrl {
+    final configured = dotenv.env['ADMIN_APP_URL']?.trim() ?? '';
+    if (configured.isNotEmpty) {
+      return configured;
+    }
+    return 'https://eldesembale-admin.vercel.app';
+  }
+
+  Future<bool> _isUserSubscribed({
+    required String phone,
+    String? email,
+  }) async {
+    final matched = <String, QueryDocumentSnapshot<Map<String, dynamic>>>{};
+    final normalizedPhone = phone.replaceAll(' ', '');
+    final fullPhone = '+57$normalizedPhone';
+
+    Future<void> collect(String field, String value) async {
+      if (value.isEmpty) return;
+      final snap = await _database.collection('users').where(field, isEqualTo: value).get();
+      for (final doc in snap.docs) {
+        matched[doc.id] = doc;
+      }
+    }
+
+    await collect('phone', phone);
+    await collect('phone', normalizedPhone);
+    await collect('phone', fullPhone);
+    if ((email ?? '').isNotEmpty) {
+      await collect('email', email!.trim().toLowerCase());
+      await collect('email', email.trim());
+    }
+
+    return matched.values.any((doc) => doc.data()['isSubscribed'] == true);
+  }
 
   @override
   Future<LimitModel> getLimits() async {
@@ -171,6 +212,10 @@ class HomeServiceImpl implements HomeService {
     String? clientName,
   }) async {
     try {
+      final subscribed = await _isUserSubscribed(phone: phone);
+      if (!subscribed) {
+        throw Exception('SUBSCRIPTION_REQUIRED');
+      }
       final ccFrontalPicture = loan.ccFrontalPicture.path.isNotEmpty
           ? await uploadImage(loan.ccFrontalPicture, 'cc_frontal_picture')
           : loan.existingCcFrontalPictureUrl;
@@ -222,7 +267,7 @@ class HomeServiceImpl implements HomeService {
       // Notificar al admin por WhatsApp
       try {
         await Dio().post(
-          'https://eldesembale-admin.vercel.app/api/notify-new-loan',
+          '$_adminAppUrl/api/notify-new-loan',
           data: {
             'loanId': generatedId,
             'amount': totalLoanAmount,
@@ -324,8 +369,13 @@ class HomeServiceImpl implements HomeService {
     required String userPhone,
     required String userEmail,
     required String userName,
+    String source = 'wompi',
     String? loanId,
     int? installmentNumber,
+    int? installmentsToPay,
+    String? proofUrl,
+    String? proofName,
+    String? proofContentType,
   }) async {
     try {
       // Campos financieros estándar: bruto pagado, comisión Wompi y neto recibido.
@@ -335,6 +385,7 @@ class HomeServiceImpl implements HomeService {
         'id': transactionId,
         'reference': reference,
         'type': type,
+        'source': source,
         'status': status,
         'amount': grossAmount,
         'amount_in_cents': amountInCents,
@@ -347,13 +398,33 @@ class HomeServiceImpl implements HomeService {
         'user_name': userName,
         'loan_id': loanId,
         'installment_number': installmentNumber,
+        'installments_to_pay': installmentsToPay,
+        'proof_url': proofUrl,
+        'proof_name': proofName,
+        'proof_content_type': proofContentType,
         'created_at': DateTime.now(),
+        'updated_at': DateTime.now(),
       });
       return true;
     } catch (e) {
       debugPrint('Error saving payment record: $e');
       return false;
     }
+  }
+}
+
+Future<String> uploadPaymentProof(File file, String prefix) async {
+  try {
+    final extension = file.path.split('.').last.toLowerCase();
+    final reference = FirebaseStorage.instance.ref().child(
+      'payment_proofs/${DateTime.now().millisecondsSinceEpoch}_$prefix.$extension',
+    );
+    final uploadTask = reference.putFile(file);
+    await uploadTask;
+    return await reference.getDownloadURL();
+  } catch (e) {
+    debugPrint('Error uploading payment proof: $e');
+    return '';
   }
 }
 

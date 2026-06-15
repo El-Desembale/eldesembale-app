@@ -1,6 +1,7 @@
 import 'package:desembale/src/config/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import 'design_tokens.dart';
 
@@ -316,6 +317,102 @@ class ModalbottomsheetUtils {
                     ],
                   ),
                 ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  static Future<void> subscriptionApprovedSheet(
+    BuildContext context, {
+    required double selectedAmount,
+    required VoidCallback onContinueLoan,
+    required VoidCallback onGoHome,
+  }) {
+    final amountLabel =
+        NumberFormat.currency(locale: 'es_CO', symbol: '\$', decimalDigits: 0)
+            .format(selectedAmount);
+
+    return showModalBottomSheet(
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: _bg,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: _green.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: const Icon(
+                  Icons.verified_rounded,
+                  color: _green,
+                  size: 40,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                '¡Felicitaciones!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: kTextPrimary,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'El pago de tu suscripción ha sido aprobado.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: kTextPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Tu solicitud por $amountLabel sigue lista para continuar. Puedes retomarla ahora o volver al inicio.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: kTextSecondary,
+                  fontSize: 14,
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: 28),
+              _primaryButton(
+                label: 'Continuar solicitud',
+                icon: Icons.arrow_forward_rounded,
+                color: _green,
+                textColor: Colors.black,
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  onContinueLoan();
+                },
+              ),
+              const SizedBox(height: 12),
+              _primaryButton(
+                label: 'Volver al home',
+                icon: Icons.home_rounded,
+                color: Colors.white.withOpacity(0.08),
+                textColor: Colors.white,
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  onGoHome();
+                },
               ),
             ],
           ),

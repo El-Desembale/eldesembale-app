@@ -106,6 +106,17 @@ class HomeCubit extends Cubit<HomeState> {
           'subscriptionAmount': _parseSubscriptionAmount(
             data['subscriptionAmount'],
           ),
+          'transferBankName': (data['transferBankName'] ?? '').toString(),
+          'transferAccountType':
+              (data['transferAccountType'] ?? '').toString(),
+          'transferAccountNumber':
+              (data['transferAccountNumber'] ?? '').toString(),
+          'transferKey': (data['transferKey'] ?? '').toString(),
+          'transferAccountHolder':
+              (data['transferAccountHolder'] ?? '').toString(),
+          'transferAccountDocument':
+              (data['transferAccountDocument'] ?? '').toString(),
+          'transferNotes': (data['transferNotes'] ?? '').toString(),
         };
       }
     } catch (_) {}
@@ -113,6 +124,13 @@ class HomeCubit extends Cubit<HomeState> {
       'publicKey': '',
       'integrityKey': '',
       'subscriptionAmount': 22000,
+      'transferBankName': '',
+      'transferAccountType': '',
+      'transferAccountNumber': '',
+      'transferKey': '',
+      'transferAccountHolder': '',
+      'transferAccountDocument': '',
+      'transferNotes': '',
     };
   }
 
@@ -121,6 +139,13 @@ class HomeCubit extends Cubit<HomeState> {
     emit(
       state.copyWith(
         subscriptionAmount: wompi['subscriptionAmount'] as int,
+        transferBankName: wompi['transferBankName'] as String,
+        transferAccountType: wompi['transferAccountType'] as String,
+        transferAccountNumber: wompi['transferAccountNumber'] as String,
+        transferKey: wompi['transferKey'] as String,
+        transferAccountHolder: wompi['transferAccountHolder'] as String,
+        transferAccountDocument: wompi['transferAccountDocument'] as String,
+        transferNotes: wompi['transferNotes'] as String,
       ),
     );
   }
@@ -550,6 +575,25 @@ class HomeCubit extends Cubit<HomeState> {
   Future<void> submitLoan(BuildContext context) async {
     // Recalcula riesgo/cupo fresco antes de validar
     await _refreshUserRiskAndCap();
+    final auth = sl<AuthCubit>(instanceName: 'auth');
+    final authUser = auth.state.user;
+
+    final freshSubscription =
+        await _fetchSubscriptionStatus(authUser.phone, authUser.email);
+    if (freshSubscription != authUser.isSubscribed) {
+      await auth.login(
+        user: authUser.copyWith(isSubscribed: freshSubscription),
+      );
+    }
+
+    if (!freshSubscription) {
+      ModalbottomsheetUtils.customError(
+        context,
+        'Suscripción requerida',
+        'Debes tener una suscripción activa para enviar la solicitud.',
+      );
+      return;
+    }
 
     // Bloqueo por mora grave
     if (state.isBlockedForNewLoans) {
@@ -584,7 +628,6 @@ class HomeCubit extends Cubit<HomeState> {
       return;
     }
     isLoading(true);
-    final authUser = sl<AuthCubit>(instanceName: 'auth').state.user;
     final response = await _createLoanUseCase.call(
       interest: state.limits.interest,
       loan: state.loanInformation,
@@ -596,7 +639,19 @@ class HomeCubit extends Cubit<HomeState> {
     );
 
     response.fold(
-      (error) => setError(error.toString()),
+      (error) {
+        final message = error.code.contains('SUBSCRIPTION_REQUIRED')
+            ? 'Debes tener una suscripción activa para enviar la solicitud.'
+            : error.toString();
+        setError(message);
+        if (context.mounted) {
+          ModalbottomsheetUtils.customError(
+            context,
+            'Solicitud no disponible',
+            message,
+          );
+        }
+      },
       (limits) {
         emit(
           state.copyWith(
@@ -612,6 +667,44 @@ class HomeCubit extends Cubit<HomeState> {
       },
     );
     isLoading(false);
+  }
+
+  Future<bool> _fetchSubscriptionStatus(String phone, String email) async {
+    final matched = <String, Map<String, dynamic>>{};
+    final authUser = sl<AuthCubit>(instanceName: 'auth').state.user;
+    if (authUser.id.isNotEmpty) {
+      final directDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(authUser.id)
+          .get();
+      if (directDoc.exists) {
+        matched[directDoc.id] = directDoc.data()!;
+      }
+    }
+    final normalizedPhone = phone.replaceAll(' ', '');
+    final fullPhone = '+57$normalizedPhone';
+    final normalizedEmail = email.trim().toLowerCase();
+
+    Future<void> addMatches(String field, String value) async {
+      if (value.isEmpty) return;
+      final snap = await FirebaseFirestore.instance
+          .collection('users')
+          .where(field, isEqualTo: value)
+          .get();
+      for (final doc in snap.docs) {
+        matched[doc.id] = doc.data();
+      }
+    }
+
+    await addMatches('phone', phone);
+    await addMatches('phone', normalizedPhone);
+    await addMatches('phone', fullPhone);
+    await addMatches('email', email);
+    if (normalizedEmail != email) {
+      await addMatches('email', normalizedEmail);
+    }
+
+    return matched.values.any((data) => data['isSubscribed'] == true);
   }
 
   void updateLoan(int loanIndex, {int installmentsToPay = 1}) {
@@ -662,12 +755,21 @@ class HomeCubit extends Cubit<HomeState> {
     required String status,
     required int amountInCents,
     int? wompiFee,
+    String source = 'wompi',
+    String? paymentType,
     String? loanId,
     int? installmentNumber,
+    int? installmentsToPay,
+    String? proofUrl,
+    String? proofName,
+    String? proofContentType,
   }) async {
     final user = sl<AuthCubit>(instanceName: 'auth').state.user;
-    final type =
-        reference.startsWith('subscription') ? 'subscription' : 'installment';
+    final normalizedReference = reference.toLowerCase();
+    final type = paymentType ??
+        (normalizedReference.contains('subscription')
+            ? 'subscription'
+            : 'installment');
     // Comisión Wompi: exacta si viene del desglose del crédito; estimada con las
     // tarifas vigentes para suscripciones y créditos legacy.
     final fee = wompiFee ??
@@ -682,8 +784,13 @@ class HomeCubit extends Cubit<HomeState> {
       userPhone: user.phone,
       userEmail: user.email,
       userName: '${user.name} ${user.lastName}'.trim(),
+      source: source,
       loanId: loanId,
       installmentNumber: installmentNumber,
+      installmentsToPay: installmentsToPay,
+      proofUrl: proofUrl,
+      proofName: proofName,
+      proofContentType: proofContentType,
     );
   }
 

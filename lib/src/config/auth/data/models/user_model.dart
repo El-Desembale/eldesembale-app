@@ -2,6 +2,7 @@ import '../../domain/entities/user_entity.dart';
 
 class UserModel extends UserEntity {
   UserModel({
+    super.id,
     required super.email,
     required super.phone,
     required super.name,
@@ -16,9 +17,11 @@ class UserModel extends UserEntity {
         lastName: "",
         phone: "",
         email: "",
+        id: '',
         isSubscribed: false,
       );
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
+        id: json["id"] ?? '',
         email: json["email"],
         phone: json["phone"],
         name: json["name"],
@@ -31,6 +34,7 @@ class UserModel extends UserEntity {
 
   Map<String, dynamic> toJson() => {
         "email": email,
+        "id": id,
         "phone": phone,
         "name": name,
         "last_name": lastName,
@@ -42,6 +46,7 @@ class UserModel extends UserEntity {
 
   UserModel copyWith({
     String? email,
+    String? id,
     String? phone,
     String? name,
     String? lastName,
@@ -52,6 +57,7 @@ class UserModel extends UserEntity {
   }) {
     return UserModel(
       email: email ?? this.email,
+      id: id ?? this.id,
       phone: phone ?? this.phone,
       name: name ?? this.name,
       lastName: lastName ?? this.lastName,

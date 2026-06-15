@@ -1,16 +1,19 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../config/auth/cubit/auth_cubit.dart';
 import '../../../../config/routes/routes.dart';
+import '../../../../core/di/injection_dependency.dart';
 import '../../../../utils/design_tokens.dart';
-import '../../../../utils/utils.dart';
 import '../../cubit/home_cubit.dart';
+import 'subscription_screen.dart';
 import '../../../shared/widgets/back_circle_button.dart';
 import '../../../shared/widgets/primary_action_button.dart';
 
-class LoanInformationScreen extends StatelessWidget {
+class LoanInformationScreen extends StatefulWidget {
   final HomeCubit homeCubit;
   const LoanInformationScreen({
     super.key,
@@ -18,9 +21,98 @@ class LoanInformationScreen extends StatelessWidget {
   });
 
   @override
+  State<LoanInformationScreen> createState() => _LoanInformationScreenState();
+}
+
+class _LoanInformationScreenState extends State<LoanInformationScreen> {
+  bool _checkingSubscription = true;
+  bool _isSubscribed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _ensureSubscribed();
+  }
+
+  Future<void> _ensureSubscribed() async {
+    final auth = sl<AuthCubit>(instanceName: 'auth');
+    final user = auth.state.user;
+    final isSubscribed = await _fetchSubscriptionStatus(user.id, user.phone, user.email);
+    if (!mounted) return;
+
+    if (isSubscribed != user.isSubscribed) {
+      await auth.login(user: user.copyWith(isSubscribed: isSubscribed));
+    }
+    if (!mounted) return;
+
+    setState(() {
+      _isSubscribed = isSubscribed;
+      _checkingSubscription = false;
+    });
+  }
+
+  Future<bool> _fetchSubscriptionStatus(
+    String userId,
+    String phone,
+    String email,
+  ) async {
+    final matched = <String, Map<String, dynamic>>{};
+    if (userId.isNotEmpty) {
+      final directDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+      if (directDoc.exists) {
+        matched[directDoc.id] = directDoc.data()!;
+      }
+    }
+
+    final normalizedPhone = phone.replaceAll(' ', '');
+    final fullPhone = '+57$normalizedPhone';
+    final normalizedEmail = email.trim().toLowerCase();
+
+    Future<void> collect(String field, String value) async {
+      if (value.isEmpty) return;
+      final snap = await FirebaseFirestore.instance
+          .collection('users')
+          .where(field, isEqualTo: value)
+          .get();
+      for (final doc in snap.docs) {
+        matched[doc.id] = doc.data();
+      }
+    }
+
+    await collect('phone', phone);
+    await collect('phone', normalizedPhone);
+    await collect('phone', fullPhone);
+    await collect('email', email);
+    if (normalizedEmail != email) {
+      await collect('email', normalizedEmail);
+    }
+
+    return matched.values.any((data) => data['isSubscribed'] == true);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_checkingSubscription) {
+      return const Scaffold(
+        backgroundColor: kBgScreen,
+        body: Center(
+          child: CircularProgressIndicator(color: kPrimaryGreen),
+        ),
+      );
+    }
+
+    if (!_isSubscribed) {
+      return SubscriptionScreen(
+        homeCubit: widget.homeCubit,
+        afterSuccessRoute: AppRoutes.loanInformation,
+      );
+    }
+
     return BlocBuilder<HomeCubit, HomeState>(
-      bloc: homeCubit,
+      bloc: widget.homeCubit,
       builder: (BuildContext context, HomeState state) {
         return Scaffold(
           drawerEnableOpenDragGesture: false,
@@ -95,12 +187,10 @@ class LoanInformationScreen extends StatelessWidget {
     if (!context.mounted) return;
 
     if (useSameData == true) {
-      // Reutiliza todos los datos y salta directo a la confirmación
-      homeCubit.useReusableLoanInformation();
+      widget.homeCubit.useReusableLoanInformation();
       context.push(AppRoutes.loanConfirm);
     } else if (useSameData == false) {
-      // Datos cambiaron: limpia y muestra el checklist para volver a llenar
-      homeCubit.resetLoanInformation();
+      widget.homeCubit.resetLoanInformation();
       context.push(AppRoutes.loanDataCollect);
     }
   }
@@ -139,209 +229,189 @@ class LoanInformationScreen extends StatelessWidget {
                 border: Border.all(color: kBorderFaint),
               ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const Text(
+                    'Tu préstamo',
+                    style: TextStyle(
+                      color: kTextSecondary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '\$${NumberFormat('#,##0', 'en_US').format(state.totalLoanAmount.toInt())}',
+                    style: const TextStyle(
+                      color: kTextPrimary,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Total Prestado',
-                        style: TextStyle(
-                          color: kTextSecondary,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      _InfoChip(
+                        label: '${state.selectedInstallments} cuotas',
+                        icon: Icons.calendar_month_outlined,
                       ),
-                      GestureDetector(
-                        onTap: () => context.go(AppRoutes.home),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: kPrimaryGreenSoft,
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: const Text(
-                            'Cambiar',
-                            style: TextStyle(
-                              color: kPrimaryGreen,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
+                      const SizedBox(width: 10),
+                      _InfoChip(
+                        label: state.paymentPeriod,
+                        icon: Icons.schedule_outlined,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      NumberFormat("#,##0", "en_US")
-                          .format(state.totalLoanAmount),
-                      style: const TextStyle(
-                        color: kTextPrimary,
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              width: double.infinity,
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color: kSurfaceSoft,
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: kBorderFaint),
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      children: [
-                        const Text(
-                          "Periodo Pago",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: kTextSecondary,
-                            fontSize: 12,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          state.paymentPeriod,
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: kTextPrimary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+                  const Text(
+                    'Antes de continuar',
+                    style: TextStyle(
+                      color: kTextPrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  Container(width: 1, height: 54, color: kBorderFaint),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        const Text(
-                          "Número Cuotas",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: kTextSecondary,
-                            fontSize: 12,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          "${state.selectedInstallments}",
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: kTextPrimary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
+                  const SizedBox(height: 12),
+                  _ChecklistRow(
+                    title: 'Documentos al día',
+                    subtitle: 'Cédula, selfie y comprobante de ingresos',
+                    done: state.loanInformation.ccFrontalPicture.path.isNotEmpty ||
+                        state.loanInformation.existingCcFrontalPictureUrl.isNotEmpty,
+                  ),
+                  const SizedBox(height: 10),
+                  _ChecklistRow(
+                    title: 'Referencias personales',
+                    subtitle: 'Dos contactos que te conozcan bien',
+                    done: state.loanInformation.firstReference.name.isNotEmpty &&
+                        state.loanInformation.secondReference.name.isNotEmpty,
+                  ),
+                  const SizedBox(height: 10),
+                  _ChecklistRow(
+                    title: 'Cuenta bancaria',
+                    subtitle: 'Para recibir el desembolso si se aprueba',
+                    done: state.loanInformation.bankInformation.bankName.isNotEmpty,
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-            const Text(
-              'Fechas de Pago',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: kTextPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Expanded(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                decoration: BoxDecoration(
-                  color: kSurfaceSoft,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: kBorderFaint),
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    children:
-                        List.generate(state.selectedInstallments, (index) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: index == state.selectedInstallments - 1
-                                  ? Colors.transparent
-                                  : kBorderFaint,
-                            ),
-                          ),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                DateFormat('d MMMM, yyyy', 'es')
-                                    .format(Utils.calculateInstallmentDate(
-                                  installmentIndex: index,
-                                  paymentPeriod: state.paymentPeriod,
-                                )),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: kTextPrimary,
-                                  fontSize: 14,
-                                  height: 1.35,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Flexible(
-                              child: Text(
-                                NumberFormat("#,##0", "en_US").format(
-                                  Utils.getTotalAmount(
-                                    state.totalLoanAmount,
-                                    state.selectedInstallments,
-                                    state.limits.interest,
-                                    state.paymentPeriod,
-                                  ),
-                                ),
-                                textAlign: TextAlign.right,
-                                style: const TextStyle(
-                                  color: kPrimaryGreen,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
+            const Spacer(),
             PrimaryActionButton(
-              label: 'Hacer la solicitud',
+              label: 'Continuar',
               margin: EdgeInsets.zero,
               onTap: () => _handleContinue(context, state),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _InfoChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+
+  const _InfoChip({
+    required this.label,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: kBgScreenAlt,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kBorderFaint),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: kPrimaryGreen, size: 18),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              color: kTextPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChecklistRow extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final bool done;
+
+  const _ChecklistRow({
+    required this.title,
+    required this.subtitle,
+    required this.done,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: done ? kPrimaryGreenSoft : kBgScreenAlt,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            done ? Icons.check_circle_outline : Icons.radio_button_unchecked,
+            color: done ? kPrimaryGreen : kTextSecondary,
+            size: 20,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: kTextPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: kTextSecondary,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

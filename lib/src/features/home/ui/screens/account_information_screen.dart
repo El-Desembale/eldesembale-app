@@ -45,6 +45,7 @@ class _AccountInformationScreenState extends State<AccountInformationScreen> {
       if (snap.docs.isNotEmpty) {
         final data = snap.docs.first.data();
         final fresh = UserModel(
+          id: snap.docs.first.id,
           email: data['email'] ?? _user.email,
           phone: phone,
           name: data['name'] ?? _user.name,

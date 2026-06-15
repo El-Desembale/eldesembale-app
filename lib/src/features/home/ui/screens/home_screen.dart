@@ -564,22 +564,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _goToLoanOrSubscription(BuildContext context) async {
-    // Refresca isSubscribed desde Firestore antes de decidir
     final user = sl<AuthCubit>(instanceName: 'auth').state.user;
     bool isSubscribed = user.isSubscribed;
     try {
-      final snap = await FirebaseFirestore.instance
-          .collection('users')
-          .where('phone', isEqualTo: user.phone)
-          .limit(1)
-          .get();
-      if (snap.docs.isNotEmpty) {
-        isSubscribed = snap.docs.first.data()['isSubscribed'] == true;
-        if (isSubscribed != user.isSubscribed) {
-          await sl<AuthCubit>(instanceName: 'auth').login(
-            user: user.copyWith(isSubscribed: isSubscribed),
-          );
-        }
+      isSubscribed = await _fetchSubscriptionStatus(user.phone, user.email);
+      if (isSubscribed != user.isSubscribed) {
+        await sl<AuthCubit>(instanceName: 'auth').login(
+          user: user.copyWith(isSubscribed: isSubscribed),
+        );
       }
     } catch (_) {}
     if (!context.mounted) return;
@@ -594,6 +586,44 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     }
     _refreshData();
+  }
+
+  Future<bool> _fetchSubscriptionStatus(String phone, String email) async {
+    final matched = <String, Map<String, dynamic>>{};
+    final authUser = sl<AuthCubit>(instanceName: 'auth').state.user;
+    if (authUser.id.isNotEmpty) {
+      final directDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(authUser.id)
+          .get();
+      if (directDoc.exists) {
+        matched[directDoc.id] = directDoc.data()!;
+      }
+    }
+    final normalizedPhone = phone.replaceAll(' ', '');
+    final fullPhone = '+57$normalizedPhone';
+    final normalizedEmail = email.trim().toLowerCase();
+
+    Future<void> addMatches(String field, String value) async {
+      if (value.isEmpty) return;
+      final snap = await FirebaseFirestore.instance
+          .collection('users')
+          .where(field, isEqualTo: value)
+          .get();
+      for (final doc in snap.docs) {
+        matched[doc.id] = doc.data();
+      }
+    }
+
+    await addMatches('phone', phone);
+    await addMatches('phone', normalizedPhone);
+    await addMatches('phone', fullPhone);
+    await addMatches('email', email);
+    if (normalizedEmail != email) {
+      await addMatches('email', normalizedEmail);
+    }
+
+    return matched.values.any((data) => data['isSubscribed'] == true);
   }
 
   Widget _buildNewRequestButton(BuildContext context) {

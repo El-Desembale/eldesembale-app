@@ -37,7 +37,12 @@ abstract class HomeRepository {
     required String userPhone,
     required String userEmail,
     required String userName,
+    String source = 'wompi',
     String? loanId,
     int? installmentNumber,
+    int? installmentsToPay,
+    String? proofUrl,
+    String? proofName,
+    String? proofContentType,
   });
 }
