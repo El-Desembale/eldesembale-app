@@ -119,9 +119,15 @@ class LoanConfirmScreen extends StatelessWidget {
                               Container(width: 1, height: 28, color: kBorderFaint),
                               _miniStat('Cuotas', '${state.selectedInstallments}'),
                               Container(width: 1, height: 28, color: kBorderFaint),
-                              _miniStat('Interés', _fmtInterest(state.limits.interest)),
+                              _miniStat('Costo mensual', _fmtInterest(state.limits.interest)),
                             ],
                           ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'El costo mensual total se distribuye entre interés, plataforma y firma electrónica.',
+                          style: TextStyle(color: kTextSecondary, fontSize: 11),
+                          textAlign: TextAlign.center,
                         ),
                       ],
                     ),
@@ -266,7 +272,7 @@ class LoanConfirmScreen extends StatelessWidget {
   }
 
   static String _fmtInterest(double multiplier) {
-    // interest se guarda como multiplicador (1.1 = 10% de interés)
+    // interest se guarda como multiplicador (1.15 = 15% de costo mensual total)
     final pct = (multiplier - 1) * 100;
     return pct % 1 == 0 ? '${pct.toInt()}%' : '${pct.toStringAsFixed(1)}%';
   }

@@ -1,7 +1,7 @@
 // Motor de cálculo de créditos y cuotas (espejo de loan-calc.ts de web/admin).
 //
-// El costo del crédito es 10% mensual sobre el capital inicial (no sobre saldo) por los meses
-// de plazo, dividido en interés / plataforma / administrativo. Sobre cada cuota se aplica el
+// El costo del crédito es 15% mensual sobre el capital inicial (no sobre saldo) por los meses
+// de plazo, dividido en interés / plataforma / firma electrónica. Sobre cada cuota se aplica el
 // gross-up de Wompi para que la empresa reciba la cuota completa; el cliente no ve Wompi como
 // concepto: queda absorbido dentro de "Plataforma". Se calcula una sola vez al crear el crédito.
 
@@ -39,7 +39,7 @@ class LoanPricingConfig {
 }
 
 const LoanPricingConfig kDefaultPricingConfig = LoanPricingConfig(
-  interesMensual: 0.10,
+  interesMensual: 0.15,
   split: PricingSplit(interes: 0.5, plataforma: 0.3, administrativo: 0.2),
   wompi: WompiFees(porcentaje: 0.0265, fijo: 700, iva: 0.19),
 );
@@ -191,7 +191,7 @@ class LoanPricing {
       numeroCuotas: _int(m['numero_cuotas']),
       mesesPlazo: _dbl(m['meses_plazo'], 0),
       paymentPeriod: (m['payment_period'] as String?) ?? 'Mensual',
-      interesMensual: _dbl(m['interes_mensual'], 0.10),
+      interesMensual: _dbl(m['interes_mensual'], 0.15),
       split: PricingSplit(
         interes: _dbl(split['interes'], 0.5),
         plataforma: _dbl(split['plataforma'], 0.3),

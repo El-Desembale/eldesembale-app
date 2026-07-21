@@ -881,7 +881,7 @@ class _ProofOptionButton extends StatelessWidget {
 }
 
 /// Desglose del crédito para el cliente: Capital e Intereses como un único concepto
-/// (incluye plataforma, administrativo y procesamiento del pago de forma transparente).
+/// (incluye plataforma, firma electrónica y procesamiento del pago de forma transparente).
 /// El detalle discriminado es exclusivo del admin.
 class _DesgloseCard extends StatelessWidget {
   final LoanPricing pricing;

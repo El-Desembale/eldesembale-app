@@ -17,30 +17,30 @@ void main() {
       expect(mesesPlazo(2, 'Mensual'), 2);
     });
 
-    test('costo total = 200.000 y split 100k/60k/40k', () {
-      expect(p.costoTotalCredito, 200000);
-      expect(p.interesTotal, 100000);
-      expect(p.plataformaTotal, 60000);
-      expect(p.administrativoTotal, 40000);
-      expect(p.totalCreditoSinWompi, 1200000);
+    test('costo total = 300.000 y split 150k/90k/60k', () {
+      expect(p.costoTotalCredito, 300000);
+      expect(p.interesTotal, 150000);
+      expect(p.plataformaTotal, 90000);
+      expect(p.administrativoTotal, 60000);
+      expect(p.totalCreditoSinWompi, 1300000);
     });
 
-    test('4 cuotas, cada cuotaCredito = 300.000', () {
+    test('4 cuotas, cada cuotaCredito = 325.000', () {
       expect(p.installments.length, 4);
       for (final c in p.installments) {
         expect(c.capital, 250000);
-        expect(c.interes, 25000);
-        expect(c.plataforma, 15000);
-        expect(c.administrativo, 10000);
-        expect(c.costosCredito, 50000);
-        expect(c.cuotaCredito, 300000);
+        expect(c.interes, 37500);
+        expect(c.plataforma, 22500);
+        expect(c.administrativo, 15000);
+        expect(c.costosCredito, 75000);
+        expect(c.cuotaCredito, 325000);
       }
     });
 
     test('Wompi gross-up por cuota según fórmula', () {
-      final esperado = grossUpWompi(300000, kDefaultPricingConfig.wompi).round();
+      final esperado = grossUpWompi(325000, kDefaultPricingConfig.wompi).round();
       expect(p.installments[0].totalCliente, esperado);
-      expect(p.installments[0].comisionWompi, esperado - 300000);
+      expect(p.installments[0].comisionWompi, esperado - 325000);
     });
 
     test('plataformaCliente = plataforma + comisionWompi (Wompi absorbido)', () {
@@ -58,7 +58,7 @@ void main() {
       expect(sum((c) => c.administrativo), p.administrativoTotal);
       expect(sum((c) => c.comisionWompi), p.wompiTotal);
       expect(sum((c) => c.totalCliente), p.totalCliente);
-      expect(p.totalCliente, p.capital + 200000 + p.wompiTotal);
+      expect(p.totalCliente, p.capital + 300000 + p.wompiTotal);
     });
 
     test('redondeo con capital no divisible: cuadra al peso', () {

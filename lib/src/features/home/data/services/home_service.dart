@@ -149,7 +149,7 @@ class HomeServiceImpl implements HomeService {
         maxInstallments: 8,
         minInstallments: 2,
         selectedSegment: 25,
-        interest: 10.0,
+        interest: 1.15,
         budgetAvailable: budgetAvailable,
       );
     }
@@ -238,7 +238,7 @@ class HomeServiceImpl implements HomeService {
 
       String generatedId = uuid.v4();
 
-      // Desglose del crédito (capital + interés/plataforma/administrativo + Wompi por cuota),
+      // Desglose del crédito (capital + interés/plataforma/firma electrónica + Wompi por cuota),
       // calculado y guardado al crear (snapshot de tarifas) para no recalcular histórico.
       final createdAt = DateTime.now();
       final pricingConfig = await _getPricingConfig();
