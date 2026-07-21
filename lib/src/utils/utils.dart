@@ -24,20 +24,14 @@ class Utils {
     DateTime? baseDate,
   }) {
     final base = baseDate ?? DateTime.now();
-    DateTime firstPaymentDate = DateTime(
-      base.year,
-      base.month + 1,
-      base.day,
-    );
-
     if (paymentPeriod == 'Mensual') {
       return DateTime(
-        firstPaymentDate.year,
-        firstPaymentDate.month + installmentIndex,
-        firstPaymentDate.day,
+        base.year,
+        base.month + 1 + installmentIndex,
+        base.day,
       );
     } else {
-      return firstPaymentDate.add(Duration(days: 15 * installmentIndex));
+      return base.add(Duration(days: 15 * (installmentIndex + 1)));
     }
   }
 

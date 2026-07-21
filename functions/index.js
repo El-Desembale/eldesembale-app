@@ -876,6 +876,50 @@ exports.recalcRiskOnPaymentChange = functions.firestore
     return null;
   });
 
+// La confirmación visual del cliente no puede ser la responsable de aplicar una
+// cuota: puede cerrar la app después de que Wompi apruebe. Este trigger enlaza el
+// documento APPROVED con el préstamo de forma idempotente.
+exports.applyApprovedInstallmentPayment = functions.firestore
+  .document("payments/{paymentId}")
+  .onWrite(async (change) => {
+    if (!change.after.exists) return null;
+    const payment = change.after.data();
+    if (payment.status !== "APPROVED" || payment.type !== "installment" ||
+        !payment.loan_id || payment.accounting_applied === true) return null;
+
+    const db = admin.firestore();
+    const paymentRef = change.after.ref;
+    const loanRef = db.collection("loan_request").doc(payment.loan_id);
+    await db.runTransaction(async (transaction) => {
+      const freshPaymentSnap = await transaction.get(paymentRef);
+      const loanSnap = await transaction.get(loanRef);
+      if (!freshPaymentSnap.exists || !loanSnap.exists) return;
+      const freshPayment = freshPaymentSnap.data();
+      if (freshPayment.accounting_applied === true) return;
+
+      const loan = loanSnap.data();
+      const current = Number(loan.installments_paid || 0);
+      const total = Number(loan.installments || current);
+      const absoluteInstallment = Number(freshPayment.installment_number || 0);
+      const quantity = Math.max(Number(freshPayment.installments_to_pay || 1), 1);
+      const next = Math.min(
+        absoluteInstallment > 0 ? Math.max(current, absoluteInstallment) : current + quantity,
+        total,
+      );
+      if (next > current) {
+        transaction.update(loanRef, {
+          installments_paid: next,
+          updated_at: admin.firestore.Timestamp.now(),
+        });
+      }
+      transaction.update(paymentRef, {
+        accounting_applied: true,
+        accounting_applied_at: admin.firestore.Timestamp.now(),
+      });
+    });
+    return null;
+  });
+
 // Callable para recalcular manualmente (usado por el admin o scripts)
 exports.recalculateUserRisk = functions.https.onCall(async (data) => {
   const phone = data?.phone;

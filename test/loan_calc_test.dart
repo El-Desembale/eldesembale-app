@@ -75,8 +75,8 @@ void main() {
       expect(q.totalCliente, q.capital + q.costoTotalCredito + q.wompiTotal);
     });
 
-    test('fechas: primera a +1 mes, quincenal +15 días', () {
-      expect(p.installments[0].fechaVencimiento.month, 2); // febrero
+    test('fechas: primera quincenal a 15 días', () {
+      expect(p.installments[0].fechaVencimiento, DateTime(2026, 1, 16));
       final d0 = p.installments[0].fechaVencimiento;
       final d1 = p.installments[1].fechaVencimiento;
       expect(d1.difference(d0).inDays, 15);

@@ -9,7 +9,6 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../../../config/routes/routes.dart';
 import '../../../../utils/design_tokens.dart';
-import '../../../../utils/utils.dart';
 import '../../cubit/home_cubit.dart';
 import '../../data/services/home_service.dart';
 import '../../domain/loan_calc.dart';
@@ -325,17 +324,12 @@ class _LoanInfoDetailScreenState extends State<LoanInfoDetailScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       itemCount: loan.installments,
                       itemBuilder: (context, index) {
-                        // Fecha y monto desde el desglose persistido (si existe); si no, legacy.
-                        final cuota = (loan.pricing != null &&
-                                index < loan.pricing!.installments.length)
-                            ? loan.pricing!.installments[index]
-                            : null;
-                        final dueDate = cuota?.fechaVencimiento ??
-                            Utils.calculateInstallmentDate(
-                              installmentIndex: index,
-                              paymentPeriod: loan.paymentPeriod,
-                              baseDate: loan.createdAt.toDate(),
-                            );
+                        // El cronograma siempre parte del desembolso real.
+                        final dueDate = installmentDueDate(
+                          loan.disbursedAt?.toDate() ?? loan.createdAt.toDate(),
+                          index,
+                          loan.paymentPeriod,
+                        );
                         final cuotaMonto = loan.cuotaAmount(index);
                         final isPaid = index < loan.installmentsPaid;
                         final isPending = !isPaid;
@@ -524,6 +518,7 @@ class _LoanInfoDetailScreenState extends State<LoanInfoDetailScreen> {
                               loanId: loan.id,
                               installmentNumber:
                                   loan.installmentsPaid + selected,
+                              installmentsToPay: selected,
                               onSuccessfulPayment: () async {
                                 final status = await widget.homeCubit
                                     .updateLoanInstallments(

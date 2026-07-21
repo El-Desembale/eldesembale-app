@@ -24,6 +24,7 @@ class WebPaymentView extends StatefulWidget {
   final int? wompiFee;
   final String? loanId;
   final int? installmentNumber;
+  final int? installmentsToPay;
 
   const WebPaymentView({
     super.key,
@@ -35,6 +36,7 @@ class WebPaymentView extends StatefulWidget {
     this.wompiFee,
     this.loanId,
     this.installmentNumber,
+    this.installmentsToPay,
   });
 
   @override
@@ -398,6 +400,7 @@ class _WebPaymentViewState extends State<WebPaymentView> {
         wompiFee: widget.wompiFee,
         loanId: widget.loanId,
         installmentNumber: widget.installmentNumber,
+        installmentsToPay: widget.installmentsToPay,
       );
     } catch (_) {
       // Best-effort, no bloquea el flujo

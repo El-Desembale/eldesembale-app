@@ -6,6 +6,7 @@ class LoanRequestEntity {
   final String id;
   final double amount;
   final Timestamp createdAt;
+  final Timestamp? disbursedAt;
   final int installments;
   final double interest;
   final String paymentPeriod;
@@ -17,6 +18,7 @@ class LoanRequestEntity {
     required this.id,
     required this.amount,
     required this.createdAt,
+    this.disbursedAt,
     required this.installments,
     required this.interest,
     required this.paymentPeriod,
@@ -32,6 +34,9 @@ class LoanRequestEntity {
       amount: (map['amount'] as num?)?.toDouble() ?? 0,
       installmentsPaid: (map['installments_paid'] as num?)?.toInt() ?? 0,
       createdAt: map['created_at'],
+      disbursedAt: map['disbursed_at'] is Timestamp
+          ? map['disbursed_at'] as Timestamp
+          : null,
       installments: (map['installments'] as num?)?.toInt() ?? 0,
       interest: (map['interest'] as num?)?.toDouble() ?? 0,
       paymentPeriod: map['payment_period'],
@@ -46,6 +51,7 @@ class LoanRequestEntity {
     String? id,
     double? amount,
     Timestamp? createdAt,
+    Timestamp? disbursedAt,
     int? installments,
     double? interest,
     String? paymentPeriod,
@@ -58,6 +64,7 @@ class LoanRequestEntity {
       id: id ?? this.id,
       amount: amount ?? this.amount,
       createdAt: createdAt ?? this.createdAt,
+      disbursedAt: disbursedAt ?? this.disbursedAt,
       installments: installments ?? this.installments,
       interest: interest ?? this.interest,
       paymentPeriod: paymentPeriod ?? this.paymentPeriod,

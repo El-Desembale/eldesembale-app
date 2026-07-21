@@ -8,9 +8,9 @@ import 'package:intl/intl.dart';
 import '../../data/entities/loan_request_entity.dart';
 import '../../../../utils/design_tokens.dart';
 import '../../../../utils/images.dart';
-import '../../../../utils/utils.dart';
 import '../../../shared/widgets/back_circle_button.dart';
 import '../../cubit/home_cubit.dart';
+import '../../domain/loan_calc.dart';
 import 'loan_info_detail_screen.dart';
 
 class LoansListScreen extends StatefulWidget {
@@ -382,18 +382,12 @@ class _LoansListScreenState extends State<LoansListScreen> {
                   String? nextDateStr;
                   String? nextAmountStr;
                   if (hasPending) {
-                    // Modelo nuevo: fecha y monto de la próxima cuota desde el desglose.
-                    final nextCuota = (loan.pricing != null &&
-                            loan.installmentsPaid <
-                                loan.pricing!.installments.length)
-                        ? loan.pricing!.installments[loan.installmentsPaid]
-                        : null;
-                    final nextDate = nextCuota?.fechaVencimiento ??
-                        Utils.calculateInstallmentDate(
-                          installmentIndex: loan.installmentsPaid,
-                          paymentPeriod: loan.paymentPeriod,
-                          baseDate: loan.createdAt.toDate(),
-                        );
+                    // El cronograma siempre parte del desembolso real.
+                    final nextDate = installmentDueDate(
+                      loan.disbursedAt?.toDate() ?? loan.createdAt.toDate(),
+                      loan.installmentsPaid,
+                      loan.paymentPeriod,
+                    );
                     final nextAmount = loan.cuotaAmount(loan.installmentsPaid);
                     nextDateStr = DateFormat('d/M/y').format(nextDate);
                     nextAmountStr =

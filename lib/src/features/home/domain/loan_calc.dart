@@ -222,14 +222,13 @@ double mesesPlazo(int numeroCuotas, String paymentPeriod) {
   return paymentPeriod == 'Quincenal' ? numeroCuotas / 2 : numeroCuotas.toDouble();
 }
 
-/// Fecha de vencimiento de la cuota [index] (0-based). La primera vence ~30 días después
-/// (mes siguiente, mismo día); las siguientes son mensuales o quincenales (+15 días).
+/// La primera cuota vence un período después del desembolso: un mes si es
+/// mensual y 15 días si es quincenal.
 DateTime installmentDueDate(DateTime base, int index, String paymentPeriod) {
-  final first = DateTime(base.year, base.month + 1, base.day);
   if (paymentPeriod == 'Mensual') {
-    return DateTime(first.year, first.month + index, first.day);
+    return DateTime(base.year, base.month + 1 + index, base.day);
   }
-  return first.add(Duration(days: 15 * index));
+  return base.add(Duration(days: 15 * (index + 1)));
 }
 
 /// Gross-up de Wompi: total a cobrar al cliente para que la empresa reciba [cuotaCredito].
