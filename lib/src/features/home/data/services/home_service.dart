@@ -216,6 +216,31 @@ class HomeServiceImpl implements HomeService {
       if (!subscribed) {
         throw Exception('SUBSCRIPTION_REQUIRED');
       }
+
+      // Evita solicitudes duplicadas (doble tap, doble poller de estado de pago,
+      // reintentos de red): si ya existe una solicitud pendiente reciente con los
+      // mismos datos para este teléfono, se reutiliza en vez de crear otra.
+      final recentCutoff = DateTime.now().subtract(const Duration(minutes: 5));
+      final existing = await _database
+          .collection('loan_request')
+          .where('phone', isEqualTo: phone)
+          .where('status', isEqualTo: 'pending')
+          .get();
+      for (final doc in existing.docs) {
+        final data = doc.data();
+        final createdAtRaw = data['created_at'];
+        final createdAt = createdAtRaw is Timestamp
+            ? createdAtRaw.toDate()
+            : (createdAtRaw is DateTime ? createdAtRaw : null);
+        if (data['amount'] == totalLoanAmount &&
+            data['installments'] == selectedInstallments &&
+            data['payment_period'] == paymentPeriod &&
+            createdAt != null &&
+            createdAt.isAfter(recentCutoff)) {
+          return true;
+        }
+      }
+
       final ccFrontalPicture = loan.ccFrontalPicture.path.isNotEmpty
           ? await uploadImage(loan.ccFrontalPicture, 'cc_frontal_picture')
           : loan.existingCcFrontalPictureUrl;

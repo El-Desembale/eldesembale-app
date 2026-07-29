@@ -408,11 +408,17 @@ class _LoginScreenState extends State<LoginScreen> {
   String documentNumber = "";
   bool checkboxValue = false;
 
+  static final RegExp _emailRegExp =
+      RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+
+  bool get _isEmailValid =>
+      _emailRegExp.hasMatch(email) && !email.contains('..');
+
   bool get _isFormValid =>
       checkboxValue &&
       name.isNotEmpty &&
       lastName.isNotEmpty &&
-      email.isNotEmpty &&
+      _isEmailValid &&
       documentType.isNotEmpty &&
       documentNumber.isNotEmpty;
 
@@ -460,6 +466,16 @@ class _LoginScreenState extends State<LoginScreen> {
               },
               keyboardType: TextInputType.emailAddress,
             ),
+            if (email.isNotEmpty && !_isEmailValid) ...[
+              const SizedBox(height: 6),
+              const Padding(
+                padding: EdgeInsets.only(left: 4),
+                child: Text(
+                  "Ingresa un correo electrónico válido",
+                  style: TextStyle(color: Colors.redAccent, fontSize: 12),
+                ),
+              ),
+            ],
             const SizedBox(height: 12),
             // Phone (read-only, verified)
             Container(

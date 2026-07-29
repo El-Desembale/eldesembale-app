@@ -382,8 +382,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
                             homeCubit: widget.homeCubit,
                             reference: payment.reference,
                             amountInCents: payment.amountInCents,
-                            onSuccessfulPayment: () async {
+                            onPaymentApproved: () async {
                               await widget.homeCubit.updateUserSubscription();
+                            },
+                            onSuccessfulPayment: () async {
                               if (!context.mounted) return;
 
                               context.pop();

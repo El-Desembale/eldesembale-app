@@ -15,6 +15,16 @@ import '../../../shared/widgets/primary_action_button.dart';
 
 class WebPaymentView extends StatefulWidget {
   final String paymentUrl;
+
+  /// Se ejecuta apenas Wompi confirma el pago (APPROVED), sin esperar
+  /// interacción del usuario. Debe contener solo la persistencia de datos
+  /// (actualizar cuotas/suscripción) para que no se pierda si el usuario
+  /// cierra la app antes de ver la pantalla de confirmación.
+  final Future<void> Function() onPaymentApproved;
+
+  /// Se ejecuta cuando el usuario toca "Entendido" tras ver la confirmación.
+  /// Debe contener solo navegación/UI (los datos ya se guardaron en
+  /// [onPaymentApproved]).
   final Future<void> Function() onSuccessfulPayment;
   final HomeCubit homeCubit;
   final String reference;
@@ -29,6 +39,7 @@ class WebPaymentView extends StatefulWidget {
   const WebPaymentView({
     super.key,
     required this.paymentUrl,
+    required this.onPaymentApproved,
     required this.onSuccessfulPayment,
     required this.homeCubit,
     required this.reference,
@@ -49,7 +60,9 @@ class _WebPaymentViewState extends State<WebPaymentView> {
   bool _showApprovedState = false;
   bool _hasExitedCheckout = false;
   bool _isLocked = false;
+  bool _paymentEffectRan = false;
   Timer? _timer;
+  String? _pollingTransactionId;
   String currentUrl = '';
 
   @override
@@ -106,16 +119,19 @@ class _WebPaymentViewState extends State<WebPaymentView> {
               _procesingPayment = true;
               setState(() {});
               final transaccionId = _extractIdFromUrl(change.url!);
-              if (transaccionId.isEmpty) {
+              if (transaccionId.isEmpty || transaccionId == _pollingTransactionId) {
+                // Ya sin id, o ya hay un poller activo para esta misma transacción
+                // (onUrlChange puede dispararse más de una vez para la misma redirección).
                 return;
-              } else {
-                _timer = Timer.periodic(
-                  const Duration(seconds: 5),
-                  (t) async {
-                    await getTransaccionStatus(transaccionId);
-                  },
-                );
               }
+              _timer?.cancel();
+              _pollingTransactionId = transaccionId;
+              _timer = Timer.periodic(
+                const Duration(seconds: 5),
+                (t) async {
+                  await getTransaccionStatus(transaccionId);
+                },
+              );
             }
             debugPrint('url change to ${change.url}');
           },
@@ -266,6 +282,14 @@ class _WebPaymentViewState extends State<WebPaymentView> {
                           icon: Icons.check_rounded,
                           margin: EdgeInsets.zero,
                           onTap: () async {
+                            // La persistencia (actualizar cuotas/suscripción) ya se
+                            // aplicó en getTransaccionStatus al confirmarse el pago;
+                            // si por alguna razón no llegó a correr, se aplica aquí
+                            // como respaldo antes de continuar la navegación.
+                            if (!_paymentEffectRan) {
+                              _paymentEffectRan = true;
+                              await widget.onPaymentApproved();
+                            }
                             setState(() => _showApprovedState = false);
                             await widget.onSuccessfulPayment();
                           },
@@ -423,6 +447,14 @@ class _WebPaymentViewState extends State<WebPaymentView> {
         _showApprovedState = true;
       });
       await _savePayment(transaccionId, status);
+      // Persiste el efecto (actualizar cuotas/suscripción) apenas Wompi confirma
+      // el pago, sin depender de que el usuario permanezca en la app y toque
+      // "Entendido" — si cierra antes de eso, el pago quedaba aprobado en Wompi
+      // pero nunca se reflejaba en el préstamo.
+      if (!_paymentEffectRan) {
+        _paymentEffectRan = true;
+        await widget.onPaymentApproved();
+      }
     } else if (status == "DECLINED") {
       _timer?.cancel();
       _isLocked = false;

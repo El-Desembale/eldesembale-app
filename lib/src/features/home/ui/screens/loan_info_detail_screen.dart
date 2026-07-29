@@ -519,7 +519,7 @@ class _LoanInfoDetailScreenState extends State<LoanInfoDetailScreen> {
                               installmentNumber:
                                   loan.installmentsPaid + selected,
                               installmentsToPay: selected,
-                              onSuccessfulPayment: () async {
+                              onPaymentApproved: () async {
                                 final status = await widget.homeCubit
                                     .updateLoanInstallments(
                                   loan,
@@ -531,6 +531,8 @@ class _LoanInfoDetailScreenState extends State<LoanInfoDetailScreen> {
                                     installmentsToPay: selected,
                                   );
                                 }
+                              },
+                              onSuccessfulPayment: () async {
                                 setState(() => _selectedUpTo = 0);
                                 if (context.mounted) {
                                   context.pop();
