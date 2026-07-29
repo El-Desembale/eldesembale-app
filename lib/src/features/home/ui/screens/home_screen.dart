@@ -574,6 +574,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         );
       }
     } catch (_) {}
+    // Asegura que el perfil reutilizable (documentos/referencias de una
+    // solicitud anterior) esté cargado antes de decidir el flujo; si la carga
+    // inicial en initState no había terminado, aquí se completa para no caer
+    // por error en el paso de volver a subir documentos.
+    await widget.homeCubit.loadReusableLoanInformation();
     if (!context.mounted) return;
     if (isSubscribed) {
       await context.push(AppRoutes.loanInformation);

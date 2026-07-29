@@ -28,7 +28,7 @@ class UserModel extends UserEntity {
         lastName: json["last_name"],
         isSubscribed: json["isSubscribed"] ?? false,
         riskProfile: json["riskProfile"] ?? 'NEW',
-        maxLoanAmount: (json["maxLoanAmount"] as num?)?.toInt() ?? 100000,
+        maxLoanAmount: (json["maxLoanAmount"] as num?)?.toInt() ?? 300000,
         isBlockedForNewLoans: json["isBlockedForNewLoans"] ?? false,
       );
 

@@ -492,6 +492,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
   Future<void> _showSubscriptionApprovedModal() async {
     if (!mounted) return;
     final nextRoute = widget.afterSuccessRoute ?? AppRoutes.loanInformation;
+    // Asegura que el perfil reutilizable esté cargado antes de continuar con
+    // la solicitud, para no pedir de nuevo documentos ya subidos antes.
+    await widget.homeCubit.loadReusableLoanInformation();
+    if (!mounted) return;
 
     await ModalbottomsheetUtils.subscriptionApprovedSheet(
       context,
@@ -507,7 +511,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
     );
   }
 
-  void _continueWithoutModal() {
+  Future<void> _continueWithoutModal() async {
     if (!mounted) return;
     final nextRoute = widget.afterSuccessRoute ?? AppRoutes.loanInformation;
 
@@ -516,6 +520,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
       return;
     }
 
+    // Asegura que el perfil reutilizable esté cargado antes de continuar con
+    // la solicitud, para no pedir de nuevo documentos ya subidos antes.
+    await widget.homeCubit.loadReusableLoanInformation();
+    if (!mounted) return;
     context.go(nextRoute);
   }
 
@@ -537,7 +545,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
     _startSubscriptionRefreshTimer();
 
     if (!_approvalFeedbackEnabled) {
-      _continueWithoutModal();
+      await _continueWithoutModal();
       return;
     }
 

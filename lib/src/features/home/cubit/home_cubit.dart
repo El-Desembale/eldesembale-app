@@ -333,6 +333,19 @@ class HomeCubit extends Cubit<HomeState> {
     isLoading(false);
   }
 
+  /// Cupo inicial configurable para clientes nuevos (config/loan_pricing.new_user_max_amount).
+  Future<int> _getNewUserMaxAmount() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('config')
+          .doc('loan_pricing')
+          .get();
+      final value = doc.data()?['new_user_max_amount'];
+      if (value is num) return value.toInt();
+    } catch (_) {}
+    return 300000;
+  }
+
   // Lee el perfil de riesgo/cupo fresco desde Firestore y topa el monto máximo
   Future<void> _refreshUserRiskAndCap() async {
     try {
@@ -345,7 +358,8 @@ class HomeCubit extends Cubit<HomeState> {
           .get();
       if (snap.docs.isEmpty) return;
       final d = snap.docs.first.data();
-      final maxLoan = (d['maxLoanAmount'] as num?)?.toInt() ?? 100000;
+      final maxLoan = (d['maxLoanAmount'] as num?)?.toInt() ??
+          await _getNewUserMaxAmount();
       final blocked = d['isBlockedForNewLoans'] ?? false;
       final riskProfile = d['riskProfile'] ?? 'NEW';
 
