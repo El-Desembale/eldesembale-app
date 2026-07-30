@@ -766,7 +766,7 @@ exports.notifyAdminsOnPayment = functions.runWith({
 //  préstamos o pagos. Otros clientes solo leen los campos resultantes.
 // ════════════════════════════════════════════════════════════════
 
-const NEW_MAX_AMOUNT = 100000;     // cupo del primer préstamo
+const NEW_MAX_AMOUNT = 300000;     // cupo del primer préstamo (default si no hay config)
 const CUPO_INCREMENT = 50000;      // aumento por préstamo pagado sin mora
 const MAX_CUPO = 1000000;          // tope máximo
 
@@ -788,7 +788,8 @@ function loanIsInMora(loan) {
   return getExpectedInstallments(loan) > paid;
 }
 
-function computeUserRisk(loans, previousMax) {
+function computeUserRisk(loans, previousMax, newUserMaxAmount) {
+  const baseMax = newUserMaxAmount || NEW_MAX_AMOUNT;
   const paid = loans.filter((l) => Number(l.installments || 0) > 0 &&
     Number(l.installments_paid || 0) >= Number(l.installments || 0));
   const active = loans.filter((l) => l.status === "disbursed" &&
@@ -807,13 +808,13 @@ function computeUserRisk(loans, previousMax) {
     profile = "BLOCKED"; maxLoanAmount = 0; blocked = true;
   } else if (hadMoraEver) {
     profile = "MEDIUM_RISK";
-    maxLoanAmount = Math.min(Math.max(previousMax || NEW_MAX_AMOUNT, NEW_MAX_AMOUNT), MAX_CUPO);
+    maxLoanAmount = Math.min(Math.max(previousMax || baseMax, baseMax), MAX_CUPO);
   } else if (paidWithoutMoraCount > 0) {
     profile = "GOOD_PAYER";
-    // Cupo progresivo: $100.000 base + $50.000 por cada préstamo pagado sin mora
-    maxLoanAmount = Math.min(NEW_MAX_AMOUNT + CUPO_INCREMENT * paidWithoutMoraCount, MAX_CUPO);
+    // Cupo progresivo: cupo base de cliente nuevo + $50.000 por cada préstamo pagado sin mora
+    maxLoanAmount = Math.min(baseMax + CUPO_INCREMENT * paidWithoutMoraCount, MAX_CUPO);
   } else {
-    profile = "NEW"; maxLoanAmount = NEW_MAX_AMOUNT;
+    profile = "NEW"; maxLoanAmount = baseMax;
   }
 
   return {
@@ -832,15 +833,19 @@ function computeUserRisk(loans, previousMax) {
 async function recalcRiskForPhone(phone) {
   if (!phone) return;
   const db = admin.firestore();
-  const [loansSnap, userSnap] = await Promise.all([
+  const [loansSnap, userSnap, pricingSnap] = await Promise.all([
     db.collection("loan_request").where("phone", "==", phone).get(),
     db.collection("users").where("phone", "==", phone).limit(1).get(),
+    db.collection("config").doc("loan_pricing").get(),
   ]);
   if (userSnap.empty) return;
   const loans = loansSnap.docs.map((d) => d.data());
   const userDoc = userSnap.docs[0];
   const previousMax = userDoc.data().maxLoanAmount;
-  const risk = computeUserRisk(loans, previousMax);
+  const newUserMaxAmount = pricingSnap.exists && typeof pricingSnap.data().new_user_max_amount === "number"
+    ? pricingSnap.data().new_user_max_amount
+    : NEW_MAX_AMOUNT;
+  const risk = computeUserRisk(loans, previousMax, newUserMaxAmount);
   await userDoc.ref.update({
     ...risk,
     riskUpdatedAt: admin.firestore.Timestamp.now(),
