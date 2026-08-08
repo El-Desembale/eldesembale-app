@@ -103,8 +103,22 @@ class LoginServiceImpl implements LoginService {
     required String countryCode,
     required BuildContext context,
   }) async {
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    // Defensa adicional: aunque el paso previo de "validar teléfono" ya
+    // debió detectar un usuario existente, se revalida aquí para no crear
+    // una cuenta duplicada si aquella verificación falló por un error
+    // transitorio de red.
+    final existing = await firestore
+        .collection('users')
+        .where('phone', isEqualTo: user)
+        .limit(1)
+        .get();
+    if (existing.docs.isNotEmpty) {
+      throw Exception(
+        "Ya existe una cuenta con este número de celular. Inicia sesión.",
+      );
+    }
     try {
-      final FirebaseFirestore firestore = FirebaseFirestore.instance;
       final userRef = await firestore.collection('users').add({
         'phone': user,
         'name': name,
