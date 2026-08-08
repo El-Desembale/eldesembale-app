@@ -1,9 +1,10 @@
 // Motor de cálculo de créditos y cuotas (espejo de loan-calc.ts de web/admin).
 //
 // El costo del crédito es 15% mensual sobre el capital inicial (no sobre saldo) por los meses
-// de plazo, dividido en interés / plataforma / firma electrónica. Sobre cada cuota se aplica el
-// gross-up de Wompi para que la empresa reciba la cuota completa; el cliente no ve Wompi como
-// concepto: queda absorbido dentro de "Plataforma". Se calcula una sola vez al crear el crédito.
+// de plazo. Ese 15% es el costo TOTAL que paga el cliente — no se le suma nada más. Se divide
+// en interés / plataforma / firma electrónica solo para desglose informativo. La comisión de
+// Wompi se descuenta de lo que recibe la empresa, no se cobra aparte al cliente. Se calcula
+// una sola vez al crear el crédito.
 
 class PricingSplit {
   final double interes;
@@ -231,16 +232,11 @@ DateTime installmentDueDate(DateTime base, int index, String paymentPeriod) {
   return base.add(Duration(days: 15 * (index + 1)));
 }
 
-/// Gross-up de Wompi: total a cobrar al cliente para que la empresa reciba [cuotaCredito].
-double grossUpWompi(double cuotaCredito, WompiFees wompi) {
-  final ivaFactor = 1 + wompi.iva;
-  return (cuotaCredito + wompi.fijo * ivaFactor) /
-      (1 - wompi.porcentaje * ivaFactor);
-}
-
 /// Comisión de Wompi (tarifa variable + fija, con IVA) sobre un monto bruto cobrado al
-/// cliente. Se usa para registrar `wompi_fee` en transacciones sin desglose persistido
-/// (suscripciones y cuotas legacy).
+/// cliente. El cliente nunca paga esta comisión aparte: el costo total ya está topado al
+/// [LoanPricingConfig.interesMensual] configurado (ej. 15% del capital por mes de plazo),
+/// y Wompi se descuenta de lo que recibe la empresa. Se usa para registrar `wompi_fee` en
+/// transacciones sin desglose persistido (suscripciones y cuotas legacy).
 int wompiFeeFromGross(num gross, WompiFees wompi) {
   if (gross <= 0) return 0;
   final ivaFactor = 1 + wompi.iva;
@@ -269,9 +265,11 @@ LoanPricing computeLoanPricing({
   final interesCuota = interesTotal / n;
   final plataformaCuota = plataformaTotal / n;
   final administrativoCuota = administrativoTotal / n;
+  // El cliente paga exactamente capital + costo del crédito (el interesMensual
+  // configurado, ej. 15% mensual, es el costo TOTAL — Wompi no se suma encima).
   final cuotaCreditoPreciso =
       capitalCuota + interesCuota + plataformaCuota + administrativoCuota;
-  final totalClientePreciso = grossUpWompi(cuotaCreditoPreciso, config.wompi);
+  final totalClientePreciso = cuotaCreditoPreciso;
 
   final capitalRedondeado = capital.round();
   final interesRedondeado = interesTotal.round();
@@ -305,11 +303,14 @@ LoanPricing computeLoanPricing({
         : administrativoCuota.round();
     final costosCreditoI = interesI + plataformaI + administrativoI;
     final cuotaCreditoI = capitalI + costosCreditoI;
+    // El cliente paga exactamente cuotaCredito (capital + costo del 15%); Wompi
+    // no se suma encima. comisionWompi es solo lo que la empresa deja de
+    // recibir neto por procesar el pago, no un cargo adicional al cliente.
     final totalClienteI = isLast
         ? totalClienteRedondeado - accTotalCliente
         : totalClientePreciso.round();
-    final comisionWompiI = totalClienteI - cuotaCreditoI;
-    final plataformaClienteI = plataformaI + comisionWompiI;
+    final comisionWompiI = wompiFeeFromGross(totalClienteI, config.wompi);
+    final plataformaClienteI = plataformaI;
 
     accCapital += capitalI;
     accInteres += interesI;

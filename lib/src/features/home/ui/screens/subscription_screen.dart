@@ -48,6 +48,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
   final List<StreamSubscription<dynamic>> _subscriptionWatchers = [];
   bool _handledApproval = false;
   Timer? _subscriptionRefreshTimer;
+  bool _generatingPayment = false;
 
   @override
   void initState() {
@@ -368,32 +369,43 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
                   PrimaryActionButton(
                     margin: EdgeInsets.zero,
                     label: 'Continuar con el pago',
+                    enabled: !_generatingPayment,
                     onTap: () async {
-                      _approvalFeedbackEnabled = true;
-                      final payment = await widget.homeCubit
-                          .generateSubscriptionPayment(context);
-                      if (!context.mounted) return;
+                      // Guard síncrono contra doble-tap: sin esto, dos taps
+                      // rápidos generaban dos checkouts de Wompi distintos
+                      // (cada uno con su propia referencia) y podían
+                      // terminar cobrando la suscripción dos veces.
+                      if (_generatingPayment) return;
+                      setState(() => _generatingPayment = true);
+                      try {
+                        _approvalFeedbackEnabled = true;
+                        final payment = await widget.homeCubit
+                            .generateSubscriptionPayment(context);
+                        if (!context.mounted) return;
 
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => WebPaymentView(
-                            paymentUrl: payment.url,
-                            homeCubit: widget.homeCubit,
-                            reference: payment.reference,
-                            amountInCents: payment.amountInCents,
-                            onPaymentApproved: () async {
-                              await widget.homeCubit.updateUserSubscription();
-                            },
-                            onSuccessfulPayment: () async {
-                              if (!context.mounted) return;
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => WebPaymentView(
+                              paymentUrl: payment.url,
+                              homeCubit: widget.homeCubit,
+                              reference: payment.reference,
+                              amountInCents: payment.amountInCents,
+                              onPaymentApproved: () async {
+                                await widget.homeCubit.updateUserSubscription();
+                              },
+                              onSuccessfulPayment: () async {
+                                if (!context.mounted) return;
 
-                              context.pop();
-                              await _handleApprovedSubscription();
-                            },
+                                context.pop();
+                                await _handleApprovedSubscription();
+                              },
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      } finally {
+                        if (mounted) setState(() => _generatingPayment = false);
+                      }
                     },
                   ),
               ],

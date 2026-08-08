@@ -36,6 +36,7 @@ class _LoanInfoDetailScreenState extends State<LoanInfoDetailScreen> {
       _selectedUpTo; // number of installments selected (1-based from next unpaid)
   bool _sendingProof = false;
   String? _proofMessage;
+  bool _generatingPayment = false;
 
   @override
   void initState() {
@@ -485,9 +486,15 @@ class _LoanInfoDetailScreenState extends State<LoanInfoDetailScreen> {
                           ? 'Pagar cuota'
                           : 'Pagar $selected cuota${selected > 1 ? 's' : ''}',
                       icon: Icons.check_circle_outline_sharp,
-                      enabled: selected > 0,
+                      enabled: selected > 0 && !_generatingPayment,
                       margin: EdgeInsets.zero,
                       onTap: () async {
+                        // Guard síncrono contra doble-tap: sin esto, dos taps
+                        // rápidos generaban dos checkouts de Wompi distintos
+                        // y podían terminar cobrando la cuota dos veces.
+                        if (_generatingPayment) return;
+                        setState(() => _generatingPayment = true);
+                        try {
                         // Comisión Wompi exacta de las cuotas seleccionadas (desde el
                         // desglose persistido); null para créditos legacy → se estima.
                         int? selectedWompiFee;
@@ -542,6 +549,11 @@ class _LoanInfoDetailScreenState extends State<LoanInfoDetailScreen> {
                             ),
                           ),
                         );
+                        } finally {
+                          if (mounted) {
+                            setState(() => _generatingPayment = false);
+                          }
+                        }
                       },
                     ),
                     const SizedBox(height: 10),
