@@ -346,6 +346,53 @@ class HomeCubit extends Cubit<HomeState> {
     return 300000;
   }
 
+  /// Calcula el desglose del crédito (capital, interés, plataforma,
+  /// mantenimiento y cuotas) con la configuración de pricing actual, sin
+  /// persistir nada. Se usa para mostrarle al cliente cómo van a quedar las
+  /// cuotas antes de confirmar el envío de la solicitud.
+  Future<LoanPricing> previewPricing() async {
+    var cfg = kDefaultPricingConfig;
+    try {
+      final results = await Future.wait([
+        FirebaseFirestore.instance.collection('config').doc('loan_pricing').get(),
+        FirebaseFirestore.instance.collection('config').doc('wompi').get(),
+      ]);
+      final pricingDoc = results[0];
+      final wompiDoc = results[1];
+      double interesMensual = cfg.interesMensual;
+      PricingSplit split = cfg.split;
+      WompiFees wompi = cfg.wompi;
+      double pick(dynamic v, double fallback) => (v is num) ? v.toDouble() : fallback;
+      if (pricingDoc.exists) {
+        final d = pricingDoc.data() as Map<String, dynamic>;
+        final s = (d['split'] as Map<String, dynamic>?) ?? {};
+        interesMensual = pick(d['interes_mensual'], cfg.interesMensual);
+        split = PricingSplit(
+          interes: pick(s['interes'], cfg.split.interes),
+          plataforma: pick(s['plataforma'], cfg.split.plataforma),
+          administrativo: pick(s['administrativo'], cfg.split.administrativo),
+        );
+      }
+      if (wompiDoc.exists) {
+        final d = wompiDoc.data() as Map<String, dynamic>;
+        wompi = WompiFees(
+          porcentaje: pick(d['porcentaje'], cfg.wompi.porcentaje),
+          fijo: pick(d['fijo'], cfg.wompi.fijo),
+          iva: pick(d['iva'], cfg.wompi.iva),
+        );
+      }
+      cfg = LoanPricingConfig(interesMensual: interesMensual, split: split, wompi: wompi);
+    } catch (_) {}
+
+    return computeLoanPricing(
+      capital: state.totalLoanAmount,
+      numeroCuotas: state.selectedInstallments,
+      paymentPeriod: state.paymentPeriod,
+      fechaDesembolso: DateTime.now(),
+      config: cfg,
+    );
+  }
+
   // Lee el perfil de riesgo/cupo fresco desde Firestore y topa el monto máximo
   Future<void> _refreshUserRiskAndCap() async {
     try {

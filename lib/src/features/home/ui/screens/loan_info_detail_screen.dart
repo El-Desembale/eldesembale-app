@@ -882,9 +882,10 @@ class _ProofOptionButton extends StatelessWidget {
   }
 }
 
-/// Desglose del crédito para el cliente: Capital e Intereses como un único concepto
-/// (incluye plataforma, firma electrónica y procesamiento del pago de forma transparente).
-/// El detalle discriminado es exclusivo del admin.
+/// Desglose del crédito para el cliente: Capital, Interés, Plataforma y
+/// Mantenimiento (firma electrónica/administrativo) por separado. La
+/// comisión de procesamiento de pago (Wompi) se absorbe dentro de
+/// Plataforma, igual que en el desglose por cuota.
 class _DesgloseCard extends StatelessWidget {
   final LoanPricing pricing;
   const _DesgloseCard({required this.pricing});
@@ -892,7 +893,7 @@ class _DesgloseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final f = NumberFormat("#,##0", "en_US");
-    final interesesCliente = pricing.totalCliente - pricing.capital;
+    final plataformaCliente = pricing.plataformaTotal + pricing.wompiTotal;
     Widget row(String label, int value, {bool strong = false}) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 3),
@@ -942,14 +943,16 @@ class _DesgloseCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           row('Capital', pricing.capital),
-          row('Intereses *', interesesCliente),
+          row('Interés', pricing.interesTotal),
+          row('Plataforma *', plataformaCliente),
+          row('Mantenimiento', pricing.administrativoTotal),
           const SizedBox(height: 8),
           Container(height: 1, color: kBorderFaint),
           const SizedBox(height: 8),
           row('Total a pagar', pricing.totalCliente, strong: true),
           const SizedBox(height: 8),
           const Text(
-            '* Incluye el costo total del servicio de crédito.',
+            '* Incluye el costo de procesamiento del pago.',
             style: TextStyle(color: kTextSecondary, fontSize: 10, height: 1.4),
           ),
         ],

@@ -7,17 +7,30 @@ import '../../../../../config/auth/cubit/auth_cubit.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../core/di/injection_dependency.dart';
 import '../../../../../utils/design_tokens.dart';
-import '../../../../../utils/modalbottomsheet.dart';
 import '../../../cubit/home_cubit.dart';
+import '../../../domain/loan_calc.dart';
 
-class LoanConfirmScreen extends StatelessWidget {
+class LoanConfirmScreen extends StatefulWidget {
   final HomeCubit homeCubit;
   const LoanConfirmScreen({super.key, required this.homeCubit});
 
   @override
+  State<LoanConfirmScreen> createState() => _LoanConfirmScreenState();
+}
+
+class _LoanConfirmScreenState extends State<LoanConfirmScreen> {
+  late final Future<LoanPricing> _pricingFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _pricingFuture = widget.homeCubit.previewPricing();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeCubit, HomeState>(
-      bloc: homeCubit,
+      bloc: widget.homeCubit,
       builder: (context, state) {
         return Scaffold(
           backgroundColor: kBgScreen,
@@ -131,6 +144,29 @@ class LoanConfirmScreen extends StatelessWidget {
                         ),
                       ],
                     ),
+                  ),
+
+                  const SizedBox(height: 24),
+                  FutureBuilder<LoanPricing>(
+                    future: _pricingFuture,
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          child: Center(
+                            child: SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.4,
+                                color: kPrimaryGreen,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                      return _PricingPreviewCard(pricing: snapshot.data!);
+                    },
                   ),
 
                   const SizedBox(height: 24),
@@ -326,7 +362,7 @@ class LoanConfirmScreen extends StatelessWidget {
   Future<void> _submit(BuildContext context, HomeState state) async {
     final isSubscribed = sl<AuthCubit>(instanceName: 'auth').state.user.isSubscribed;
     if (isSubscribed) {
-      await homeCubit.submitLoan(context);
+      await widget.homeCubit.submitLoan(context);
     } else {
       final response = await context.push<bool>(
         AppRoutes.subscrption,
@@ -334,7 +370,7 @@ class LoanConfirmScreen extends StatelessWidget {
       );
       if (!context.mounted) return;
       if (response ?? false) {
-        await homeCubit.submitLoan(context);
+        await widget.homeCubit.submitLoan(context);
       }
     }
   }
@@ -346,4 +382,138 @@ class _SummaryItem {
   final IconData icon;
   final bool done;
   const _SummaryItem(this.title, this.subtitle, this.icon, this.done);
+}
+
+/// Desglose del crédito (capital, interés, plataforma, mantenimiento y
+/// fechas de pago por cuota) mostrado antes de enviar la solicitud, para
+/// que el cliente sepa cómo le van a quedar las cuotas.
+class _PricingPreviewCard extends StatelessWidget {
+  final LoanPricing pricing;
+  const _PricingPreviewCard({required this.pricing});
+
+  @override
+  Widget build(BuildContext context) {
+    final f = NumberFormat('#,##0', 'en_US');
+    final dateFmt = DateFormat('d MMM yyyy', 'es_CO');
+    final plataformaCliente = pricing.plataformaTotal + pricing.wompiTotal;
+
+    Widget row(String label, int value, {bool strong = false}) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 3),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: strong ? kTextPrimary : kTextSecondary,
+                fontSize: strong ? 14 : 13,
+                fontWeight: strong ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+            Text(
+              '\$${f.format(value)}',
+              style: TextStyle(
+                color: strong ? kPrimaryGreen : kTextPrimary,
+                fontSize: strong ? 15 : 13,
+                fontWeight: strong ? FontWeight.w800 : FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: kSurfaceSoft,
+            borderRadius: BorderRadius.circular(kRadiusCard),
+            border: Border.all(color: kBorderFaint),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Desglose del crédito',
+                style: TextStyle(
+                  color: kTextSecondary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              const SizedBox(height: 8),
+              row('Capital', pricing.capital),
+              row('Interés', pricing.interesTotal),
+              row('Plataforma *', plataformaCliente),
+              row('Mantenimiento', pricing.administrativoTotal),
+              const SizedBox(height: 8),
+              Container(height: 1, color: kBorderFaint),
+              const SizedBox(height: 8),
+              row('Total a pagar', pricing.totalCliente, strong: true),
+              const SizedBox(height: 8),
+              const Text(
+                '* Incluye el costo de procesamiento del pago.',
+                style: TextStyle(color: kTextSecondary, fontSize: 10, height: 1.4),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        const Text(
+          'Fechas de pago',
+          style: TextStyle(color: kTextSecondary, fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 0.5),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: kBgScreenAlt,
+            borderRadius: BorderRadius.circular(kRadiusCard),
+            border: Border.all(color: kBorderFaint),
+          ),
+          child: Column(
+            children: pricing.installments.asMap().entries.map((e) {
+              final i = e.key;
+              final cuota = e.value;
+              return Column(
+                children: [
+                  if (i > 0) Divider(height: 1, color: kBorderFaint),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Cuota ${cuota.numeroCuota}',
+                              style: const TextStyle(color: kTextPrimary, fontSize: 13, fontWeight: FontWeight.w600),
+                            ),
+                            Text(
+                              dateFmt.format(cuota.fechaVencimiento),
+                              style: const TextStyle(color: kTextSecondary, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          '\$${f.format(cuota.totalCliente)}',
+                          style: const TextStyle(color: kTextPrimary, fontSize: 14, fontWeight: FontWeight.w700),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
 }
