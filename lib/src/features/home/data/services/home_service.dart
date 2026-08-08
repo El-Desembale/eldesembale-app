@@ -254,6 +254,17 @@ class HomeServiceImpl implements HomeService {
           ? await uploadPDF(loan.empInvoiceFile, 'emp_invoice_file')
           : loan.existingEmpInvoiceUrl;
 
+      // Defensa adicional: aunque la pantalla previa ya exige los 4 soportes
+      // (nuevos o reutilizados de una solicitud anterior) antes de continuar,
+      // se revalida aquí para no guardar una solicitud sin documentos si esa
+      // validación fue evadida (ej. perfil reutilizable no cargado a tiempo).
+      if (ccFrontalPicture.isEmpty ||
+          ccBackPicture.isEmpty ||
+          selfiePicture.isEmpty ||
+          empInvoiceFile.isEmpty) {
+        throw Exception('MISSING_DOCUMENTS');
+      }
+
       Map<String, dynamic> loanInformation = loan.toJson();
       loanInformation['emp_invoice_file'] = empInvoiceFile;
       loanInformation['cc_frontal_picture'] = ccFrontalPicture;

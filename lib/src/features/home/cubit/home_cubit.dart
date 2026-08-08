@@ -656,7 +656,9 @@ class HomeCubit extends Cubit<HomeState> {
       (error) {
         final message = error.code.contains('SUBSCRIPTION_REQUIRED')
             ? 'Debes tener una suscripción activa para enviar la solicitud.'
-            : error.toString();
+            : error.code.contains('MISSING_DOCUMENTS')
+                ? 'Faltan documentos por subir. Vuelve a intentarlo desde el paso de documentos.'
+                : error.toString();
         setError(message);
         if (context.mounted) {
           ModalbottomsheetUtils.customError(
